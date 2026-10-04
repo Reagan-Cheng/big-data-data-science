@@ -58,11 +58,10 @@
   },
   {
     "file": "last-coupon",
-    "path": "https://last-coupon-rfm.herrowa.chatgpt.site/",
+    "path": "/chapter-02/games/last-coupon/",
     "zh": "最後一張優惠券",
     "en": "The Last Coupon",
-    "url": "https://last-coupon-rfm.herrowa.chatgpt.site/",
-    "external": true
+    "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/last-coupon/"
   },
   {
     "file": "dynamic-labels",

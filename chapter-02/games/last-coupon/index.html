@@ -1,0 +1,1873 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Last Coupon 最後一張優惠券</title>
+<meta name="description" content="A four-quarter RFM decision game for marketing classes. 四個季度的 RFM 團隊決策遊戲。">
+<!-- ============================================================
+     The Last Coupon · 最後一張優惠券
+     A classroom simulation on RFM segmentation for team discussion.
+     Single file, no build step, no server: open it or host it on
+     GitHub Pages. Three script blocks below: ENGINE (the customer
+     model), COPY (all text, English and 繁體中文), APP (the screens).
+     ============================================================ -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Instrument+Sans:wght@400..700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --paper:#F1F4EE;
+  --surface:#FFFFFF;
+  --ink:#16201B;
+  --ink-2:#47544D;
+  --ink-3:#6F7C75;
+  --line:#D3DAD2;
+  --line-2:#E6EBE4;
+  --accent:#1E6B55;
+  --accent-deep:#104435;
+  --accent-wash:#E1EEE8;
+  --stamp:#C4352B;
+  --stamp-deep:#9C261E;
+  --stamp-wash:#FBEAE7;
+  --good:#0B7A0B;
+  --bad:#B42B2B;
+  --you:#2A78D6;
+  --ref:#8A918C;
+  --display:"Bricolage Grotesque","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --body:"Instrument Sans","Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --wrap:68rem;
+  --gutter:clamp(1rem,3.5vw,2.5rem);
+}
+*{box-sizing:border-box}
+html{font-size:106.25%;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:1rem;line-height:1.55;-webkit-font-smoothing:antialiased}
+html:lang(zh-Hant) body{line-height:1.75}
+h1,h2,h3{font-family:var(--display);line-height:1.12;margin:0;font-weight:700;letter-spacing:-.01em}
+html:lang(zh-Hant) h1,html:lang(zh-Hant) h2,html:lang(zh-Hant) h3{line-height:1.3;letter-spacing:0;font-weight:700}
+p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--accent-deep)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.num{font-variant-numeric:tabular-nums}
+h1:focus{outline:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- top bar ---------- */
+.top{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.7rem var(--gutter);border-bottom:1px solid var(--line);background:var(--surface)}
+.brand{font-family:var(--display);font-weight:700;font-size:1.02rem;display:flex;align-items:baseline;gap:.6rem;min-width:0}
+.brand{white-space:nowrap}
+.brand small{font-family:var(--body);font-weight:400;font-size:.82rem;color:var(--ink-3);white-space:nowrap}
+@media(max-width:520px){.brand small{display:none}}
+.top-actions{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
+.lang{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.lang button{border:0;background:transparent;padding:.28rem .8rem;font-size:.84rem;cursor:pointer;color:var(--ink-2)}
+.lang button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.quiet{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:.28rem .85rem;font-size:.84rem;cursor:pointer;color:var(--ink-2)}
+.quiet:hover{border-color:var(--ink-3);color:var(--ink)}
+.quiet.armed{border-color:var(--stamp);color:var(--stamp-deep);background:var(--stamp-wash)}
+
+/* ---------- progress rail ---------- */
+.rail{list-style:none;margin:0;padding:.75rem var(--gutter);display:flex;gap:.35rem;overflow-x:auto;background:var(--surface);border-bottom:1px solid var(--line)}
+.rail li{flex:1 1 0;min-width:4.6rem;font-size:.8rem;color:var(--ink-3);padding-top:.45rem;border-top:3px solid var(--line-2);white-space:nowrap}
+.rail li.done{border-top-color:var(--accent);color:var(--ink-2)}
+.rail li.now{border-top-color:var(--ink);color:var(--ink);font-weight:600}
+
+/* ---------- KPI strip ---------- */
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-bottom:1px solid var(--line);background:var(--surface)}
+.kpi{padding:.75rem var(--gutter) .8rem;border-left:1px solid var(--line-2);min-width:0}
+.kpi:first-child{border-left:0}
+.kpi .k-label{font-size:.8rem;color:var(--ink-2)}
+.kpi .k-val{font-family:var(--body);font-weight:600;font-size:clamp(1.15rem,2.3vw,1.6rem);line-height:1.2;white-space:nowrap}
+.kpi .k-delta{font-size:.8rem;color:var(--ink-3);white-space:nowrap}
+.k-delta .up{color:var(--good)}
+.k-delta .down{color:var(--bad)}
+@media(max-width:700px){
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kpi{padding:.55rem 1rem}
+  .kpi:nth-child(3){border-left:0}
+  .kpi:nth-child(n+3){border-top:1px solid var(--line-2)}
+}
+
+/* ---------- stage ---------- */
+main{max-width:var(--wrap);margin:0 auto;padding:clamp(1.5rem,4vw,3rem) var(--gutter) 5rem}
+.period{font-size:.92rem;color:var(--accent-deep);font-weight:600;margin-bottom:.35rem}
+.stage-title{font-size:clamp(1.9rem,4.4vw,3rem)}
+.lede{max-width:64ch;margin-top:.9rem;font-size:1.06rem;color:var(--ink-2)}
+h2{font-size:clamp(1.2rem,2.2vw,1.5rem);margin:2.3rem 0 .8rem}
+h3{font-size:1.02rem;margin:0 0 .25rem}
+.sub{color:var(--ink-2);max-width:66ch;margin:-.3rem 0 .9rem;font-size:.95rem}
+.small{font-size:.86rem;color:var(--ink-3)}
+.block{background:var(--surface);border:1px solid var(--line);border-radius:6px}
+.pad{padding:1rem 1.15rem}
+
+/* ---------- hero ticket (intro) ---------- */
+.hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:clamp(1.5rem,4vw,3.5rem);align-items:center}
+@media(max-width:820px){.hero{grid-template-columns:minmax(0,1fr)}}
+.ticket{
+  --s:18px;
+  position:relative;background:var(--stamp);color:#fff;display:grid;grid-template-columns:minmax(0,1fr) auto;
+  -webkit-mask:
+    radial-gradient(circle at left,transparent calc(var(--s)*.34),#000 calc(var(--s)*.36)) left/51% var(--s) repeat-y,
+    radial-gradient(circle at right,transparent calc(var(--s)*.34),#000 calc(var(--s)*.36)) right/51% var(--s) repeat-y;
+  mask:
+    radial-gradient(circle at left,transparent calc(var(--s)*.34),#000 calc(var(--s)*.36)) left/51% var(--s) repeat-y,
+    radial-gradient(circle at right,transparent calc(var(--s)*.34),#000 calc(var(--s)*.36)) right/51% var(--s) repeat-y;
+}
+.ticket-main{padding:clamp(1.4rem,3.2vw,2.4rem) clamp(1.5rem,3.4vw,2.6rem)}
+.ticket-main h1{font-size:clamp(2.5rem,6.6vw,4.6rem);font-weight:800;line-height:.98;letter-spacing:-.025em}
+html:lang(zh-Hant) .ticket-main h1{line-height:1.12;letter-spacing:0;font-size:clamp(2.2rem,5.6vw,3.9rem)}
+.ticket-main p{margin-top:1rem;font-size:1.05rem;max-width:26ch;opacity:.94}
+.ticket-stub{border-left:2px dashed rgba(255,255,255,.55);padding:1.2rem 1.5rem 1.2rem 1.2rem;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;text-align:right;min-width:7.2rem}
+.ticket-stub .amount{font-family:var(--display);font-weight:800;font-size:clamp(1.5rem,3.2vw,2.2rem);line-height:1}
+.ticket-stub .amount small{display:block;font-family:var(--body);font-weight:500;font-size:.8rem;margin-bottom:.25rem;opacity:.9}
+.ticket-stub .valid{font-size:.8rem;opacity:.9;max-width:9ch}
+.hero-copy p{font-size:1.12rem;max-width:44ch}
+.hero-copy .fict{margin-top:.9rem;font-size:.86rem;color:var(--ink-3)}
+
+.cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.9rem clamp(1.5rem,4vw,3.5rem)}
+@media(max-width:820px){.cols{grid-template-columns:minmax(0,1fr)}}
+ol.steps{margin:0;padding:0;list-style:none;counter-reset:st}
+ol.steps li{counter-increment:st;display:grid;grid-template-columns:2rem minmax(0,1fr);gap:.2rem;padding:.55rem 0;border-top:1px solid var(--line)}
+ol.steps li:first-child{border-top:0}
+ol.steps li::before{content:counter(st);font-family:var(--display);font-weight:700;color:var(--accent-deep)}
+dl.defs{margin:0}
+dl.defs div{padding:.55rem 0;border-top:1px solid var(--line);display:grid;grid-template-columns:9.5rem 1fr;gap:.8rem}
+dl.defs div:first-child{border-top:0}
+dl.defs dt{font-weight:600}
+dl.defs dd{margin:0;color:var(--ink-2)}
+@media(max-width:520px){dl.defs div{grid-template-columns:minmax(0,1fr);gap:0}}
+
+.field{display:block;margin-top:1.4rem}
+.field > span{display:block;font-weight:600;font-size:.95rem;margin-bottom:.3rem}
+.field input[type=text],.field textarea,select{width:100%;border:1px solid var(--ink-3);border-radius:5px;padding:.6rem .7rem;background:var(--surface)}
+.field textarea{min-height:3.4rem;resize:vertical}
+.field input:focus,.field textarea:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.narrow{max-width:26rem}
+
+/* ---------- lock-in ticket button ---------- */
+.commit{margin-top:1.4rem;display:flex;flex-wrap:wrap;align-items:center;gap:.9rem 1.2rem}
+.btn-ticket{
+  --s:12px;
+  border:0;cursor:pointer;background:var(--stamp);color:#fff;font-family:var(--display);font-weight:700;font-size:1.05rem;
+  padding:.85rem 2rem;
+  -webkit-mask:
+    radial-gradient(circle at left,transparent calc(var(--s)*.34),#000 calc(var(--s)*.38)) left/51% var(--s) repeat-y,
+    radial-gradient(circle at right,transparent calc(var(--s)*.34),#000 calc(var(--s)*.38)) right/51% var(--s) repeat-y;
+  mask:
+    radial-gradient(circle at left,transparent calc(var(--s)*.34),#000 calc(var(--s)*.38)) left/51% var(--s) repeat-y,
+    radial-gradient(circle at right,transparent calc(var(--s)*.34),#000 calc(var(--s)*.38)) right/51% var(--s) repeat-y;
+  transition:background .15s, transform .15s;
+}
+html:lang(zh-Hant) .btn-ticket{font-weight:700}
+.btn-ticket:hover{background:var(--stamp-deep)}
+.btn-ticket:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.btn-ticket.armed{background:var(--ink)}
+.btn-ticket[aria-disabled="true"]{background:#B9C0BA;cursor:not-allowed}
+.btn-plain{border:0;cursor:pointer;background:var(--ink);color:#fff;font-family:var(--display);font-weight:700;font-size:1.02rem;padding:.8rem 1.6rem;border-radius:5px}
+.btn-plain:hover{background:var(--accent-deep)}
+.btn-ghost{border:1px solid var(--ink-3);cursor:pointer;background:transparent;font-weight:600;padding:.6rem 1.1rem;border-radius:5px}
+.btn-ghost:hover{border-color:var(--ink);background:var(--surface)}
+.msg{font-size:.92rem;color:var(--bad);font-weight:500}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+
+/* ---------- option cards (radio) ---------- */
+.opts{display:grid;grid-template-columns:minmax(0,1fr);gap:.6rem;margin-top:1rem}
+.opts.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.opts.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:820px){.opts.two,.opts.three{grid-template-columns:minmax(0,1fr)}}
+.opt{position:relative;display:block;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:.85rem 1rem .9rem 2.6rem;cursor:pointer}
+.opt:hover{border-color:var(--ink-3)}
+.opt input{position:absolute;left:.95rem;top:1.05rem;width:1.05rem;height:1.05rem;accent-color:var(--ink);margin:0}
+.opt:has(input:checked){border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink);background:var(--accent-wash)}
+.opt strong{display:block;font-family:var(--display);font-size:1.04rem}
+html:lang(zh-Hant) .opt strong{font-weight:700}
+.opt span{display:block;color:var(--ink-2);font-size:.94rem}
+.opt em{display:block;font-style:normal;font-size:.86rem;color:var(--ink-3);margin-top:.4rem}
+.opt.locked{cursor:default;opacity:.92}
+
+/* ---------- data tables ---------- */
+.scroll{overflow-x:auto}
+table.data{border-collapse:collapse;width:100%;font-size:.93rem}
+table.data caption{text-align:left;padding:.8rem 1.15rem .2rem;font-weight:600}
+table.data th,table.data td{padding:.5rem .75rem;text-align:right;border-top:1px solid var(--line-2);white-space:nowrap;font-variant-numeric:tabular-nums}
+table.data thead th{border-top:0;font-weight:600;font-size:.84rem;color:var(--ink-2);vertical-align:bottom;white-space:normal;line-height:1.3}
+html:lang(zh-Hant) table.data thead th{word-break:keep-all}
+table.data th:first-child,table.data td:first-child{text-align:left;padding-left:1.15rem}
+table.data td:last-child,table.data th:last-child{padding-right:1.15rem}
+table.data tbody th{font-weight:600;text-align:left}
+table.data tr.total td,table.data tr.total th{border-top:1px solid var(--ink-3);font-weight:700}
+table.data td.l,table.data th.l{text-align:left}
+table.data .best{font-weight:700}
+table.data .best::after{content:"";display:inline-block;width:.45rem;height:.45rem;border-radius:50%;background:var(--accent);margin-left:.4rem;vertical-align:.08em}
+table.data tr.you th,table.data tr.you td{background:var(--accent-wash)}
+th button.sort{border:0;background:none;font:inherit;color:inherit;cursor:pointer;padding:0;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+th button.sort[aria-pressed="true"]{text-decoration-color:var(--ink);color:var(--ink)}
+.tfoot{padding:.55rem 1.15rem .8rem;font-size:.86rem;color:var(--ink-3)}
+
+/* ---------- segment plan ---------- */
+.plan{display:grid;grid-template-columns:minmax(0,1fr);gap:0}
+.seg{display:grid;grid-template-columns:minmax(12rem,1.25fr) minmax(0,1.5fr) minmax(16rem,1.6fr);gap:.4rem 1.2rem;padding:.9rem 1.15rem;border-top:1px solid var(--line-2);align-items:center}
+.seg:first-child{border-top:0}
+.seg-name strong{font-family:var(--display);font-size:1.05rem;display:block}
+html:lang(zh-Hant) .seg-name strong{font-weight:700}
+.seg-name span{font-size:.84rem;color:var(--ink-3);display:block;line-height:1.35}
+.seg-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.3rem .8rem}
+.seg-stats.more{grid-template-columns:repeat(4,minmax(0,1fr))}
+.stat b{display:block;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.stat i{display:block;font-style:normal;font-size:.76rem;color:var(--ink-3);line-height:1.25}
+.stat.hl b{color:var(--accent-deep)}
+.bar{height:6px;background:var(--line-2);border-radius:0 3px 3px 0;margin-top:.25rem;overflow:hidden}
+.bar u{display:block;height:100%;background:var(--accent);border-radius:0 3px 3px 0;text-decoration:none}
+.tactics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--ink-3);border-radius:5px;overflow:hidden}
+.tactics label{position:relative;text-align:center;padding:.4rem .3rem;cursor:pointer;border-left:1px solid var(--ink-3);font-size:.9rem;line-height:1.25;background:var(--surface)}
+.tactics label:first-child{border-left:0}
+.tactics input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.tactics b{display:block;font-weight:600}
+.tactics small{display:block;font-size:.78rem;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.tactics label:has(input:checked){background:var(--ink);color:#fff}
+.tactics label:has(input:checked) small{color:#D7DDD8}
+.tactics label:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:-2px}
+.tactics.locked label{cursor:default}
+.tactics.locked label:not(:has(input:checked)){background:var(--line-2);color:var(--ink-3)}
+.seg-note{grid-column:1/-1;font-size:.84rem;color:var(--ink-3)}
+@media(max-width:940px){
+  .seg{grid-template-columns:minmax(0,1fr)}
+}
+.truth{grid-column:1/-1;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:.3rem .8rem;background:var(--accent-wash);border-radius:5px;padding:.55rem .8rem}
+@media(max-width:700px){.truth{grid-template-columns:repeat(2,minmax(0,1fr))}.seg-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.budget{padding:1rem 1.15rem;border-top:1px solid var(--line)}
+.budget-row{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;font-size:.95rem}
+.budget-row b{font-variant-numeric:tabular-nums}
+.meter{height:10px;background:var(--accent-wash);border-radius:5px;margin-top:.45rem;overflow:hidden}
+.meter u{display:block;height:100%;background:var(--accent);border-radius:5px;text-decoration:none;transition:width .2s}
+.meter.over{background:var(--stamp-wash)}
+.meter.over u{background:var(--stamp)}
+.check{display:grid;grid-template-columns:1.4rem minmax(0,1fr);gap:.2rem .5rem;padding:1rem 1.15rem;border-top:1px solid var(--line);cursor:pointer}
+.check input{width:1.05rem;height:1.05rem;margin:.28rem 0 0;accent-color:var(--ink)}
+.check strong{display:block}
+.check span{color:var(--ink-2);font-size:.93rem}
+
+/* ---------- RFM exercise ---------- */
+.people{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem}
+@media(max-width:900px){.people{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.people{grid-template-columns:minmax(0,1fr)}}
+.person{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:.9rem 1rem}
+.person h3{font-size:1.1rem}
+.person dl{margin:.5rem 0 .6rem;display:grid;grid-template-columns:auto 1fr;gap:.1rem .8rem;font-size:.92rem}
+.person dt{color:var(--ink-3)}
+.person dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+.tl{display:grid;grid-template-columns:repeat(8,1fr);gap:2px;margin:.2rem 0 .1rem}
+.tl i{font-style:normal;text-align:center;font-size:.8rem;padding:.18rem 0;background:var(--line-2);color:var(--ink-3);font-variant-numeric:tabular-nums}
+.tl i.on{background:var(--accent);color:#fff;font-weight:600}
+.tl-ax{display:grid;grid-template-columns:repeat(8,1fr);gap:2px;font-size:.66rem;color:var(--ink-3);text-align:center;margin-bottom:.7rem;line-height:1.2}
+.person .fb{margin-top:.5rem;font-size:.88rem}
+.fb.ok{color:var(--good)}
+.fb.no{color:var(--bad)}
+.verdict{margin-top:1rem;padding:.9rem 1.1rem;border-left:4px solid var(--accent);background:var(--surface);max-width:70ch}
+.verdict.no{border-left-color:var(--ink-3)}
+
+/* ---------- results ---------- */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5rem,1fr));gap:0;border:1px solid var(--line);border-radius:6px;background:var(--surface);overflow:hidden}
+.tile{padding:.8rem 1rem;border-left:1px solid var(--line-2);margin-left:-1px}
+.tile .t-label{font-size:.82rem;color:var(--ink-2)}
+.tile .t-val{font-weight:600;font-size:1.35rem;line-height:1.25;white-space:nowrap}
+.tile .t-sub{font-size:.8rem;color:var(--ink-3)}
+ul.notes{margin:0;padding:0;list-style:none}
+ul.notes li{padding:.7rem 1.15rem;border-top:1px solid var(--line-2);display:grid;grid-template-columns:4.6rem minmax(0,1fr);gap:.8rem;align-items:baseline}
+ul.notes li:first-child{border-top:0}
+ul.notes b{font-variant-numeric:tabular-nums;white-space:nowrap}
+ul.notes b.up{color:var(--good)}
+ul.notes b.down{color:var(--bad)}
+ul.plain{margin:.3rem 0 0;padding-left:1.1rem}
+ul.plain li{margin:.25rem 0}
+.callout{margin-top:1.2rem;padding:1rem 1.15rem;border-left:4px solid var(--ink);background:var(--surface);max-width:72ch}
+.event{background:var(--ink);color:#fff;border-radius:6px;padding:clamp(1.1rem,3vw,1.8rem) clamp(1.1rem,3vw,2rem)}
+.event h3{font-size:clamp(1.4rem,3vw,2rem);margin-bottom:.6rem}
+.event p{max-width:62ch;color:#E3E8E4;font-size:1.04rem}
+
+/* ---------- charts ---------- */
+.legend{display:flex;gap:1.2rem;flex-wrap:wrap;font-size:.88rem;color:var(--ink-2);margin:.2rem 0 .7rem}
+.legend span{display:inline-flex;align-items:center;gap:.4rem}
+.legend i{display:inline-block;width:1.3rem;height:0;border-top:2px solid var(--you)}
+.legend i.ref{border-top-color:var(--ref)}
+.charts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem}
+@media(max-width:760px){.charts{grid-template-columns:minmax(0,1fr)}}
+.chart{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:.8rem 1rem .5rem}
+.chart h3{font-family:var(--body);font-weight:600;font-size:.92rem}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart text{font-family:var(--body);fill:var(--ink-3);font-size:11px;font-variant-numeric:tabular-nums}
+.chart text.end{fill:var(--ink);font-weight:600}
+.tip{position:absolute;right:.7rem;top:.55rem;pointer-events:none;background:var(--ink);color:#fff;border-radius:5px;padding:.35rem .6rem;font-size:.8rem;line-height:1.4;white-space:nowrap;z-index:5;display:none}
+.tip b{font-variant-numeric:tabular-nums}
+.tip i{display:inline-block;width:.9rem;border-top:2px solid var(--you);vertical-align:middle;margin-right:.35rem}
+.tip i.ref{border-top-color:#C5CBC6}
+details{margin-top:.8rem}
+summary{cursor:pointer;font-weight:600;color:var(--accent-deep)}
+details .block{margin-top:.6rem}
+.finals{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border:1px solid var(--line);border-radius:6px;background:var(--surface);overflow:hidden;margin-top:1.4rem}
+.final{padding:1rem 1.15rem;border-left:1px solid var(--line-2)}
+.final:first-child{border-left:0}
+.final .f-label{font-size:.86rem;color:var(--ink-2)}
+.final .f-val{font-weight:600;font-size:clamp(1.3rem,2.6vw,1.9rem);line-height:1.2;white-space:nowrap}
+.final .f-delta{font-size:.86rem;color:var(--ink-3)}
+.f-delta .up{color:var(--good);font-weight:600}
+.f-delta .down{color:var(--bad);font-weight:600}
+@media(max-width:760px){.finals{grid-template-columns:repeat(2,minmax(0,1fr))}.final:nth-child(3){border-left:0}.final:nth-child(n+3){border-top:1px solid var(--line-2)}}
+.path{margin:0;padding:0;list-style:none}
+.path li{padding:.8rem 1.15rem;border-top:1px solid var(--line-2);display:grid;grid-template-columns:3.6rem minmax(0,1fr);gap:.8rem}
+.path li:first-child{border-top:0}
+.path b{font-family:var(--display)}
+.path q{display:block;color:var(--ink-2);font-size:.93rem;quotes:"“" "”";margin-top:.15rem}
+html:lang(zh-Hant) .path q{quotes:"「" "」"}
+.insights{display:grid;grid-template-columns:minmax(0,1fr);gap:.7rem}
+.insight h3{font-size:1.1rem;margin-bottom:.35rem}
+.insight p{max-width:72ch;color:var(--ink-2)}
+ol.qs{margin:0;padding-left:1.3rem;max-width:72ch}
+ol.qs li{margin:.5rem 0}
+.endbar{margin-top:2.2rem;display:flex;gap:.8rem;flex-wrap:wrap;align-items:center}
+footer{max-width:var(--wrap);margin:0 auto;padding:0 var(--gutter) 2.5rem;font-size:.82rem;color:var(--ink-3)}
+footer p{margin:.3rem 0}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<noscript><p style="padding:2rem;font-family:sans-serif">This game needs JavaScript. 這個遊戲需要啟用 JavaScript。</p></noscript>
+<script>
+/* ============================================================
+   ENGINE — The Last Coupon (RFM simulation)
+   Pure, deterministic customer-level simulation. No DOM access.
+   Same seed + same decisions => same outcome on every device.
+   ============================================================ */
+const Engine = (() => {
+  'use strict';
+
+  const P = {
+    seed: 20261,
+    baseN: 1000,          // members at the start of Q1
+    joinPerQ: 45,         // organic sign-ups per game quarter
+    qDays: 90,
+    margin: 0.55,         // gross margin on list-price sales
+    coupon: 200,          // NT$ off one order
+    perkCost: 150,         // NT$ per perk recipient (gift is mailed whether or not they order)
+    msg: 15,              // NT$ per member targeted
+    betaC: 0.95,          // logit lift from a coupon
+    betaP: 0.30,          // logit lift from a perk
+    gamma: 1.2,           // logit penalty per unit of discount dependence
+    decay: 0.55,          // pull toward the member's resting level after a quarter with no order
+    floor: 0.15,          // resting level as a share of the member's ceiling          // engagement decay after a quarter with no order
+    habit: 0.60,          // engagement gain after an organic / perk order
+    habitCoupon: 0.50,    // ... after a coupon order by an engaged member
+    habitReact: 0.25,     // ... after a coupon order by a lapsed member
+    perkBond: 0.15,       // engagement gain from simply receiving a perk
+    shock: 0.03,          // quarterly chance a member drifts to a rival
+    depUp: 0.30, depDown: 0.12,
+    trust0: 70,
+    trustLogit: 0.2,      // logit shift per 100 trust points
+    q1Coupons: 300,
+    budgets: [0, 50000, 50000, 35000],
+    testCost: 6000,
+    holdout: 0.10,
+    lnyQuarter: 2         // game quarter index (0-based) containing Lunar New Year
+  };
+
+  const SEGS = ['champ', 'loyal', 'new', 'risk', 'hib'];
+  const TACTICS = ['none', 'perk', 'coupon'];
+
+  /* ---------- deterministic uniform(0,1) from (seed, id, quarter, stream) ---------- */
+  function u(id, t, s) {
+    let h = P.seed | 0;
+    h = Math.imul(h ^ (id + 0x9e3779b9), 0x85ebca6b); h ^= h >>> 13;
+    h = Math.imul(h ^ ((t + 64) * 0x27d4eb2f), 0xc2b2ae35); h ^= h >>> 16;
+    h = Math.imul(h ^ ((s + 1) * 0x165667b1), 0x9e3779b1); h ^= h >>> 15;
+    h = Math.imul(h, 0x85ebca6b); h ^= h >>> 13;
+    h = Math.imul(h, 0xc2b2ae35); h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+  const lerp = (a, b, x) => a + (b - a) * x;
+  const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+  const logit = p => Math.log(p / (1 - p));
+  const sigm = x => 1 / (1 + Math.exp(-x));
+  // is quarter t (0 = game Q1 = Jul–Sep) a Lunar New Year quarter (Jan–Mar)?
+  const isLNY = t => (((t - P.lnyQuarter) % 4) + 4) % 4 === 0;
+
+  /* ---------- population ---------- */
+  function makeCustomer(id, joinT, forceType) {
+    const a = u(id, -99, 1);
+    let type;
+    if (forceType) type = forceType;
+    else if (joinT < 0) {
+      type = a < 0.20 ? 'enth' : a < 0.50 ? 'reg' : a < 0.78 ? 'occ' : a < 0.965 ? 'deal' : 'gift';
+    } else {
+      type = a < 0.14 ? 'enth' : a < 0.38 ? 'reg' : a < 0.73 ? 'occ' : 'deal';
+    }
+    const b = u(id, -99, 2), c = u(id, -99, 3), d = u(id, -99, 4);
+    let cap, k, aov;
+    if (type === 'enth')      { cap = lerp(0.93, 0.985, b); k = 3 + Math.floor(c * 3);  aov = lerp(900, 1500, d); }
+    else if (type === 'reg')  { cap = lerp(0.70, 0.88, b); k = 2 + Math.floor(c * 2);  aov = lerp(700, 1150, d); }
+    else if (type === 'occ')  { cap = lerp(0.28, 0.52, b); k = 1 + Math.floor(c * 2);  aov = lerp(600, 1000, d); }
+    else if (type === 'deal') { cap = lerp(0.06, 0.20, b); k = 1;                       aov = lerp(450, 800, d); }
+    else                      { cap = 0.9;                 k = 1 + Math.floor(c * 2);  aov = lerp(3000, 6000, d); }
+    return {
+      id, type, joinT, cap, k, aov: Math.round(aov / 10) * 10,
+      e: 0, dep: 0, miss: 0, seasonal: type === 'gift',
+      hist: {}          // t -> {n, spend, gap, tactic, coupon}
+    };
+  }
+
+  function baseJoinQuarter(id, type) {
+    const x = u(id, -99, 5);
+    if (type === 'gift') return x < 0.7 ? -6 : -2;                 // first bought at a Lunar New Year
+    if (type === 'deal') return x < 0.30 ? -5 : x < 0.62 ? -2 : x < 0.86 ? -1 : -8 + Math.floor(u(id, -99, 6) * 7);
+    if (x < 0.12) return -1;                                       // recent acquisition push
+    return -8 + Math.floor(u(id, -99, 6) * 7);                     // -8 .. -2
+  }
+
+  function newWorld(opts) {
+    if (opts && opts.seed != null) P.seed = opts.seed | 0;
+    const cs = [];
+    for (let i = 0; i < P.baseN; i++) {
+      const tmp = makeCustomer(i, -1);
+      const c = makeCustomer(i, baseJoinQuarter(i, tmp.type));
+      cs.push(c);
+    }
+    let id = P.baseN;
+    for (let t = 0; t < 4; t++) for (let j = 0; j < P.joinPerQ; j++) cs.push(makeCustomer(id++, t));
+    const w = { t: -8, trust: P.trust0, customers: cs, nextId: id, log: [], filterSeasonal: false, hasTest: false };
+    for (let t = -8; t < 0; t++) { stepCore(w, t, null, { history: true }); }
+    w.t = 0;
+    return w;
+  }
+
+  /* ---------- purchase probability under a tactic ---------- */
+  // long-silent members read fewer of our messages, so campaigns reach them less
+  const REACH = [1, 1, 1, 0.85, 0.45, 0.3];
+  const reach = c => REACH[Math.min(c.miss || 0, REACH.length - 1)];
+  function prob(c, t, tactic, trust) {
+    if (c.seasonal) return isLNY(t) ? 0.88 : 0.02;
+    const rho = reach(c);
+    const base = logit(clamp(c.e, 0.004, 0.996)) + (trust - P.trust0) / 100 * P.trustLogit;
+    let L;
+    if (tactic === 'coupon') L = base + P.betaC * rho;
+    else if (tactic === 'perk') L = base + P.betaP * rho - P.gamma * c.dep * 0.5;
+    else L = base - P.gamma * c.dep;
+    return sigm(L);
+  }
+
+  function orderGap(c, t, n) {
+    if (c.seasonal) return 45 + Math.floor(u(c.id, t, 12) * 25);        // late Jan – mid Feb
+    return Math.floor(P.qDays * (1 - Math.pow(1 - u(c.id, t, 12), 1 / n)));
+  }
+
+  /* ---------- one quarter ----------
+     plan: Map id -> 'perk' | 'coupon' (absent = none); returns per-customer outcome list */
+  function stepCore(w, t, plan, o) {
+    o = o || {};
+    const trust = w.trust;
+    const out = [];
+    for (const c of w.customers) {
+      if (c.joinT > t) continue;
+      if (c.joinT === t) {                                  // first order
+        const spend = Math.round(c.aov * lerp(0.9, 1.15, u(c.id, t, 11)));
+        c.hist[t] = { n: 1, spend, gap: orderGap(c, t, 1), tactic: 'join' };
+        c.e = c.seasonal ? 0 : 0.6 * c.cap + 0.12;
+        out.push({ c, joined: true, bought: true, spend, tactic: 'join', pNone: 1 });
+        continue;
+      }
+      const tactic = (plan && plan.get(c.id)) || 'none';
+      const p = prob(c, t, tactic, trust);
+      const pNone = tactic === 'none' ? p : prob(c, t, 'none', trust);
+      const draw = u(c.id, t, 10);
+      const bought = draw < p;
+      const anyway = draw < pNone;
+      const ePre = c.e;
+      let spend = 0, n = 0;
+      if (bought) {
+        n = c.k;
+        spend = Math.round(n * c.aov * lerp(0.85, 1.15, u(c.id, t, 11)));
+        c.hist[t] = { n, spend, gap: orderGap(c, t, n), tactic };
+      }
+      c.miss = bought ? 0 : c.miss + 1;
+      // would-have-been spend if untreated (same draw, for exact counterfactuals)
+      const spendAnyway = anyway ? Math.round(c.k * c.aov * lerp(0.85, 1.15, u(c.id, t, 11))) : 0;
+      if (!c.seasonal) {
+        if (bought) {
+          const h = tactic === 'coupon' ? (ePre < 0.3 ? P.habitReact : P.habitCoupon) : P.habit;
+          c.e = c.e + h * (c.cap - c.e);
+        } else {
+          const fl = P.floor * c.cap;
+          c.e = Math.max(0.01, fl + (c.e - fl) * P.decay);
+        }
+        if (tactic === 'perk') c.e = c.e + P.perkBond * (c.cap - c.e);
+        // discount dependence
+        if (tactic === 'coupon' && bought && ePre >= 0.5) c.dep = Math.min(1, c.dep + P.depUp);
+        else if (tactic !== 'coupon') c.dep = Math.max(0, c.dep - P.depDown);
+        // drift to a rival; a perk halves the risk
+        const sp = P.shock * (tactic === 'perk' ? 0.5 : 1);
+        const rival = o.history && t === -3 && (c.type === 'enth' || c.type === 'reg') && u(c.id, t, 14) < 0.34;
+        if (rival || u(c.id, t, 13) < sp) { c.e *= 0.2; c.cap *= 0.5; }
+      }
+      out.push({ c, bought, anyway, spend, spendAnyway, n, tactic, pNone, p });
+    }
+    w.t = t + 1;
+    return out;
+  }
+
+  /* ---------- RFM as of the start of quarter t (24-month window) ---------- */
+  const rScore = d => d <= 30 ? 5 : d <= 60 ? 4 : d <= 120 ? 3 : d <= 270 ? 2 : 1;
+  const fScore = f => f >= 16 ? 5 : f >= 10 ? 4 : f >= 5 ? 3 : f >= 2 ? 2 : 1;
+  const mScore = m => m >= 18000 ? 5 : m >= 10000 ? 4 : m >= 5000 ? 3 : m >= 2000 ? 2 : 1;
+  function segmentOf(R, F, M) {
+    const FM = Math.round((F + M) / 2);
+    if (R >= 3) { if (FM >= 3) return (R >= 4 && FM >= 4) ? 'champ' : 'loyal'; return 'new'; }
+    return FM >= 3 ? 'risk' : 'hib';
+  }
+  function rfm(c, t) {
+    let f = 0, m = 0, last = null;
+    for (let q = t - 8; q < t; q++) {
+      const h = c.hist[q];
+      if (h) { f += h.n; m += h.spend; last = q; }
+    }
+    let days;
+    if (last === null) {                                   // nothing in 24 months
+      let q = t - 9; while (q >= -8 && !c.hist[q]) q--;
+      days = q >= -8 ? (t - 1 - q) * P.qDays + c.hist[q].gap : 999;
+    } else days = (t - 1 - last) * P.qDays + c.hist[last].gap;
+    const R = rScore(days), F = fScore(f), M = mScore(m);
+    return { days, f, m, R, F, M, seg: segmentOf(R, F, M) };
+  }
+  function snapshot(w) {
+    const t = w.t, rows = [];
+    for (const c of w.customers) if (c.joinT < t) rows.push(Object.assign({ c }, rfm(c, t)));
+    return rows;
+  }
+
+  /* ---------- segment table shown to the team ---------- */
+  function segTable(w, snap) {
+    snap = snap || snapshot(w);
+    const tb = {};
+    for (const s of SEGS) tb[s] = { seg: s, n: 0, days: 0, f: 0, m: 0, pNone: 0, pPerk: 0, pCoupon: 0, nT: 0,
+      costPerk: 0, costCoupon: 0, incPerk: 0, incCoupon: 0, valPerk: 0, valCoupon: 0, seasonal: 0 };
+    for (const r of snap) {
+      const x = tb[r.seg], c = r.c;
+      x.n++; x.days += r.days; x.f += r.f; x.m += r.m;
+      if (c.seasonal) x.seasonal++;
+      if (c.seasonal && w.filterSeasonal) continue;        // filtered members are never targeted
+      const p0 = prob(c, w.t, 'none', w.trust), p1 = prob(c, w.t, 'perk', w.trust), p2 = prob(c, w.t, 'coupon', w.trust);
+      const q = c.k * c.aov * P.margin;
+      x.nT++; x.pNone += p0; x.pPerk += p1; x.pCoupon += p2;
+      x.costPerk += P.perkCost;
+      x.costCoupon += P.msg + p2 * P.coupon;
+      x.incPerk += p1 - p0; x.incCoupon += p2 - p0;
+      x.valPerk += (p1 - p0) * q - P.perkCost;
+      x.valCoupon += (p2 - p0) * q - p2 * P.coupon - P.msg;
+    }
+    for (const s of SEGS) {
+      const x = tb[s], n = x.n || 1, nt = x.nT || 1;
+      x.days /= n; x.f /= n; x.m /= n;
+      x.pNone /= nt; x.pPerk /= nt; x.pCoupon /= nt;
+      x.incPerk /= nt; x.incCoupon /= nt;
+      x.unitPerk = x.costPerk / nt; x.unitCoupon = x.costCoupon / nt;
+      x.valPerkPer = x.valPerk / nt; x.valCouponPer = x.valCoupon / nt;
+    }
+    return tb;
+  }
+  function planCost(tb, alloc, withTest) {
+    let cost = 0;
+    for (const s of SEGS) {
+      const a = alloc[s];
+      if (a === 'perk') cost += tb[s].costPerk; else if (a === 'coupon') cost += tb[s].costCoupon;
+    }
+    if (withTest) cost = cost * (1 - P.holdout);
+    return Math.round(cost);
+  }
+
+  /* ---------- equity: gross margin the current base would bring in the next
+     four quarters with no campaigns at all ---------- */
+  function equity(w) {
+    const save = w.customers.map(c => ({ e: c.e, cap: c.cap, dep: c.dep, miss: c.miss }));
+    const t0 = w.t; let total = 0;
+    const tmp = { t: t0, trust: w.trust, customers: w.customers.filter(c => c.joinT < t0) };
+    for (let t = t0; t < t0 + 4; t++) {
+      const out = stepCore(tmp, t, null);
+      for (const r of out) { total += r.spend * P.margin; delete r.c.hist[t]; }
+    }
+    w.customers.forEach((c, i) => { c.e = save[i].e; c.cap = save[i].cap; c.dep = save[i].dep; c.miss = save[i].miss; });
+    return Math.round(total);
+  }
+  function activeCount(w) {
+    let n = 0;
+    for (const c of w.customers) if (c.joinT < w.t && (c.hist[w.t - 1] || c.hist[w.t - 2])) n++;
+    return n;
+  }
+
+  /* ---------- play one quarter and book it ----------
+     d = { list:'M'|'F'|'R'|'X' }                        (Q1)
+       | { alloc:{seg:tactic}, test:bool, fixed:NT$, mods:{...} } (Q2–Q4) */
+  function play(w, d) {
+    const t = w.t, snap = snapshot(w), tb = segTable(w, snap);
+    const segOf = new Map(snap.map(r => [r.c.id, r.seg]));
+    const plan = new Map(); const held = new Set();
+    if (d.list) {
+      const key = { M: r => -r.m, F: r => -r.f, R: r => r.days, X: r => u(r.c.id, -50, 1), '0': r => 0 }[d.list];
+      const tie = r => u(r.c.id, -50, 2);
+      snap.slice().sort((a, b) => key(a) - key(b) || tie(a) - tie(b)).slice(0, d.list === '0' ? 0 : P.q1Coupons)
+        .forEach(r => plan.set(r.c.id, 'coupon'));
+    } else {
+      for (const r of snap) {
+        const a = d.alloc[r.seg];
+        if (!a || a === 'none') continue;
+        if (r.c.seasonal && w.filterSeasonal) continue;
+        if (d.test && u(r.c.id, t, 20) < P.holdout) { held.add(r.c.id); continue; }
+        plan.set(r.c.id, a);
+      }
+    }
+    // one-off modifiers decided before the quarter (event responses)
+    const mods = d.mods || {};
+    if (mods.eMult) for (const r of snap) { const m = mods.eMult[r.seg]; if (m && !r.c.seasonal) r.c.e = clamp(r.c.e * m, 0.01, 0.99); }
+    if (mods.dep) for (const r of snap) { const m = mods.dep[r.seg]; if (m) r.c.dep = clamp(r.c.dep + m, 0, 1); }
+    if (mods.trust) w.trust = clamp(w.trust + mods.trust, 0, 100);
+    if (mods.joiners) for (let j = 0; j < mods.joiners; j++) {
+      const id = w.nextId++; const a = u(id, -99, 1);
+      w.customers.push(makeCustomer(id, t, a < 0.8 ? 'deal' : a < 0.96 ? 'occ' : 'reg'));
+    }
+
+    const out = stepCore(w, t, plan);
+
+    const res = { t, seg: {}, tb, list: d.list || null, alloc: d.alloc || null, test: !!d.test, fixed: d.fixed || 0,
+      revenue: 0, baseRev: 0, discount: 0, perk: 0, msg: 0, joinRev: 0, joiners: 0,
+      targeted: 0, buyersT: 0, anywayT: 0, wasted: 0, incRevenue: 0, seasonalHit: 0, seasonalCost: 0, seasonalTargeted: 0, coupons: 0, perks: 0, redeemed: 0 };
+    for (const s of SEGS) res.seg[s] = { n: 0, targeted: 0, buyers: 0, buyersT: 0, anywayT: 0, revenue: 0, cost: 0, incRev: 0, tactic: d.alloc ? d.alloc[s] : null, coupons: 0 };
+    for (const r of out) {
+      res.revenue += r.spend;
+      if (r.joined) { res.joiners++; res.joinRev += r.spend; res.baseRev += r.spend; continue; }
+      const s = res.seg[segOf.get(r.c.id)];
+      s.n++; if (r.bought) { s.buyers++; s.revenue += r.spend; }
+      res.baseRev += r.spendAnyway;
+      if (r.tactic !== 'none') {
+        s.targeted++; res.targeted++;
+        if (r.c.seasonal) res.seasonalTargeted++;
+        if (r.tactic === 'coupon') {
+          s.coupons++; res.coupons++; res.msg += P.msg; s.cost += P.msg;
+          if (r.bought) { res.redeemed++; res.discount += P.coupon; s.cost += P.coupon; if (r.anyway) res.wasted += P.coupon; if (r.c.seasonal) res.seasonalCost += P.coupon; }
+        } else {
+          res.perks++; res.perk += P.perkCost; s.cost += P.perkCost;
+          if (r.c.seasonal) res.seasonalCost += P.perkCost;
+        }
+        if (r.bought) {
+          s.buyersT++; res.buyersT++;
+          if (r.anyway) { s.anywayT++; res.anywayT++; }
+          if (r.c.seasonal) res.seasonalHit++;
+        }
+        s.incRev += r.spend - r.spendAnyway;
+        res.incRevenue += r.spend - r.spendAnyway;
+      }
+    }
+    res.campaign = res.discount + res.perk + res.msg + res.fixed;
+    res.profit = Math.round(res.revenue * P.margin - res.campaign);
+    res.baseProfit = Math.round(res.baseRev * P.margin);   // same quarter, same members, no campaign
+
+    // trust & fairness consequences (carry into the next quarter)
+    let dTrust = 0; const notes = [];
+    if (d.alloc) {
+      const a = d.alloc;
+      const winback = a.risk === 'coupon' || a.hib === 'coupon';
+      if (winback && a.champ === 'none') {
+        dTrust -= 5; notes.push('unfair');
+      }
+      let nCoupon = 0; for (const s of SEGS) if (a[s] === 'coupon') nCoupon += tb[s].n;
+      if (nCoupon / snap.length > 0.5) { dTrust -= 3; notes.push('discountBrand'); }
+      if (a.champ === 'perk') { dTrust += 3; notes.push('recogChamp'); }
+      if (a.loyal === 'perk') { dTrust += 2; notes.push('recogLoyal'); }
+    }
+    w.trust = clamp(w.trust + dTrust, 0, 100);
+    res.dTrust = dTrust + (mods.trust || 0); res.notes = notes;
+    if (d.test) w.hasTest = true;
+
+    res.trust = w.trust;
+    res.active = activeCount(w);
+    res.equity = equity(w);
+    res.members = w.customers.filter(c => c.joinT < w.t).length;
+    w.log.push(res);
+    return res;
+  }
+
+  /* ---------- Q3 event, decided by what the team did in Q2 ---------- */
+  function eventFor(alloc) {
+    if ((alloc.risk === 'coupon' || alloc.hib === 'coupon') && alloc.champ === 'none') return 'FAIR';
+    if (alloc.champ === 'coupon') return 'DEP';
+    if (alloc.new === 'none') return 'NEGLECT';
+    return 'RIVAL';
+  }
+  const EVENTS = {
+    FAIR: [
+      { lock: { champ: 'coupon' }, mods: { trust: 7 } },
+      { lock: { champ: 'perk' },   mods: { trust: 4 } },
+      { lock: {},                  mods: { trust: -6 } }
+    ],
+    DEP: [
+      { lock: { champ: 'coupon' }, mods: {} },
+      { lock: { champ: 'none' },   mods: { trust: -2, dep: { champ: -0.2, loyal: -0.2 } } },
+      { lock: { champ: 'perk' },   mods: { trust: 3, dep: { champ: -0.15 } }, fixed: 12000 }
+    ],
+    NEGLECT: [
+      { lock: { new: 'perk' },     mods: {} },
+      { lock: {},                  mods: { joiners: 60 }, fixed: 36000 },
+      { lock: {},                  mods: {} }
+    ],
+    RIVAL: [
+      { lock: { champ: 'coupon' }, mods: { eMult: { loyal: 0.98 } } },
+      { lock: { champ: 'perk' },   mods: { trust: 2, eMult: { loyal: 0.98 } }, fixed: 15000 },
+      { lock: {},                  mods: { eMult: { champ: 0.96, loyal: 0.97 } } }
+    ]
+  };
+
+  /* ---------- segment-to-segment movement between two snapshots ---------- */
+  function migration(before, after) {
+    const prev = new Map(before.map(r => [r.c.id, r.seg]));
+    const m = {}; for (const a of SEGS.concat(['join'])) { m[a] = {}; for (const b of SEGS) m[a][b] = 0; }
+    for (const r of after) m[prev.get(r.c.id) || 'join'][r.seg]++;
+    return m;
+  }
+
+  // members who now hold back full-price orders while waiting for a code
+  function dependents(w) { let n = 0; for (const c of w.customers) if (c.joinT < w.t && c.dep >= 0.3) n++; return n; }
+  function seasonalCount(w) { let n = 0; for (const c of w.customers) if (c.joinT < w.t && c.seasonal) n++; return n; }
+  function startKpi(w) { return { active: activeCount(w), equity: equity(w), trust: w.trust, members: w.customers.filter(c => c.joinT < w.t).length }; }
+
+  return { P, SEGS, TACTICS, newWorld, dependents, seasonalCount, startKpi, snapshot, segTable, planCost, play, eventFor, EVENTS, migration,
+           rfm, equity, activeCount, prob, rScore, fScore, mScore, segmentOf, isLNY };
+})();
+</script>
+<script>
+/* ============================================================
+   COPY — every string on the page, English first, 繁體中文 second.
+   A value is either a string or a function that returns one.
+   ============================================================ */
+const T = {
+  pageTitle: ['The Last Coupon', '最後一張優惠券'],
+  brand: ['Maple Lane Coffee', '楓巷咖啡'],
+  desk: ['CRM desk', '會員經營小組'],
+  restart: ['Start over', '重新開始'],
+  restartArm: ['Erase this game?', '確定清除這一局？'],
+  fictional: ['Maple Lane Coffee, Northbound Roasters and everyone in this game are fictional.', '楓巷咖啡、北行烘焙與遊戲中的人物皆為虛構。'],
+
+  backChapter: ['Back to Chapter 2', '返回第二章'],
+  backHome: ['Back to course home', '返回課程首頁'],
+
+  rail: [['Brief', 'Q1', 'Q2', 'Q3', 'Q4', 'Debrief'], ['任務說明', '第一季', '第二季', '第三季', '第四季', '結算']],
+
+  kProfit: ['Cumulative profit', '累計利潤'],
+  kActive: ['Active members', '活躍會員'],
+  kEquity: ['Customer equity', '顧客資產'],
+  kTrust: ['Brand trust', '品牌信任'],
+  kStart: ['at the start', '起始值'],
+  kThisQ: ['this quarter', '本季'],
+  kVsLast: ['vs last quarter', '較上季'],
+
+  /* ---------- intro ---------- */
+  title: ['The Last Coupon', '最後一張優惠券'],
+  tagline: ['A four-quarter RFM decision game for teams.', '四個季度的 RFM 團隊決策遊戲。'],
+  stubSmall: ['Off your next order', '下一筆訂單折抵'],
+  stubValid: ['Valid for four quarters', '限四個季度內使用'],
+  introLead: [
+    'You are the CRM team at Maple Lane Coffee, an online specialty roaster with about 1,000 members. For the next four quarters you decide which members get an offer, and what kind. The budget never covers everyone, and every choice changes the members you face next quarter.',
+    '你們是線上精品咖啡品牌「楓巷咖啡」的會員經營小組，手上約有 1,000 位會員。接下來四個季度，每一季都要決定哪些會員收到優惠、收到哪一種。預算永遠不夠發給所有人，而每個選擇都會改變下一季面對的會員。'],
+  howH: ['How each round works', '每一回合怎麼進行'],
+  how: [[
+    'Think alone for 30 seconds. Each person picks an answer before anyone speaks.',
+    'Argue it out. The four roles want different things.',
+    'Commit one team decision and one sentence of reasoning. A locked decision cannot be changed.'
+  ], [
+    '每個人先自己想 30 秒，在任何人開口之前先選好答案。',
+    '接著討論。四個角色要的東西並不一樣。',
+    '全組提交一個決定，並寫下一句理由。鎖定後不能更改。'
+  ]],
+  rolesH: ['Split the roles', '分配角色'],
+  roles: [[
+    ['Finance lead', 'Protects profit. Every discount comes out of margin.'],
+    ['Sales lead', 'Wants this quarter’s revenue up, now.'],
+    ['CRM manager', 'Counts active members and what they will be worth next year.'],
+    ['Brand manager', 'Guards trust. Hates anything that looks like a discount store.']
+  ], [
+    ['財務長', '守住利潤。每一張折價券都是從毛利裡拿出來的。'],
+    ['業務主管', '要這一季的營收，現在就要。'],
+    ['會員經理', '在意活躍會員數，以及他們明年還值多少。'],
+    ['品牌經理', '守護品牌信任，討厭任何看起來像折扣店的做法。']
+  ]],
+  rolesNote: ['With fewer than four people, one person takes two roles.', '不足四人時，由一人兼任兩個角色。'],
+  scoreH: ['Four numbers, no total score', '四個數字，沒有總分'],
+  score: [[
+    ['Cumulative profit', 'Gross margin on sales, minus everything you spend on campaigns.'],
+    ['Active members', 'Members who ordered in the last 180 days.'],
+    ['Customer equity', 'The gross margin your current members would bring in over the next 12 months if you stopped all campaigns today.'],
+    ['Brand trust', 'An index from 0 to 100. It starts at 70.']
+  ], [
+    ['累計利潤', '銷售毛利扣掉所有行銷活動支出。'],
+    ['活躍會員', '最近 180 天內下過單的會員。'],
+    ['顧客資產', '如果今天起停掉所有活動，現有會員未來 12 個月還會帶來的毛利。'],
+    ['品牌信任', '0 到 100 的指數，起始值 70。']
+  ]],
+  toolsH: ['Two tools', '兩種工具'],
+  tools: [[
+    ['Coupon', 'NT$200 off the next order. NT$15 to send, and NT$200 more only if it is redeemed.'],
+    ['Sample box', 'A small-batch sample box with a handwritten note. NT$150 per member, mailed whether or not they order.']
+  ], [
+    ['折價券', '下一筆訂單折 NT$200。寄送成本 NT$15，被使用時才再花 NT$200。'],
+    ['體驗禮', '一盒小批次樣品豆加一張手寫卡片。每位會員 NT$150，不論對方有沒有下單都會寄出。']
+  ]],
+  teamLabel: ['Team name', '隊名'],
+  teamPh: ['e.g. Team 3', '例如：第 3 組'],
+  needTeam: ['Enter a team name to start.', '請先輸入隊名。'],
+  start: ['Start Q1', '開始第一季'],
+
+  /* ---------- shared decision UI ---------- */
+  whyLabel: ['Your reasoning, in one sentence', '用一句話寫下你們的理由'],
+  whyPh: ['We chose this because…', '我們這樣選，是因為⋯⋯'],
+  needWhy: ['Write one sentence of reasoning before you lock in.', '鎖定前請先寫下一句理由。'],
+  needChoice: ['Pick one option first.', '請先選一個方案。'],
+  needEvent: ['Choose a response to what landed on your desk first.', '請先選擇如何回應桌上的事。'],
+  confirm: ['Confirm. This cannot be changed', '確認送出，之後不能更改'],
+  lockQ: [q => `Lock in the Q${q} plan`, q => `鎖定${['', '第一季', '第二季', '第三季', '第四季'][q]}方案`],
+
+  /* ---------- Q1 ---------- */
+  q1Period: ['Q1, July to September', '第一季（7–9 月）'],
+  q1Title: ['Going on instinct', '先憑直覺'],
+  q1Text: [
+    'Finance has approved 300 coupons for this quarter. All you have is the member export below: how many orders, how much spent, and when each member last ordered. Who gets the 300?',
+    '財務部核准本季發 300 張折價券。你們手上只有下面這份會員匯出檔：訂單數、消費金額、最後一次下單日期。這 300 張要發給誰？'],
+  q1Cap: ['Member export, 24 months to 30 June 2026', '會員匯出檔（截至 2026 年 6 月 30 日的 24 個月）'],
+  colMember: ['Member', '會員'],
+  colOrders: ['Orders', '訂單數'],
+  colSpend: ['Spend (NT$)', '消費金額（NT$）'],
+  colLast: ['Last order', '最後下單'],
+  q1Foot: [n => `Showing 12 of ${n} members. Select a column name to sort by it.`, n => `顯示 ${n} 位會員中的 12 位。點選欄位名稱可依該欄排序。`],
+  q1Opts: [{
+    M: ['The 300 biggest spenders', '“They have given us the most. They have earned it.”'],
+    F: ['The 300 most frequent buyers', '“Habit is what we want to reward.”'],
+    R: ['The 300 most recent buyers', '“They still remember us.”'],
+    X: ['A random 300', '“Everyone gets the same chance.”']
+  }, {
+    M: ['消費金額最高的 300 人', '「他們貢獻最多，應該回饋。」'],
+    F: ['下單次數最多的 300 人', '「我們要獎勵的是習慣。」'],
+    R: ['最近下單的 300 人', '「他們還記得我們。」'],
+    X: ['隨機抽 300 人', '「每個人機會均等。」']
+  }],
+  q1ResTitle: ['Q1 results', '第一季結果'],
+  tSent: ['Coupons sent', '發出折價券'],
+  tRedeemed: ['Redeemed', '被使用'],
+  tRevenue: ['Revenue', '營收'],
+  tCampaign: ['Campaign cost', '活動支出'],
+  tProfit: ['Profit this quarter', '本季利潤'],
+  q1Comment: [
+    p => `${p}% of your coupons were redeemed. That looks healthy. Hold on to one question for later: how many of those orders would have happened without the coupon? Nothing on this screen can tell you.`,
+    p => `折價券的使用率是 ${p}%，看起來不錯。請先記住一個問題：這些訂單裡，有多少是不發券也會成立的？這個畫面上沒有任何數字能回答。`],
+  q1Active: [
+    n => `Active members fell by ${n}. Many of the people who joined during last year’s promotions have not ordered since. That would have happened whichever list you picked.`,
+    n => `活躍會員少了 ${n} 位。去年促銷期間加入的會員，很多之後就沒有再下單。不論你們選哪一份名單，這件事都會發生。`],
+  toQ: [q => `Continue to Q${q}`, q => `進入${['', '第一季', '第二季', '第三季', '第四季'][q]}`],
+  toEnd: ['Go to the debrief', '前往結算'],
+
+  /* ---------- RFM exercise ---------- */
+  q2Period: ['Q2, October to December', '第二季（10–12 月）'],
+  exTitle: ['RFM, unlocked', '解鎖 RFM'],
+  exText: [
+    'Your analyst has scored every member on three questions: how recently they ordered (R), how often (F), and how much they spent (M). Each answer gets a score from 1 to 5. Before you see the whole base, sort six members by hand.',
+    '分析師已經用三個問題替每位會員評分：多久前下單（R）、多常下單（F）、花了多少（M），各給 1 到 5 分。在看到全部會員之前，先親手替六位會員分群。'],
+  scoreTableCap: ['How the scores are set', '評分標準'],
+  scHead: [['Score', 'R: days since last order', 'F: orders in 24 months', 'M: spend in 24 months (NT$)'], ['分數', 'R：距離上次下單天數', 'F：24 個月內訂單數', 'M：24 個月內消費金額（NT$）']],
+  scRows: [
+    ['5', '30 or fewer', '16 or more', '18,000 or more'],
+    ['4', '31 to 60', '10 to 15', '10,000 to 17,999'],
+    ['3', '61 to 120', '5 to 9', '5,000 to 9,999'],
+    ['2', '121 to 270', '2 to 4', '2,000 to 4,999'],
+    ['1', 'more than 270', '1', 'under 2,000']
+  ],
+  scRowsZh: [
+    ['5', '30 天以內', '16 筆以上', '18,000 以上'],
+    ['4', '31–60 天', '10–15 筆', '10,000–17,999'],
+    ['3', '61–120 天', '5–9 筆', '5,000–9,999'],
+    ['2', '121–270 天', '2–4 筆', '2,000–4,999'],
+    ['1', '超過 270 天', '1 筆', '低於 2,000']
+  ],
+  fmNote: ['FM is the average of the F and M scores. A half rounds up.', 'FM 是 F 分數與 M 分數的平均，遇 .5 進位。'],
+  segH: ['The five segments', '五個分群'],
+  seg: [{
+    champ: ['Champions', 'R 4 or 5, and FM 4 or 5. Ordered in the last 60 days; buy often and spend a lot.'],
+    loyal: ['Loyal', 'R 3 or more, FM 3 or more, but not a Champion. Steady, mid-to-high value.'],
+    new: ['New & Promising', 'R 3 or more, FM 2 or less. Ordered in the last 120 days, with few orders so far.'],
+    risk: ['At Risk', 'R 2 or less, FM 3 or more. Used to buy a lot; nothing for over 120 days.'],
+    hib: ['Hibernating', 'R 2 or less, FM 2 or less. Few orders, and nothing for over 120 days.']
+  }, {
+    champ: ['冠軍客', 'R 為 4 或 5，且 FM 為 4 或 5。60 天內下過單，買得勤也買得多。'],
+    loyal: ['忠誠客', 'R 在 3 以上、FM 在 3 以上，但未達冠軍客。穩定的中高價值會員。'],
+    new: ['新客與潛力客', 'R 在 3 以上、FM 在 2 以下。120 天內下過單，但訂單還很少。'],
+    risk: ['流失風險客', 'R 在 2 以下、FM 在 3 以上。以前買很多，但已超過 120 天沒下單。'],
+    hib: ['沉睡客', 'R 在 2 以下、FM 在 2 以下。訂單少，且超過 120 天沒下單。']
+  }],
+  exAsOf: ['As of 1 October 2026', '資料日期：2026 年 10 月 1 日'],
+  pLast: ['Last order', '最後下單'],
+  pDays: [d => `${d} days ago`, d => `${d} 天前`],
+  pOrders: ['Orders', '訂單數'],
+  pSpend: ['Spend', '消費金額'],
+  pTimeline: ['Orders in each of the last eight quarters', '最近八個季度的各季訂單數'],
+  pChoose: ['Choose a segment', '選擇分群'],
+  pSegLabel: [n => `Segment for ${n}`, n => `${n}的分群`],
+  people: [
+    ['Ms. Chen', 'Mr. Wang', 'Mrs. Lin', 'Mr. Chang', 'Ms. Huang', 'Mr. Wu'],
+    ['陳小姐', '王先生', '林太太', '張先生', '黃小姐', '吳先生']
+  ],
+  exCheck: ['Check our answers', '對答案'],
+  exScore: [n => `${n} of 6 correct.`, n => `6 題答對 ${n} 題。`],
+  exFb: [(R, F, M, FM, seg) => `R${R}, F${F}, M${M}, so FM ${FM}: ${seg}.`, (R, F, M, FM, seg) => `R${R}、F${F}、M${M}，FM 為 ${FM}：${seg}。`],
+  oddH: ['One label you should not trust', '有一個標籤不能信'],
+  oddText: [
+    'RFM has put one of these six in the wrong box. Look at the orders by quarter again. Whose label would you not trust? You get one guess.',
+    '這六位裡面，有一位被 RFM 放錯了位置。再看一次各季訂單數，你們最不相信誰的標籤？只能猜一次。'],
+  oddLock: ['Lock in our guess', '鎖定答案'],
+  oddRight: [
+    n => `Right. Mrs. Lin orders once a year, in the weeks before Lunar New Year. She is on schedule, not at risk, and no coupon will make her order in October. Your analyst found ${n} members with the same pattern. From now on they are left out of your campaigns, which frees budget.`,
+    n => `答對了。林太太每年只在農曆年前幾週下一次單。她是照著自己的節奏在買，並不是快要流失，十月發券也不會讓她下單。分析師找到 ${n} 位相同模式的會員，之後你們的活動會自動排除他們，省下預算。`],
+  oddWrong: ['Not that one. The debrief will show you who it was.', '不是這一位。結算時會揭曉答案。'],
+  oddNone: ['No guess made. The debrief will show you who it was.', '沒有作答。結算時會揭曉答案。'],
+  exNext: ['See the whole base', '看全部會員的分群'],
+  needOdd: ['Lock in a guess, or continue without one.', '可以先鎖定答案，也可以直接繼續。'],
+
+  /* ---------- plan (Q2–Q4) ---------- */
+  q2Title: ['Who gets what', '誰拿到什麼'],
+  q2Text: [
+    'Here is your whole base, sorted into segments. For each one choose nothing, the sample box, or the coupon. This quarter’s budget is NT$50,000.',
+    '這是分群後的全部會員。每個分群可以選擇不做、寄體驗禮，或發折價券。本季預算 NT$50,000。'],
+  costNote: [
+    'Coupon costs are estimates: Finance reserves NT$15 per coupon sent plus NT$200 for each one it expects to be redeemed.',
+    '折價券成本為估計值：財務部替每張券保留 NT$15 寄送費，並替每一張預期被使用的券保留 NT$200。'],
+  q1Recap: ['Where your Q1 coupons went', '第一季的折價券發到了哪裡'],
+  q1RecapSub: ['Now that every member has a segment, you can see who received them.', '有了分群之後，可以看出當時是誰收到了券。'],
+  rcSent: ['Coupons sent', '發出'],
+  rcRedeemed: ['Redeemed', '被使用'],
+  rcRate: ['Redemption rate', '使用率'],
+  planH: ['This quarter’s plan', '本季方案'],
+  sMembers: ['members', '位會員'],
+  sDays: ['days since last order', '天未下單（平均）'],
+  sOrders: ['orders in 24 months', '24 個月訂單數（平均）'],
+  sSpend: ['spent in 24 months', '24 個月消費（平均）'],
+  sRate: ['order if couponed', '收到券後會下單'],
+  sRateTitle: ['Expected share who order this quarter if they get the coupon, based on past campaigns.', '依過去活動推估：收到折價券後，本季會下單的比例。'],
+  tNone: ['Nothing', '不做'],
+  tPerk: ['Sample box', '體驗禮'],
+  tCoupon: ['Coupon', '折價券'],
+  free: ['NT$0', 'NT$0'],
+  lockedRow: ['Set by your response above.', '由上方的回應決定。'],
+  budget: ['Budget', '預算'],
+  planned: ['Planned', '已規劃'],
+  left: ['Left', '剩餘'],
+  over: [x => `NT$${x} over budget. Drop a segment or change an offer.`, x => `超出預算 NT$${x}。請少選一個分群，或更換方案。`],
+  fixedLine: [(label, x) => `${label}: NT$${x}`, (label, x) => `${label}：NT$${x}`],
+  fixedTest: ['Holdout test', '對照組測試'],
+  fixedEvent: ['Your response', '事件回應'],
+  testLabel: ['Run a holdout test for NT$6,000', '做對照組測試（NT$6,000）'],
+  testDesc: [
+    'Hold back a random 10% of every segment you target. Next quarter you will see how many members order with no offer at all, and how many extra buyers each offer really adds.',
+    '從每個有發優惠的分群中隨機保留 10% 不發。下一季就能看到：不給任何優惠時有多少人會下單，以及每種優惠真正多帶來多少購買者。'],
+  filterNote: [n => `${n} gift-season members are left out of every campaign.`, n => `${n} 位年節送禮型會員已從所有活動中排除。`],
+
+  /* ---------- results ---------- */
+  resTitle: [q => `Q${q} results`, q => `${['', '第一季', '第二季', '第三季', '第四季'][q]}結果`],
+  pnlH: ['Where the money went', '錢花到哪裡'],
+  pRevenue: ['Revenue', '營收'],
+  pMargin: ['Gross margin, 55% of revenue', '毛利（營收的 55%）'],
+  pDiscount: [n => `Coupons redeemed (${n})`, n => `折價券折抵（${n} 張）`],
+  pPerk: [n => `Sample boxes (${n})`, n => `體驗禮（${n} 份）`],
+  pMsg: ['Sending coupons', '折價券寄送'],
+  pFixed: ['Holdout test and other one-off costs', '對照組測試與其他一次性支出'],
+  pProfit: ['Profit this quarter', '本季利潤'],
+  segResH: ['What each segment did', '各分群的表現'],
+  cSeg: ['Segment', '分群'],
+  cOffer: ['Offer', '方案'],
+  cMembers: ['Members', '會員數'],
+  cTargeted: ['Received it', '實際收到'],
+  cOrdered: ['Ordered', '下單人數'],
+  cRate: ['Share who ordered', '下單比例'],
+  cCost: ['Cost (NT$)', '支出（NT$）'],
+  recvNote: ['“Received it” can be lower than the member count: gift-season members you spotted are left out, and a holdout test keeps 10% back.', '「實際收到」可能少於會員數：已被你們看出的年節送禮型會員不會收到優惠，對照組測試也會保留 10% 不發。'],
+  noticedH: ['What members noticed', '會員注意到的事'],
+  notes: [{
+    unfair: 'Lapsed members got NT$200 off while Champions got nothing. Word got around.',
+    discountBrand: 'More than half of your members received a coupon this quarter. People are starting to see Maple Lane as a discount brand.',
+    recogChamp: 'Champions noticed the sample box and the handwritten note.',
+    recogLoyal: 'Loyal members noticed the sample box.',
+    event: 'Your response to what landed on your desk.',
+    none: 'Nothing this quarter changed how members see the brand.'
+  }, {
+    unfair: '已經不買的會員拿到 NT$200 折扣，冠軍客卻什麼都沒有。消息傳開了。',
+    discountBrand: '本季超過一半的會員收到折價券。大家開始把楓巷咖啡看成折扣品牌。',
+    recogChamp: '冠軍客注意到了體驗禮和那張手寫卡片。',
+    recogLoyal: '忠誠客注意到了體驗禮。',
+    event: '你們對桌上那件事的回應。',
+    none: '本季沒有任何事改變會員對品牌的看法。'
+  }],
+  trustPts: ['trust', '信任'],
+  lnyNote: ['Lunar New Year fell in this quarter. Gift orders lift revenue for every team, whatever they decided.', '本季有農曆新年。不論做了什麼決定，禮盒訂單都會拉高每一隊的營收。'],
+  joinNote: [n => `${n} new members joined and placed a first order.`, n => `${n} 位新會員加入並下了第一筆訂單。`],
+
+  /* ---------- Q3 ---------- */
+  q3Period: ['Q3, January to March', '第三季（1–3 月）'],
+  q3Title: ['Consequences', '後果'],
+  q3Text: ['Your members moved while you were busy. Then something landed on your desk. This quarter’s budget is NT$50,000 again.', '你們忙著執行的時候，會員已經移動了。接著，有一件事被送到你們桌上。本季預算同樣是 NT$50,000。'],
+  moveH: ['How members moved since last quarter', '上一季以來的會員流動'],
+  mBefore: ['Last quarter', '上一季'],
+  mNow: ['Now', '現在'],
+  mChange: ['Change', '變化'],
+  movesH: ['Largest moves', '最大的幾股流動'],
+  moveLine: [(n, a, b) => `${n} members went from ${a} to ${b}.`, (n, a, b) => `${n} 人從「${a}」移到「${b}」。`],
+  moveJoin: [(n, b) => `${n} new members arrived in ${b}.`, (n, b) => `${n} 位新會員進入「${b}」。`],
+  testH: ['What the holdout test found', '對照組測試的發現'],
+  testSub: [
+    'These figures are for this quarter and count only orders placed this quarter. They say nothing about habit, dependence on discounts, or trust.',
+    '以下數字是針對本季的估計，只計算本季的訂單，不包含購買習慣、折扣依賴或品牌信任的變化。'],
+  trNone: ['order with no offer', '不給優惠也會下單'],
+  trIncP: ['extra buyers per 100, sample box', '每 100 人多出的購買者（體驗禮）'],
+  trIncC: ['extra buyers per 100, coupon', '每 100 人多出的購買者（折價券）'],
+  trValP: ['profit per member, sample box', '每人本季損益（體驗禮）'],
+  trValC: ['profit per member, coupon', '每人本季損益（折價券）'],
+  deskH: ['On your desk', '桌上的事'],
+  respH: ['Your response', '你們的回應'],
+  setsTo: [(seg, tac, cost) => `Sets ${seg} to ${tac}: about NT$${cost} of this quarter’s budget.`, (seg, tac, cost) => `「${seg}」將固定為「${tac}」，約占本季預算 NT$${cost}。`],
+  setsNone: [seg => `Sets ${seg} to Nothing.`, seg => `「${seg}」將固定為「不做」。`],
+  plusFixed: [x => `Plus NT$${x} from the budget.`, x => `另由預算支出 NT$${x}。`],
+  usesFixed: [x => `Uses NT$${x} of this quarter’s budget.`, x => `占用本季預算 NT$${x}。`],
+  noCost: ['Uses none of the budget.', '不占用預算。'],
+  events: [{
+    FAIR: {
+      title: 'The loyalty penalty',
+      story: 'A three-year member has posted two screenshots side by side: her lapsed friend’s NT$200 code, and her own empty inbox. “Leave Maple Lane and they pay you to come back. Stay, and you get nothing.” It had 2,400 likes by morning.',
+      opts: [['Match it', 'Every Champion gets the NT$200 coupon this quarter.'], ['Recognise, don’t discount', 'Reply in public, and send every Champion the sample box.'], ['Hold the line', 'No reply. Offers go where the data says they work.']]
+    },
+    DEP: {
+      title: 'The coupon habit',
+      story: 'Customer service has forwarded a pattern. Your best customers now write in to ask when the next code is coming, and full-price orders from Champions slipped last quarter.',
+      opts: [['Keep them coming', 'Champions get the coupon again this quarter.'], ['Stop at once', 'No offer of any kind for Champions this quarter.'], ['Swap discount for status', 'Launch a members’ tier: early access to micro-lots and the sample box, with no discounts.']]
+    },
+    NEGLECT: {
+      title: 'The second-order cliff',
+      story: 'The acquisition team is standing at your desk. “We pay about NT$600 in ads for every new member. Most of last quarter’s sign-ups never ordered a second time.”',
+      opts: [['Onboard them', 'New & Promising members get the sample box with a brew guide.'], ['Buy more sign-ups', 'Pay for another round of ads. About 60 new members join this quarter.'], ['Accept it', 'Some people only ever buy once. Keep the budget for proven customers.']]
+    },
+    RIVAL: {
+      title: 'A rival moves in',
+      story: 'Northbound Roasters has launched a subscription at 25% off for the first three months, and its ads are following your best customers around.',
+      opts: [['Price-match for our best', 'Champions get the NT$200 coupon this quarter.'], ['Double down on experience', 'Host a cupping evening for Champions and send them the sample box.'], ['Ignore it', 'Launch promotions fade. Keep the budget for your own plan.']]
+    }
+  }, {
+    FAIR: {
+      title: '忠誠的懲罰',
+      story: '一位入會三年的會員把兩張截圖並排貼上網：一張是她那位早就不買的朋友收到的 NT$200 折價碼，另一張是她自己空空的信箱。「離開楓巷，他們付錢請你回來；留下來，什麼都沒有。」到早上已經有 2,400 個讚。',
+      opts: [['比照辦理', '本季每位冠軍客都發 NT$200 折價券。'], ['給肯定，不給折扣', '公開回覆，並寄體驗禮給每位冠軍客。'], ['堅持原則', '不回應。優惠只發給資料顯示有效的人。']]
+    },
+    DEP: {
+      title: '被養成的習慣',
+      story: '客服轉來一個現象：你們最好的客人開始來信問「下一張折價碼什麼時候發」，而上一季冠軍客的原價訂單變少了。',
+      opts: [['繼續發', '冠軍客本季繼續發折價券。'], ['立刻停發', '本季不給冠軍客任何優惠。'], ['把折扣換成身分', '推出會員等級：小批次豆優先購買權加上體驗禮，不給折扣。']]
+    },
+    NEGLECT: {
+      title: '第二單的懸崖',
+      story: '獲客團隊站在你們桌前：「我們每找來一位新會員，廣告費大約 NT$600。上一季加入的人，大多數沒有再下第二單。」',
+      opts: [['好好迎新', '寄體驗禮和沖煮指南給新客與潛力客。'], ['再買一批新會員', '再買一波廣告，本季約有 60 位新會員加入。'], ['接受現實', '有些人就是只買一次。把預算留給已經證明自己的客人。']]
+    },
+    RIVAL: {
+      title: '對手進場',
+      story: '「北行烘焙」推出訂閱方案，前三個月打 75 折，而且廣告正追著你們最好的客人跑。',
+      opts: [['替最好的客人跟價', '本季發 NT$200 折價券給冠軍客。'], ['加碼體驗', '替冠軍客辦一場杯測之夜，並寄體驗禮給他們。'], ['不理會', '開幕促銷總會退燒。預算留給自己的計畫。']]
+    }
+  }],
+
+  /* ---------- Q4 ---------- */
+  q4Period: ['Q4, April to June', '第四季（4–6 月）'],
+  q4Title: ['Thirty percent less', '預算少三成'],
+  q4Text: ['Head office is moving 30% of your budget to a new flagship store. You have NT$35,000 for the final quarter. Something has to go.', '總部把你們三成的預算挪去開新的旗艦店。最後一季只剩 NT$35,000，勢必要放棄某些會員。'],
+
+  /* ---------- debrief ---------- */
+  endPeriod: ['Debrief', '結算'],
+  endTitle: [t => `${t}, here is your year`, t => `${t}，這是你們的一年`],
+  endLead: ['Four numbers, each set against the same year with no campaigns at all.', '四個數字，各自對照「同一年完全不做任何活動」的結果。'],
+  vsNone: ['vs no campaigns', '相較於完全不做活動'],
+  chartsH: ['Quarter by quarter', '逐季走勢'],
+  legYou: ['Your team', '你們'],
+  legRef: ['No campaigns', '完全不做活動'],
+  chProfit: ['Profit per quarter (NT$)', '各季利潤（NT$）'],
+  chActive: ['Active members', '活躍會員'],
+  chEquity: ['Customer equity (NT$)', '顧客資產（NT$）'],
+  chTrust: ['Brand trust', '品牌信任'],
+  asTable: ['Show these numbers as a table', '以表格顯示這些數字'],
+  qShort: [['Q1', 'Q2', 'Q3', 'Q4'], ['第一季', '第二季', '第三季', '第四季']],
+  pathH: ['Your decisions', '你們的決定'],
+  pathQ1: [o => `Coupons to: ${o}`, o => `折價券發給：${o}`],
+  pathPlan: [s => s || 'No offers to anyone', s => s || '沒有對任何人發優惠'],
+  pathTest: ['Ran the holdout test', '做了對照組測試'],
+  pathEvent: [(e, o) => `${e}: ${o}`, (e, o) => `${e}：${o}`],
+  pathOdd: [ok => ok ? 'Spotted the gift-season buyer' : 'Did not spot the gift-season buyer', ok => ok ? '看出了年節送禮型會員' : '沒有看出年節送禮型會員'],
+  hiddenH: ['What the data could not show you', '資料沒告訴你們的事'],
+  anyH: ['Orders that would have happened anyway', '不發優惠也會成立的訂單'],
+  anyText: [
+    (used, any, pct, wasted) => `Members who ordered used ${used} of your offers. ${any} of them (${pct}%) would have ordered with no offer at all. On coupons alone, that is NT$${wasted} of margin handed to people who needed no persuading.`,
+    (used, any, pct, wasted) => `下單的會員用掉了你們 ${used} 份優惠，其中 ${any} 位（${pct}%）就算沒有優惠也會下單。光是折價券，就有 NT$${wasted} 的毛利送給了不需要被說服的人。`],
+  anyNone: ['You made no offers after Q1, so there is nothing to compare.', '第一季之後你們沒有發出任何優惠，因此沒有可比較的資料。'],
+  aSent: ['Offers received', '收到優惠'],
+  aOrdered: ['Ordered', '下單'],
+  aAnyway: ['Would have ordered anyway', '本來就會下單'],
+  aExtra: ['Extra buyers', '多出的購買者'],
+  aQ1Row: ['Q1 coupons, all segments', '第一季折價券（全部分群）'],
+  aSegRow: [s => `${s}, Q2 to Q4`, s => `${s}（第二至第四季）`],
+  aQ24: ['Q2 to Q4, by segment', '第二季到第四季（依分群）'],
+  giftH: ['The gift-season buyers', '年節送禮型會員'],
+  giftText: [
+    (n, spotted, targeted, cost) => `${n} members order only in the weeks before Lunar New Year. RFM filed most of them under At Risk in the autumn and under Loyal in the spring, and neither label was true. Mrs. Lin was the member to doubt. ` + (spotted ? 'You spotted her, so after Q1 they were left out of your campaigns.' : (targeted ? `You sent them ${targeted} offers at a cost of NT$${cost}, and not one changed what they did.` : 'As it happened, none of your offers went to them.')),
+    (n, spotted, targeted, cost) => `有 ${n} 位會員只在農曆年前幾週下單。RFM 在秋天把他們多數歸為「流失風險客」，到了春天又歸為「忠誠客」，兩個標籤都不對。該懷疑的那一位是林太太。` + (spotted ? '你們看出來了，所以第一季之後的活動都排除了這群人。' : (targeted ? `你們對他們發出了 ${targeted} 份優惠，花了 NT$${cost}，卻沒有改變任何一個人的行為。` : '剛好你們的優惠都沒有發到他們身上。'))],
+  depH: ['Waiting for the next code', '等下一張折價碼'],
+  depText: [
+    (n, b) => n > b ? `${n} of your members now hold back full-price orders because they expect a coupon. With no campaigns at all it would be ${b}. Customer equity assumes you stop sending offers, so it counts what this habit will cost you.` : `Your coupons did not teach members to wait for the next one: ${n} members hold back full-price orders, no more than with no campaigns at all.`,
+    (n, b) => n > b ? `現在有 ${n} 位會員因為預期會收到折價券而延後原價訂單；完全不做活動的話是 ${b} 位。顧客資產是以「之後不再發優惠」來估算，所以這個習慣的代價已經算在裡面。` : `你們的折價券沒有讓會員養成等券的習慣：延後原價訂單的會員有 ${n} 位，並不比完全不做活動時多。`],
+  refH: ['Five other ways to play the same year', '同一年的另外五種打法'],
+  refSub: ['Same members, same budgets, same rules. The dot marks the best figure in each column.', '相同的會員、相同的預算、相同的規則。圓點標示每一欄的最佳數字。'],
+  refCol: ['Strategy', '打法'],
+  refs: [{
+    you: ['Your team', ''],
+    none: ['No campaigns', 'Spend nothing for four quarters.'],
+    best: ['Reward the best', 'Coupons for the biggest spenders, then for Champions and Loyal members every quarter.'],
+    back: ['Win them back', 'Coupons for At Risk and Hibernating members every quarter. No reply to the complaint.'],
+    nurture: ['Recognise and nurture', 'Sample boxes for Champions, Loyal and New members. No coupons after Q1.'],
+    greedy: ['Follow this quarter’s numbers', 'Each quarter, coupon every segment that shows a profit per member this quarter, biggest gain first. No reply to anything.']
+  }, {
+    you: ['你們', ''],
+    none: ['完全不做活動', '四個季度一毛都不花。'],
+    best: ['回饋最好的客人', '先發給消費最高的人，之後每季都發券給冠軍客與忠誠客。'],
+    back: ['把人找回來', '每季發券給流失風險客與沉睡客，不回應抱怨。'],
+    nurture: ['肯定與培養', '寄體驗禮給冠軍客、忠誠客與新客，第一季之後不發折價券。'],
+    greedy: ['只看當季數字', '每一季都發券給「當季每人損益為正」的分群，從總效益最大的開始。對任何事都不回應。']
+  }],
+  qsH: ['For the class discussion', '課堂討論'],
+  qs: [[
+    'Which of the four numbers should define winning for Maple Lane? Who in your team disagreed?',
+    'The share who ordered and the number of extra buyers pointed at different segments. When did you first notice, and what would have let you see it sooner?',
+    'A coupon that worked on At Risk members in Q2 worked less well by Q4. Why?',
+    'Is it fair to give a lapsed customer a better price than a loyal one? Would your answer change if the loyal customer never found out?',
+    'RFM mislabelled the gift-season buyers in every quarter. What other kinds of customer would it misread?'
+  ], [
+    '楓巷咖啡應該用四個數字中的哪一個來定義「贏」？你們組裡誰不同意？',
+    '「下單比例」和「多出的購買者」指向不同的分群。你們是在哪一步察覺的？有什麼資料可以讓你們更早看出來？',
+    '第二季對流失風險客有效的折價券，到了第四季效果變差。為什麼？',
+    '給流失顧客比忠誠顧客更好的價格，公平嗎？如果忠誠顧客永遠不會發現，你的答案會改變嗎？',
+    'RFM 每一季都把年節送禮型會員標錯。還有哪些類型的顧客會被它誤判？'
+  ]],
+  copy: ['Copy our summary', '複製本組摘要'],
+  copied: ['Copied', '已複製'],
+  copyFail: ['Select the text below and copy it', '請選取下方文字後自行複製'],
+  teachH: ['Notes for the instructor', '給授課教師的說明'],
+  teach: [[
+    'Every member has a hidden level of engagement. An order raises it; a quarter with no order lowers it.',
+    'A coupon or a sample box lifts the chance of ordering most for members in the middle. Champions were going to order anyway, and long-silent members rarely respond.',
+    'When a member who was already likely to order redeems a coupon, that member learns to wait for the next one. A sample box does not teach this.',
+    'A sample box lifts orders less than a coupon this quarter, but its recipients are less likely to drift to a rival, and trust rises when Champions and Loyal members receive one.',
+    'Coupons for At Risk or Hibernating members with nothing for Champions cost 5 trust points each quarter. Coupons to more than half of all members cost 3.',
+    'The Q3 event depends on the Q2 plan. Win-back coupons with nothing for Champions bring the loyalty penalty; coupons for Champions bring the coupon habit; nothing for New members brings the second-order cliff; anything else brings the rival.',
+    'About 35 members buy only before Lunar New Year, which falls in Q3.',
+    'The same decisions always give the same result, so teams can be compared. Add ?seed=7 to the address for a different member base, and ?lang=en or ?lang=zh to set the language.',
+    'Suggested timing: brief 5 minutes, Q1 5, Q2 12, Q3 10, Q4 6, debrief 10.'
+  ], [
+    '每位會員都有一個隱藏的「投入程度」。下單會讓它上升，一整季沒下單會讓它下降。',
+    '折價券或體驗禮對「中間」的會員最有效。冠軍客本來就會買，久未下單的會員則很少回應。',
+    '本來就很可能下單的會員如果用了折價券，就會學到「等下一張券」。體驗禮不會造成這個效果。',
+    '體驗禮在當季帶來的訂單比折價券少，但收到的會員比較不會被對手拉走；冠軍客與忠誠客收到時，品牌信任也會上升。',
+    '發券給流失風險客或沉睡客、卻沒有給冠軍客任何東西，每季扣 5 點信任。發券對象超過全部會員的一半，扣 3 點。',
+    '第三季的事件取決於第二季的方案：發挽回券但冠軍客什麼都沒有，出現「忠誠的懲罰」；發券給冠軍客，出現「被養成的習慣」；新客什麼都沒有，出現「第二單的懸崖」；其他情況則是「對手進場」。',
+    '約有 35 位會員只在農曆年前下單，而農曆年落在第三季。',
+    '相同的決定一定得到相同的結果，方便各組互相比較。在網址後面加上 ?seed=7 可以換一批會員，加上 ?lang=en 或 ?lang=zh 可以指定語言。',
+    '建議時間：任務說明 5 分鐘、第一季 5、第二季 12、第三季 10、第四季 6、結算 10。'
+  ]],
+  sumTeam: ['Team', '隊名'],
+  sumDecisions: ['Decisions', '決定'],
+  sumResult: ['Result', '結果'],
+  sumWhy: ['Why', '理由']
+};
+</script>
+<script>
+/* ============================================================
+   APP — screens, state, and the glue between Engine and the page.
+   The saved state holds only the team's decisions; every number
+   on screen is recomputed from them, so a refresh loses nothing.
+   ============================================================ */
+(() => {
+  'use strict';
+  const E = Engine;
+  const app = document.getElementById('app');
+  const STEPS = ['intro', 'q1', 'q1r', 'q2x', 'q2', 'q2r', 'q3', 'q3r', 'q4', 'q4r', 'end'];
+  const RAIL_OF = { intro: 0, q1: 1, q1r: 1, q2x: 2, q2: 2, q2r: 2, q3: 3, q3r: 3, q4: 4, q4r: 4, end: 5 };
+  const LS_KEY = 'lastcoupon.v1';
+  const qs = new URLSearchParams(location.search);
+  const SEED = qs.has('seed') && /^\d+$/.test(qs.get('seed')) ? parseInt(qs.get('seed'), 10) : E.P.seed;
+  const ODD_ANSWER = 2;                                   // Mrs. Lin
+  const Q_START = ['2026-07-01', '2026-10-01', '2027-01-01', '2027-04-01'];
+  const PEOPLE = [
+    { last: '2026-09-22', orders: 22, spend: 21400, tl: [2, 3, 3, 2, 3, 3, 3, 3] },
+    { last: '2025-11-23', orders: 14, spend: 26800, tl: [4, 4, 3, 2, 1, 0, 0, 0] },
+    { last: '2026-02-06', orders: 2, spend: 23600, tl: [0, 1, 0, 0, 0, 1, 0, 0] },
+    { last: '2026-09-10', orders: 1, spend: 780, tl: [0, 0, 0, 0, 0, 0, 0, 1] },
+    { last: '2026-07-18', orders: 8, spend: 7900, tl: [1, 1, 1, 1, 1, 1, 1, 1] },
+    { last: '2025-08-26', orders: 1, spend: 650, tl: [0, 0, 0, 1, 0, 0, 0, 0] }
+  ];
+  const TL_AXIS = [['Q4', '2024'], ['Q1', '2025'], ['Q2', ''], ['Q3', ''], ['Q4', ''], ['Q1', '2026'], ['Q2', ''], ['Q3', '']];
+  const REF_SPECS = {
+    none:    { q1: '0', prio: [], ev: { FAIR: 2, DEP: 1, NEGLECT: 2, RIVAL: 2 } },
+    best:    { q1: 'M', prio: [['champ', 'coupon'], ['loyal', 'coupon'], ['new', 'coupon']], ev: { FAIR: 0, DEP: 0, NEGLECT: 2, RIVAL: 0 } },
+    back:    { q1: 'M', prio: [['risk', 'coupon'], ['hib', 'coupon'], ['new', 'coupon']], ev: { FAIR: 2, DEP: 1, NEGLECT: 2, RIVAL: 2 } },
+    nurture: { q1: 'R', prio: [['champ', 'perk'], ['loyal', 'perk'], ['new', 'perk']], ev: { FAIR: 1, DEP: 2, NEGLECT: 0, RIVAL: 1 } },
+    greedy:  { q1: 'X', greedy: true, prio: [], ev: { FAIR: 2, DEP: 1, NEGLECT: 2, RIVAL: 2 } }
+  };
+
+  /* ---------- state ---------- */
+  const noneAlloc = () => ({ champ: 'none', loyal: 'none', new: 'none', risk: 'none', hib: 'none' });
+  function initialLang() {
+    const q = qs.get('lang');
+    if (q === 'en' || q === 'zh') return q;
+    return /^zh/i.test(navigator.language || '') ? 'zh' : 'en';
+  }
+  function fresh() {
+    return {
+      v: 1, seed: SEED, lang: initialLang(), team: '', step: 'intro',
+      q1: { list: null, why: '' },
+      ex: { ans: {}, checked: false, odd: null, oddDone: false },
+      q2: { alloc: noneAlloc(), test: false, why: '' },
+      q3: { ev: null, alloc: noneAlloc(), test: false, why: '' },
+      q4: { alloc: noneAlloc(), why: '' }
+    };
+  }
+  function load() {
+    try {
+      if (qs.has('reset')) { localStorage.removeItem(LS_KEY); return null; }
+      const s = JSON.parse(localStorage.getItem(LS_KEY) || 'null');
+      if (!s || s.v !== 1 || s.seed !== SEED || !STEPS.includes(s.step)) return null;
+      return s;
+    } catch (e) { return null; }
+  }
+  function save() { try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) { /* private mode: play on without saving */ } }
+  let S = load() || fresh();
+  let SIM = null;
+  const UI = { sort: 'm', armed: null, msg: '' };
+
+  /* ---------- formatting ---------- */
+  const L = () => (S.lang === 'zh' ? 1 : 0);
+  function t(key, ...a) { const v = T[key][L()]; return typeof v === 'function' ? v(...a) : v; }
+  const nf = n => Math.round(n).toLocaleString('en-US');
+  const money = n => (n < 0 ? '−' : '') + 'NT$' + nf(Math.abs(n));
+  const signed = n => (Math.round(n) > 0 ? '+' : Math.round(n) < 0 ? '−' : '') + nf(Math.abs(n));
+  const pct = x => Math.round(x * 100) + '%';
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  function fmtDate(d) {
+    return S.lang === 'zh' ? `${d.getUTCFullYear()}/${d.getUTCMonth() + 1}/${d.getUTCDate()}` : `${d.getUTCDate()} ${MON[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+  }
+  const dayMs = 864e5;
+  const dateBefore = (iso, days) => new Date(Date.parse(iso + 'T00:00:00Z') - days * dayMs);
+  const segName = s => T.seg[L()][s][0];
+  const segDef = s => T.seg[L()][s][1];
+  const tacName = a => t(a === 'perk' ? 'tPerk' : a === 'coupon' ? 'tCoupon' : 'tNone');
+  const stepIdx = s => STEPS.indexOf(s);
+  const past = s => stepIdx(S.step) > stepIdx(s);
+  function fmtAxis(n) {
+    const a = Math.abs(n);
+    if (S.lang === 'zh') return a >= 1e4 ? (+(n / 1e4).toFixed(1)) + ' 萬' : nf(n);
+    return a >= 1e6 ? (+(n / 1e6).toFixed(2)) + 'M' : a >= 1e4 ? (+(n / 1e3).toFixed(0)) + 'K' : nf(n);
+  }
+
+  /* ---------- simulation from the saved decisions ---------- */
+  function simulate() {
+    const w = E.newWorld({ seed: S.seed });
+    const sim = { w, start: E.startKpi(w), res: [], snaps: [], tabs: [], event: null };
+    sim.snaps[0] = E.snapshot(w); sim.tabs[0] = E.segTable(w, sim.snaps[0]);
+    if (past('q1')) {
+      sim.res[0] = E.play(w, { list: S.q1.list });
+      w.filterSeasonal = !!(S.ex.oddDone && S.ex.odd === ODD_ANSWER);
+      sim.snaps[1] = E.snapshot(w); sim.tabs[1] = E.segTable(w, sim.snaps[1]);
+    }
+    if (past('q2')) {
+      sim.res[1] = E.play(w, { alloc: S.q2.alloc, test: S.q2.test, fixed: S.q2.test ? E.P.testCost : 0 });
+      sim.event = E.eventFor(S.q2.alloc);
+      sim.snaps[2] = E.snapshot(w); sim.tabs[2] = E.segTable(w, sim.snaps[2]);
+    }
+    if (past('q3')) {
+      const opt = E.EVENTS[sim.event][S.q3.ev];
+      sim.res[2] = E.play(w, { alloc: S.q3.alloc, test: S.q3.test, mods: opt.mods, fixed: (opt.fixed || 0) + (S.q3.test ? E.P.testCost : 0) });
+      sim.snaps[3] = E.snapshot(w); sim.tabs[3] = E.segTable(w, sim.snaps[3]);
+    }
+    if (past('q4')) sim.res[3] = E.play(w, { alloc: S.q4.alloc });
+    return sim;
+  }
+  function autoPlay(spec) {
+    const w = E.newWorld({ seed: S.seed }); const res = [];
+    const fit = (budget, lock) => {
+      const tb = E.segTable(w); const a = Object.assign(noneAlloc(), lock || {});
+      let prio = spec.prio;
+      if (spec.greedy) {            // whatever shows a profit per member this quarter, biggest total gain first
+        prio = E.SEGS.map(s => tb[s].valCoupon >= tb[s].valPerk ? [s, 'coupon', tb[s].valCoupon] : [s, 'perk', tb[s].valPerk])
+          .filter(x => x[2] > 0).sort((x, y) => y[2] - x[2]);
+      }
+      for (const [s, tac] of prio) {
+        if (lock && lock[s]) continue;
+        const trial = Object.assign({}, a, { [s]: tac });
+        if (E.planCost(tb, trial, false) <= budget) a[s] = tac;
+      }
+      return a;
+    };
+    res.push(E.play(w, { list: spec.q1 }));
+    const a2 = fit(E.P.budgets[1]); res.push(E.play(w, { alloc: a2 }));
+    const opt = E.EVENTS[E.eventFor(a2)][spec.ev[E.eventFor(a2)]];
+    res.push(E.play(w, { alloc: fit(E.P.budgets[2] - (opt.fixed || 0), opt.lock), mods: opt.mods, fixed: opt.fixed || 0 }));
+    res.push(E.play(w, { alloc: fit(E.P.budgets[3]) }));
+    return { res, w, kpi: kpiOf(res) };
+  }
+  const kpiOf = res => ({ profit: res.reduce((s, r) => s + r.profit, 0), active: res[res.length - 1].active, equity: res[res.length - 1].equity, trust: res[res.length - 1].trust });
+
+  function planInfo(qn) {
+    const d = S['q' + qn], tb = SIM.tabs[qn - 1];
+    let fixedEvent = 0, lock = {};
+    if (qn === 3 && d.ev != null) { const o = E.EVENTS[SIM.event][d.ev]; fixedEvent = o.fixed || 0; lock = o.lock; }
+    const test = qn < 4 && !!d.test;
+    const fixedTest = test ? E.P.testCost : 0;
+    const cost = E.planCost(tb, d.alloc, test);
+    const budget = E.P.budgets[qn - 1];
+    const total = cost + fixedEvent + fixedTest;
+    const onlyLocked = E.SEGS.every(s => lock[s] || d.alloc[s] === 'none') && !test;
+    return { cost, fixedEvent, fixedTest, total, budget, over: total > budget && !onlyLocked, lock, test };
+  }
+  const hasTestInfo = qn => (qn === 3 && S.q2.test) || (qn === 4 && (S.q2.test || S.q3.test));
+  const canTest = qn => qn === 2 || (qn === 3 && !S.q2.test);
+
+  /* ---------- chrome ---------- */
+  function top() {
+    return `<header class="top">
+      <div class="brand">${t('brand')}<small>${t('desk')}</small></div>
+      <div class="top-actions">
+        <div class="lang" role="group" aria-label="Language / 語言">
+          <button type="button" data-act="lang" data-v="en" aria-pressed="${S.lang === 'en'}">EN</button>
+          <button type="button" data-act="lang" data-v="zh" aria-pressed="${S.lang === 'zh'}">中文</button>
+        </div>
+        ${S.step !== 'intro' ? `<button type="button" class="quiet" data-act="restart" data-label="${esc(t('restart'))}" data-arm="${esc(t('restartArm'))}">${t('restart')}</button>` : ''}
+      </div>
+    </header>`;
+  }
+  function rail() {
+    const now = RAIL_OF[S.step];
+    return `<ol class="rail" aria-label="Progress">${T.rail[L()].map((x, i) =>
+      `<li class="${i < now ? 'done' : i === now ? 'now' : ''}"${i === now ? ' aria-current="step"' : ''}>${x}</li>`).join('')}</ol>`;
+  }
+  function kpis() {
+    const r = SIM.res, n = r.length, last = r[n - 1], prev = n > 1 ? r[n - 2] : SIM.start;
+    const cum = r.reduce((s, x) => s + x.profit, 0);
+    const cur = last || SIM.start;
+    const d = (a, b, f) => { const x = a - b; return `<span class="${x > 0 ? 'up' : x < 0 ? 'down' : ''}">${f(x)}</span> ${t('kVsLast')}`; };
+    const tile = (label, val, delta) => `<div class="kpi"><div class="k-label">${label}</div><div class="k-val">${val}</div><div class="k-delta">${delta}</div></div>`;
+    return `<section class="kpis" aria-label="Scoreboard">
+      ${tile(t('kProfit'), money(cum), n ? `${signed(last.profit)} ${t('kThisQ')}` : t('kStart'))}
+      ${tile(t('kActive'), nf(cur.active), n ? d(cur.active, prev.active, signed) : t('kStart'))}
+      ${tile(t('kEquity'), money(cur.equity), n ? d(cur.equity, prev.equity, signed) : t('kStart'))}
+      ${tile(t('kTrust'), nf(cur.trust), n ? d(cur.trust, prev.trust, signed) : t('kStart'))}
+    </section>`;
+  }
+  const head = (period, title, text) => `<p class="period">${period}</p><h1 class="stage-title" tabindex="-1">${title}</h1>${text ? `<p class="lede">${text}</p>` : ''}`;
+  const whyField = key => `<label class="field"><span>${t('whyLabel')}</span><textarea data-bind="${key}.why" maxlength="240" placeholder="${esc(t('whyPh'))}">${esc(S[key].why)}</textarea></label>`;
+  const commit = (act, label) => `<div class="commit"><button type="button" class="btn-ticket" data-act="${act}" data-label="${esc(label)}" data-arm="${esc(t('confirm'))}">${label}</button><span class="msg" role="status" aria-live="polite">${esc(UI.msg)}</span></div>`;
+  const nextBtn = (label) => `<div class="commit"><button type="button" class="btn-plain" data-act="next">${label}</button></div>`;
+
+  /* ---------- intro ---------- */
+  function vIntro() {
+    const dl = rows => `<dl class="defs">${rows.map(r => `<div><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join('')}</dl>`;
+    return `<div class="hero">
+        <div class="ticket">
+          <div class="ticket-main"><h1>${t('title')}</h1><p>${t('tagline')}</p></div>
+          <div class="ticket-stub"><div class="amount"><small>${t('stubSmall')}</small>NT$200</div><div class="valid">${t('stubValid')}</div></div>
+        </div>
+        <div class="hero-copy"><p>${t('introLead')}</p><p class="fict">${t('fictional')}</p></div>
+      </div>
+      <div class="cols">
+        <section><h2>${t('howH')}</h2><ol class="steps">${T.how[L()].map(x => `<li><span>${x}</span></li>`).join('')}</ol></section>
+        <section><h2>${t('rolesH')}</h2>${dl(T.roles[L()])}<p class="small" style="margin-top:.5rem">${t('rolesNote')}</p></section>
+        <section><h2>${t('scoreH')}</h2>${dl(T.score[L()])}</section>
+        <section><h2>${t('toolsH')}</h2>${dl(T.tools[L()])}</section>
+      </div>
+      <label class="field narrow"><span>${t('teamLabel')}</span><input type="text" data-bind="team" maxlength="40" value="${esc(S.team)}" placeholder="${esc(t('teamPh'))}" autocomplete="off"></label>
+      <div class="commit"><button type="button" class="btn-plain" data-act="start">${t('start')}</button><span class="msg" role="status" aria-live="polite">${esc(UI.msg)}</span></div>`;
+  }
+
+  /* ---------- Q1 ---------- */
+  function vQ1() {
+    const rows = SIM.snaps[0].slice();
+    const key = { m: r => -r.m, f: r => -r.f, r: r => r.days }[UI.sort];
+    rows.sort((a, b) => key(a) - key(b) || a.c.id - b.c.id);
+    const sortBtn = (k, label) => `<button type="button" class="sort" data-act="sort" data-v="${k}" aria-pressed="${UI.sort === k}">${label}</button>`;
+    const o = T.q1Opts[L()];
+    return head(t('q1Period'), t('q1Title'), t('q1Text')) + `
+      <h2>${t('q1Cap')}</h2>
+      <div class="block scroll"><table class="data">
+        <thead><tr><th>${t('colMember')}</th><th>${sortBtn('f', t('colOrders'))}</th><th>${sortBtn('m', t('colSpend'))}</th><th>${sortBtn('r', t('colLast'))}</th></tr></thead>
+        <tbody>${rows.slice(0, 12).map(r => `<tr><td>M-${String(r.c.id + 1).padStart(4, '0')}</td><td>${r.f}</td><td>${nf(r.m)}</td><td>${fmtDate(dateBefore(Q_START[0], r.days))}</td></tr>`).join('')}</tbody>
+      </table><p class="tfoot">${t('q1Foot', nf(rows.length))}</p></div>
+      <div class="opts two" role="radiogroup" aria-label="${esc(t('q1Title'))}">
+        ${['M', 'F', 'R', 'X'].map(k => `<label class="opt"><input type="radio" name="q1" value="${k}" data-bind="q1.list"${S.q1.list === k ? ' checked' : ''}><strong>${o[k][0]}</strong><span>${o[k][1]}</span></label>`).join('')}
+      </div>
+      ${whyField('q1')}
+      ${commit('lock:q1', t('lockQ', 1))}`;
+  }
+  function tiles(list) {
+    return `<div class="tiles">${list.map(x => `<div class="tile"><div class="t-label">${x[0]}</div><div class="t-val">${x[1]}</div>${x[2] ? `<div class="t-sub">${x[2]}</div>` : ''}</div>`).join('')}</div>`;
+  }
+  function vQ1r() {
+    const r = SIM.res[0];
+    const p = Math.round(100 * r.redeemed / Math.max(1, r.coupons));
+    return head(t('q1Period'), t('q1ResTitle')) + `<div style="margin-top:1.4rem">` + tiles([
+      [t('tSent'), nf(r.coupons)], [t('tRedeemed'), nf(r.redeemed), p + '%'], [t('tRevenue'), money(r.revenue)],
+      [t('tCampaign'), money(r.campaign)], [t('tProfit'), money(r.profit)]
+    ]) + `</div><p class="callout">${t('q1Comment', p)}</p>${r.active < SIM.start.active ? `<p class="callout">${t('q1Active', nf(SIM.start.active - r.active))}</p>` : ''}` + nextBtn(t('toQ', 2));
+  }
+
+  /* ---------- RFM exercise ---------- */
+  function person(i) {
+    const p = PEOPLE[i];
+    const days = Math.round((Date.parse(Q_START[1] + 'T00:00:00Z') - Date.parse(p.last + 'T00:00:00Z')) / dayMs);
+    const R = E.rScore(days), F = E.fScore(p.orders), M = E.mScore(p.spend);
+    return { i, name: T.people[L()][i], days, R, F, M, FM: Math.round((F + M) / 2), seg: E.segmentOf(R, F, M), p };
+  }
+  function vQ2x() {
+    const ex = S.ex, ppl = PEOPLE.map((_, i) => person(i));
+    const scRows = S.lang === 'zh' ? T.scRowsZh : T.scRows;
+    const card = x => {
+      const a = ex.ans[x.i] || '';
+      const ok = a === x.seg;
+      return `<div class="person">
+        <h3>${x.name}</h3>
+        <dl><dt>${t('pLast')}</dt><dd>${fmtDate(new Date(x.p.last + 'T00:00:00Z'))}<br><span class="small">${t('pDays', x.days)}</span></dd>
+            <dt>${t('pOrders')}</dt><dd>${x.p.orders}</dd><dt>${t('pSpend')}</dt><dd>${money(x.p.spend)}</dd></dl>
+        <div class="small">${t('pTimeline')}</div>
+        <div class="tl" role="img" aria-label="${esc(t('pTimeline'))}: ${x.p.tl.join(', ')}">${x.p.tl.map(n => `<i class="${n ? 'on' : ''}">${n}</i>`).join('')}</div>
+        <div class="tl-ax" aria-hidden="true">${TL_AXIS.map(a => `<span>${a[0]}<br>${a[1]}</span>`).join('')}</div>
+        <select data-bind="ex.ans.${x.i}" aria-label="${esc(t('pSegLabel', x.name))}"${ex.checked ? ' disabled' : ''}>
+          <option value="">${t('pChoose')}</option>${E.SEGS.map(s => `<option value="${s}"${a === s ? ' selected' : ''}>${segName(s)}</option>`).join('')}
+        </select>
+        ${ex.checked ? `<p class="fb ${ok ? 'ok' : 'no'}">${ok ? '✓' : '✗'} ${t('exFb', x.R, x.F, x.M, x.FM, segName(x.seg))}</p>` : ''}
+      </div>`;
+    };
+    const nOk = ppl.filter(x => ex.ans[x.i] === x.seg).length;
+    let odd = '';
+    if (ex.checked) {
+      odd = `<h2>${t('oddH')}</h2><p class="sub">${t('oddText')}</p>
+        <div class="opts three" role="radiogroup" aria-label="${esc(t('oddH'))}">
+          ${ppl.map(x => `<label class="opt${ex.oddDone ? ' locked' : ''}"><input type="radio" name="odd" value="${x.i}" data-bind="ex.odd"${ex.odd === x.i ? ' checked' : ''}${ex.oddDone ? ' disabled' : ''}><strong>${x.name}</strong><span>${segName(x.seg)}</span></label>`).join('')}
+        </div>`;
+      if (!ex.oddDone) odd += `<div class="commit"><button type="button" class="btn-ticket" data-act="lock:odd" data-label="${esc(t('oddLock'))}" data-arm="${esc(t('confirm'))}">${t('oddLock')}</button><button type="button" class="btn-ghost" data-act="next">${t('exNext')}</button><span class="msg" role="status" aria-live="polite">${esc(UI.msg)}</span></div>`;
+      else odd += `<p class="verdict ${ex.odd === ODD_ANSWER ? '' : 'no'}">${ex.odd === ODD_ANSWER ? t('oddRight', E.seasonalCount(SIM.w)) : t('oddWrong')}</p>` + nextBtn(t('exNext'));
+    }
+    return head(t('q2Period'), t('exTitle'), t('exText')) + `
+      <div class="cols" style="margin-top:.4rem">
+        <section><h2>${t('scoreTableCap')}</h2><div class="block scroll"><table class="data">
+          <thead><tr>${T.scHead[L()].map((h, i) => `<th${i ? '' : ' class="l"'}>${h}</th>`).join('')}</tr></thead>
+          <tbody>${scRows.map(r => `<tr>${r.map((c, i) => i ? `<td>${c}</td>` : `<th>${c}</th>`).join('')}</tr>`).join('')}</tbody>
+        </table><p class="tfoot">${t('fmNote')}</p></div></section>
+        <section><h2>${t('segH')}</h2><dl class="defs">${E.SEGS.map(s => `<div><dt>${segName(s)}</dt><dd>${segDef(s)}</dd></div>`).join('')}</dl></section>
+      </div>
+      <h2>${t('exAsOf')}</h2>
+      <div class="people">${ppl.map(card).join('')}</div>
+      ${ex.checked ? `<p class="callout">${t('exScore', nOk)}</p>` : `<div class="commit"><button type="button" class="btn-plain" data-act="excheck">${t('exCheck')}</button></div>`}
+      ${odd}`;
+  }
+
+  /* ---------- plan screens (Q2–Q4) ---------- */
+  function planBlock(qn) {
+    const d = S['q' + qn], tb = SIM.tabs[qn - 1], info = planInfo(qn);
+    const maxN = Math.max(...E.SEGS.map(s => tb[s].n));
+    const truth = hasTestInfo(qn);
+    const stat = (b, i, cls, title) => `<div class="stat${cls ? ' ' + cls : ''}"${title ? ` title="${esc(title)}"` : ''}><b>${b}</b><i>${i}</i></div>`;
+    const row = s => {
+      const x = tb[s], locked = !!info.lock[s];
+      const tac = (a, cost) => `<label><input type="radio" name="alloc-${s}" value="${a}" data-alloc="${s}"${d.alloc[s] === a ? ' checked' : ''}${locked ? ' disabled' : ''}><b>${tacName(a)}</b><small>${cost}</small></label>`;
+      return `<div class="seg">
+        <div class="seg-name"><strong>${segName(s)}</strong><span>${segDef(s)}</span></div>
+        <div class="seg-stats">
+          <div class="stat"><b>${nf(x.n)}</b><i>${t('sMembers')}</i><div class="bar" aria-hidden="true"><u style="width:${(100 * x.n / maxN).toFixed(1)}%"></u></div></div>
+          ${stat(nf(x.days), t('sDays'))}
+          ${stat(nf(x.m), t('sSpend'))}
+          ${stat(pct(x.pCoupon), t('sRate'), 'hl', t('sRateTitle'))}
+        </div>
+        <div class="tactics${locked ? ' locked' : ''}" role="radiogroup" aria-label="${esc(segName(s))}">
+          ${tac('none', t('free'))}${tac('perk', money(x.costPerk))}${tac('coupon', '≈ ' + money(x.costCoupon))}
+        </div>
+        ${locked ? `<div class="seg-note">${t('lockedRow')}</div>` : ''}
+        ${truth ? `<div class="truth">
+          ${stat(pct(x.pNone), t('trNone'))}
+          ${stat(signed(x.incPerk * 100), t('trIncP'))}
+          ${stat(signed(x.incCoupon * 100), t('trIncC'))}
+          ${stat((x.valPerkPer < 0 ? '−' : '+') + 'NT$' + nf(Math.abs(x.valPerkPer)), t('trValP'))}
+          ${stat((x.valCouponPer < 0 ? '−' : '+') + 'NT$' + nf(Math.abs(x.valCouponPer)), t('trValC'))}
+        </div>` : ''}
+      </div>`;
+    };
+    return `<h2>${t('planH')}</h2>
+      ${truth ? `<p class="sub"><strong>${t('testH')}.</strong> ${t('testSub')}</p>` : ''}
+      <div class="block">
+        <div class="plan">${E.SEGS.map(row).join('')}</div>
+        ${canTest(qn) ? `<label class="check"><input type="checkbox" data-test="q${qn}"${d.test ? ' checked' : ''}><div><strong>${t('testLabel')}</strong><span>${t('testDesc')}</span></div></label>` : ''}
+        <div class="budget" id="budget">${budgetHtml(qn)}</div>
+      </div>
+      <p class="small" style="margin-top:.6rem;max-width:72ch">${t('costNote')}${SIM.w.filterSeasonal ? ' ' + t('filterNote', E.seasonalCount(SIM.w)) : ''}</p>`;
+  }
+  function budgetHtml(qn) {
+    const i = planInfo(qn);
+    const w = Math.min(100, 100 * i.total / i.budget);
+    const fixed = [];
+    if (i.fixedEvent) fixed.push(t('fixedLine', t('fixedEvent'), nf(i.fixedEvent)));
+    if (i.fixedTest) fixed.push(t('fixedLine', t('fixedTest'), nf(i.fixedTest)));
+    return `<div class="budget-row"><span>${t('budget')} <b>${money(i.budget)}</b></span><span>${t('planned')} <b>${money(i.total)}</b></span><span>${t('left')} <b>${money(i.budget - i.total)}</b></span></div>
+      <div class="meter${i.over ? ' over' : ''}" role="img" aria-label="${esc(t('planned'))} ${nf(i.total)} / ${nf(i.budget)}"><u style="width:${w.toFixed(1)}%"></u></div>
+      ${fixed.length ? `<p class="small" style="margin-top:.4rem">${fixed.join('　')}</p>` : ''}
+      ${i.over ? `<p class="msg" style="margin-top:.4rem">${t('over', nf(i.total - i.budget))}</p>` : ''}`;
+  }
+  function moveBlock(qn) {
+    const a = SIM.tabs[qn - 2], b = SIM.tabs[qn - 1];
+    const m = E.migration(SIM.snaps[qn - 2], SIM.snaps[qn - 1]);
+    const flows = [];
+    for (const x of E.SEGS) for (const y of E.SEGS) if (x !== y && m[x][y] > 0) flows.push([m[x][y], x, y]);
+    flows.sort((p, q) => q[0] - p[0]);
+    const lines = flows.slice(0, 4).map(f => `<li>${t('moveLine', f[0], segName(f[1]), segName(f[2]))}</li>`);
+    for (const y of E.SEGS) if (m.join[y] > 0) lines.push(`<li>${t('moveJoin', m.join[y], segName(y))}</li>`);
+    return `<h2>${t('moveH')}</h2>
+      <div class="cols">
+        <div class="block scroll"><table class="data">
+          <thead><tr><th>${t('cSeg')}</th><th>${t('mBefore')}</th><th>${t('mNow')}</th><th>${t('mChange')}</th></tr></thead>
+          <tbody>${E.SEGS.map(s => `<tr><th>${segName(s)}</th><td>${nf(a[s].n)}</td><td>${nf(b[s].n)}</td><td>${signed(b[s].n - a[s].n)}</td></tr>`).join('')}</tbody>
+        </table></div>
+        <div><h3>${t('movesH')}</h3><ul class="plain">${lines.join('')}</ul></div>
+      </div>`;
+  }
+  function q1Recap() {
+    const r = SIM.res[0];
+    return `<h2>${t('q1Recap')}</h2><p class="sub">${t('q1RecapSub')}</p>
+      <div class="block scroll"><table class="data">
+        <thead><tr><th>${t('cSeg')}</th><th>${t('rcSent')}</th><th>${t('rcRedeemed')}</th><th>${t('rcRate')}</th></tr></thead>
+        <tbody>${E.SEGS.map(s => { const x = r.seg[s]; return `<tr><th>${segName(s)}</th><td>${nf(x.coupons)}</td><td>${nf(x.buyersT)}</td><td>${x.coupons ? pct(x.buyersT / x.coupons) : '–'}</td></tr>`; }).join('')}</tbody>
+      </table></div>`;
+  }
+  function eventBlock() {
+    const ev = SIM.event, x = T.events[L()][ev], tb = SIM.tabs[2];
+    const meta = i => {
+      const o = E.EVENTS[ev][i], parts = [];
+      for (const s in o.lock) parts.push(o.lock[s] === 'none' ? t('setsNone', segName(s)) : t('setsTo', segName(s), tacName(o.lock[s]), nf(o.lock[s] === 'perk' ? tb[s].costPerk : tb[s].costCoupon)));
+      if (o.fixed) parts.push(t(parts.length ? 'plusFixed' : 'usesFixed', nf(o.fixed)));
+      if (!parts.length) parts.push(t('noCost'));
+      return parts.join(' ');
+    };
+    return `<h2>${t('deskH')}</h2>
+      <div class="event"><h3>${x.title}</h3><p>${x.story}</p></div>
+      <h2>${t('respH')}</h2>
+      <div class="opts three" role="radiogroup" aria-label="${esc(t('respH'))}">
+        ${x.opts.map((o, i) => `<label class="opt"><input type="radio" name="ev" value="${i}" data-ev="${i}"${S.q3.ev === i ? ' checked' : ''}><strong>${o[0]}</strong><span>${o[1]}</span><em>${meta(i)}</em></label>`).join('')}
+      </div>`;
+  }
+  function vPlan(qn) {
+    if (qn === 2) return head(t('q2Period'), t('q2Title'), t('q2Text')) + q1Recap() + planBlock(2) + whyField('q2') + commit('lock:q2', t('lockQ', 2));
+    if (qn === 3) return head(t('q3Period'), t('q3Title'), t('q3Text')) + moveBlock(3) + eventBlock() + planBlock(3) + whyField('q3') + commit('lock:q3', t('lockQ', 3));
+    return head(t('q4Period'), t('q4Title'), t('q4Text')) + moveBlock(4) + planBlock(4) + whyField('q4') + commit('lock:q4', t('lockQ', 4));
+  }
+
+  /* ---------- results (Q2–Q4) ---------- */
+  function vRes(qn) {
+    const r = SIM.res[qn - 1];
+    const period = t(['q1Period', 'q2Period', 'q3Period', 'q4Period'][qn - 1]);
+    const notes = [];
+    const pts = { unfair: -5, discountBrand: -3, recogChamp: 3, recogLoyal: 2 };
+    if (qn === 3) { const tr = (E.EVENTS[SIM.event][S.q3.ev].mods || {}).trust; if (tr) notes.push([tr, T.notes[L()].event]); }
+    for (const k of r.notes) notes.push([pts[k], T.notes[L()][k]]);
+    const noteHtml = notes.length
+      ? notes.map(n => `<li><b class="${n[0] > 0 ? 'up' : 'down'}">${signed(n[0])} ${t('trustPts')}</b><span>${n[1]}</span></li>`).join('')
+      : `<li><b>0 ${t('trustPts')}</b><span>${T.notes[L()].none}</span></li>`;
+    const line = (label, v, cls) => `<tr${cls ? ` class="${cls}"` : ''}><th>${label}</th><td>${v}</td></tr>`;
+    return head(period, t('resTitle', qn)) + `
+      <div class="cols">
+        <section><h2>${t('pnlH')}</h2><div class="block scroll"><table class="data"><tbody>
+          ${line(t('pRevenue'), money(r.revenue))}
+          ${line(t('pMargin'), money(r.revenue * E.P.margin))}
+          ${line(t('pDiscount', nf(r.redeemed)), money(-r.discount))}
+          ${line(t('pPerk', nf(r.perks)), money(-r.perk))}
+          ${line(t('pMsg'), money(-r.msg))}
+          ${r.fixed ? line(t('pFixed'), money(-r.fixed)) : ''}
+          ${line(t('pProfit'), money(r.profit), 'total')}
+        </tbody></table></div></section>
+        <section><h2>${t('noticedH')}</h2><div class="block"><ul class="notes">${noteHtml}</ul></div>
+          <ul class="plain small" style="margin-top:.7rem">${qn === 3 ? `<li>${t('lnyNote')}</li>` : ''}<li>${t('joinNote', r.joiners)}</li></ul></section>
+      </div>
+      <h2>${t('segResH')}</h2>
+      <div class="block scroll"><table class="data">
+        <thead><tr><th>${t('cSeg')}</th><th class="l">${t('cOffer')}</th><th>${t('cMembers')}</th><th>${t('cTargeted')}</th><th>${t('cOrdered')}</th><th>${t('cRate')}</th><th>${t('cCost')}</th></tr></thead>
+        <tbody>${E.SEGS.map(s => { const x = r.seg[s]; return `<tr><th>${segName(s)}</th><td class="l">${tacName(r.alloc[s])}</td><td>${nf(x.n)}</td><td>${nf(x.targeted)}</td><td>${nf(x.buyers)}</td><td>${x.n ? pct(x.buyers / x.n) : '–'}</td><td>${nf(x.cost)}</td></tr>`; }).join('')}</tbody>
+      </table>${r.targeted && (SIM.w.filterSeasonal || r.test) ? `<p class="tfoot">${t('recvNote')}</p>` : ''}</div>
+      ${nextBtn(qn < 4 ? t('toQ', qn + 1) : t('toEnd'))}`;
+  }
+
+  /* ---------- debrief ---------- */
+  let REFS = null;
+  function refs() {
+    if (!REFS || REFS.key !== JSON.stringify([S.q1, S.q2, S.q3, S.q4, S.ex, S.seed])) {
+      REFS = { key: JSON.stringify([S.q1, S.q2, S.q3, S.q4, S.ex, S.seed]), runs: {} };
+      for (const k in REF_SPECS) REFS.runs[k] = autoPlay(REF_SPECS[k]);
+    }
+    return REFS.runs;
+  }
+  const zh = () => S.lang === 'zh';
+  const stop = () => (zh() ? '。' : '. ');
+  const colon = () => (zh() ? '：' : ': ');
+  const planText = a => E.SEGS.filter(s => a[s] !== 'none').map(s => `${segName(s)}${colon()}${tacName(a[s])}`).join(zh() ? '；' : '; ');
+  function pathItems() {
+    const ev = T.events[L()][SIM.event];
+    const q = T.qShort[L()];
+    return [
+      [q[0], t('pathQ1', T.q1Opts[L()][S.q1.list][0]), S.q1.why],
+      ['', t('pathOdd', S.ex.oddDone && S.ex.odd === ODD_ANSWER), ''],
+      [q[1], t('pathPlan', planText(S.q2.alloc)) + (S.q2.test ? stop() + t('pathTest') : ''), S.q2.why],
+      [q[2], t('pathEvent', ev.title, ev.opts[S.q3.ev][0]) + stop() + t('pathPlan', planText(S.q3.alloc)) + (S.q3.test ? stop() + t('pathTest') : ''), S.q3.why],
+      [q[3], t('pathPlan', planText(S.q4.alloc)), S.q4.why]
+    ];
+  }
+  function vEnd() {
+    const R = refs(), base = R.none, me = kpiOf(SIM.res);
+    const fin = (label, v, d, f) => `<div class="final"><div class="f-label">${label}</div><div class="f-val">${v}</div><div class="f-delta"><span class="${d > 0 ? 'up' : d < 0 ? 'down' : ''}">${f(d)}</span> ${t('vsNone')}</div></div>`;
+    const sgnMoney = d => (Math.round(d) > 0 ? '+' : Math.round(d) < 0 ? '−' : '') + 'NT$' + nf(Math.abs(d));
+    // would-have-ordered-anyway
+    const all = SIM.res, used = all.reduce((s, r) => s + r.buyersT, 0), any = all.reduce((s, r) => s + r.anywayT, 0), wasted = all.reduce((s, r) => s + r.wasted, 0);
+    const segAgg = {}; for (const s of E.SEGS) segAgg[s] = { t: 0, b: 0, a: 0 };
+    for (const r of all.slice(1)) for (const s of E.SEGS) { segAgg[s].t += r.seg[s].targeted; segAgg[s].b += r.seg[s].buyersT; segAgg[s].a += r.seg[s].anywayT; }
+    const anyRow = (label, x) => `<tr><th>${label}</th><td>${nf(x.t)}</td><td>${nf(x.b)}</td><td>${nf(x.a)}</td><td>${nf(x.b - x.a)}</td></tr>`;
+    const giftT = all.reduce((s, r) => s + r.seasonalTargeted, 0), giftC = all.reduce((s, r) => s + r.seasonalCost, 0);
+    const spotted = S.ex.oddDone && S.ex.odd === ODD_ANSWER;
+    // references table
+    const order = ['you', 'none', 'best', 'back', 'nurture', 'greedy'];
+    const k = { you: me }; for (const id in R) k[id] = R[id].kpi;
+    const bestOf = key => Math.max(...order.map(id => k[id][key]));
+    const cell = (id, key, f) => `<td class="${k[id][key] === bestOf(key) ? 'best' : ''}">${f(k[id][key])}</td>`;
+    const refRows = order.map(id => `<tr class="${id === 'you' ? 'you' : ''}"><th>${id === 'you' ? esc(S.team) : T.refs[L()][id][0]}${T.refs[L()][id][1] ? `<br><span class="small" style="font-weight:400;white-space:normal">${T.refs[L()][id][1]}</span>` : ''}</th>${cell(id, 'profit', money)}${cell(id, 'active', nf)}${cell(id, 'equity', money)}${cell(id, 'trust', nf)}</tr>`).join('');
+    const series = [
+      ['chProfit', SIM.res.map(r => r.profit), base.res.map(r => r.profit), true],
+      ['chActive', SIM.res.map(r => r.active), base.res.map(r => r.active), false],
+      ['chEquity', SIM.res.map(r => r.equity), base.res.map(r => r.equity), true],
+      ['chTrust', SIM.res.map(r => r.trust), base.res.map(r => r.trust), false]
+    ];
+    const tableTwin = `<div class="block scroll"><table class="data"><thead><tr><th></th>${T.qShort[L()].map(q => `<th>${q}</th>`).join('')}</tr></thead><tbody>
+      ${series.map(s => `<tr><th>${t(s[0])}, ${t('legYou')}</th>${s[1].map(v => `<td>${nf(v)}</td>`).join('')}</tr><tr><th>${t(s[0])}, ${t('legRef')}</th>${s[2].map(v => `<td>${nf(v)}</td>`).join('')}</tr>`).join('')}
+    </tbody></table></div>`;
+    return head(t('endPeriod'), t('endTitle', esc(S.team)), t('endLead')) + `
+      <div class="finals">
+        ${fin(t('kProfit'), money(me.profit), me.profit - base.kpi.profit, sgnMoney)}
+        ${fin(t('kActive'), nf(me.active), me.active - base.kpi.active, signed)}
+        ${fin(t('kEquity'), money(me.equity), me.equity - base.kpi.equity, sgnMoney)}
+        ${fin(t('kTrust'), nf(me.trust), me.trust - base.kpi.trust, signed)}
+      </div>
+      <h2>${t('chartsH')}</h2>
+      <div class="legend"><span><i></i>${t('legYou')}</span><span><i class="ref"></i>${t('legRef')}</span></div>
+      <div class="charts">${series.map((s, i) => `<div class="chart" id="chart${i}"><h3>${t(s[0])}</h3>${lineChart(s[1], s[2], i)}<div class="tip"></div></div>`).join('')}</div>
+      <details><summary>${t('asTable')}</summary>${tableTwin}</details>
+      <h2>${t('pathH')}</h2>
+      <div class="block"><ol class="path">${pathItems().map(p => `<li><b>${p[0]}</b><div>${esc(p[1])}${p[2] ? `<q>${esc(p[2])}</q>` : ''}</div></li>`).join('')}</ol></div>
+      <h2>${t('hiddenH')}</h2>
+      <div class="insights">
+        <div class="insight block pad"><h3>${t('anyH')}</h3><p>${used ? t('anyText', nf(used), nf(any), Math.round(100 * any / used), nf(wasted)) : t('anyNone')}</p>
+          <div class="scroll" style="margin:.8rem -1.15rem -1rem"><table class="data"><thead><tr><th></th><th>${t('aSent')}</th><th>${t('aOrdered')}</th><th>${t('aAnyway')}</th><th>${t('aExtra')}</th></tr></thead><tbody>
+            ${anyRow(t('aQ1Row'), { t: all[0].targeted, b: all[0].buyersT, a: all[0].anywayT })}
+            ${E.SEGS.map(s => anyRow(t('aSegRow', segName(s)), segAgg[s])).join('')}
+          </tbody></table></div></div>
+        <div class="insight block pad"><h3>${t('giftH')}</h3><p>${t('giftText', E.seasonalCount(SIM.w), spotted, nf(giftT), nf(giftC))}</p></div>
+        <div class="insight block pad"><h3>${t('depH')}</h3><p>${t('depText', E.dependents(SIM.w), E.dependents(base.w))}</p></div>
+      </div>
+      <h2>${t('refH')}</h2><p class="sub">${t('refSub')}</p>
+      <div class="block scroll"><table class="data"><thead><tr><th>${t('refCol')}</th><th>${t('kProfit')}</th><th>${t('kActive')}</th><th>${t('kEquity')}</th><th>${t('kTrust')}</th></tr></thead><tbody>${refRows}</tbody></table></div>
+      <h2>${t('qsH')}</h2>
+      <ol class="qs">${T.qs[L()].map(q => `<li>${q}</li>`).join('')}</ol>
+      <div class="endbar"><button type="button" class="btn-plain" data-act="copy">${t('copy')}</button><span class="msg" role="status" aria-live="polite" style="color:var(--ink-2)"></span></div>
+      <textarea id="sumtext" class="sr" aria-hidden="true" tabindex="-1" readonly></textarea>
+      <details><summary>${t('teachH')}</summary><ul class="plain" style="max-width:74ch">${T.teach[L()].map(x => `<li>${x}</li>`).join('')}</ul></details>`;
+  }
+  function summaryText() {
+    const R = refs(), me = kpiOf(SIM.res), b = R.none.kpi;
+    const c = colon(), comma = zh() ? '、' : ', ';
+    const lines = [`${t('title')} | ${t('sumTeam')}${c}${S.team}`];
+    for (const p of pathItems()) lines.push(`${p[0] ? p[0] + c : '    '}${p[1]}${p[2] ? `\n    ${t('sumWhy')}${c}${p[2]}` : ''}`);
+    lines.push(`${t('sumResult')}${c}` + [`${t('kProfit')} ${money(me.profit)} (${signed(me.profit - b.profit)})`, `${t('kActive')} ${nf(me.active)} (${signed(me.active - b.active)})`, `${t('kEquity')} ${money(me.equity)} (${signed(me.equity - b.equity)})`, `${t('kTrust')} ${nf(me.trust)} (${signed(me.trust - b.trust)})`].join(comma));
+    lines.push(zh() ? `括號內為${t('vsNone')}的差距。` : `Figures in brackets are ${t('vsNone')}.`);
+    return lines.join('\n');
+  }
+
+  /* ---------- line chart: your team vs no campaigns ---------- */
+  const CH = { w: 380, h: 190, l: 50, r: 60, t: 12, b: 26 };
+  function niceTicks(lo, hi) {
+    if (lo === hi) { lo -= 1; hi += 1; }
+    const span = hi - lo, raw = span / 3, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => s >= raw) || raw;
+    const a = Math.floor(lo / step) * step, out = [];
+    for (let v = a; v <= hi + step * 0.999; v += step) out.push(+v.toFixed(6));
+    return out;
+  }
+  function lineChart(you, ref) {
+    const ticks = niceTicks(Math.min(...you, ...ref), Math.max(...you, ...ref));
+    const lo = ticks[0], hi = ticks[ticks.length - 1];
+    const X = i => CH.l + i * (CH.w - CH.l - CH.r) / 3;
+    const Y = v => CH.t + (hi - v) / (hi - lo) * (CH.h - CH.t - CH.b);
+    const path = a => a.map((v, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join('');
+    const dots = (a, c) => a.map((v, i) => `<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="4" fill="${c}" stroke="#fff" stroke-width="2"/>`).join('');
+    const yl = Y(you[3]), rl = Y(ref[3]), apart = Math.abs(yl - rl) >= 13;
+    const bw = (CH.w - CH.l - CH.r) / 3;
+    return `<svg viewBox="0 0 ${CH.w} ${CH.h}" role="img">
+      ${ticks.map(v => `<line x1="${CH.l}" x2="${CH.w - CH.r}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="#E6EBE4" stroke-width="1"/><text x="${CH.l - 8}" y="${(Y(v) + 4).toFixed(1)}" text-anchor="end">${fmtAxis(v)}</text>`).join('')}
+      ${T.qShort[L()].map((q, i) => `<text x="${X(i).toFixed(1)}" y="${CH.h - 6}" text-anchor="middle">${q}</text>`).join('')}
+      <line class="cross" x1="0" x2="0" y1="${CH.t}" y2="${CH.h - CH.b}" stroke="#6F7C75" stroke-width="1" visibility="hidden"/>
+      <path d="${path(ref)}" fill="none" stroke="#8A918C" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+      ${dots(ref, '#8A918C')}
+      <path d="${path(you)}" fill="none" stroke="#2A78D6" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+      ${dots(you, '#2A78D6')}
+      <text class="end" x="${X(3) + 9}" y="${(yl + 4).toFixed(1)}">${fmtAxis(you[3])}</text>
+      ${apart ? `<text x="${X(3) + 9}" y="${(rl + 4).toFixed(1)}">${fmtAxis(ref[3])}</text>` : ''}
+      ${you.map((v, i) => `<rect class="band" x="${(X(i) - bw / 2).toFixed(1)}" y="0" width="${bw.toFixed(1)}" height="${CH.h}" fill="transparent" tabindex="0" data-i="${i}" data-x="${X(i).toFixed(1)}" data-you="${nf(v)}" data-ref="${nf(ref[i])}" aria-label="${T.qShort[L()][i]}: ${t('legYou')} ${nf(v)}, ${t('legRef')} ${nf(ref[i])}"/>`).join('')}
+    </svg>`;
+  }
+  function bindCharts() {
+    app.querySelectorAll('.chart').forEach(ch => {
+      const tip = ch.querySelector('.tip'), cross = ch.querySelector('.cross');
+      const show = b => {
+        const x = +b.dataset.x;
+        cross.setAttribute('x1', x); cross.setAttribute('x2', x); cross.setAttribute('visibility', 'visible');
+        tip.textContent = '';
+        const head = document.createElement('div'); head.textContent = T.qShort[L()][+b.dataset.i]; tip.appendChild(head);
+        [['', b.dataset.you, t('legYou')], ['ref', b.dataset.ref, t('legRef')]].forEach(r => {
+          const row = document.createElement('div'), k = document.createElement('i'), v = document.createElement('b');
+          if (r[0]) k.className = r[0]; v.textContent = r[1]; row.appendChild(k); row.appendChild(v); row.appendChild(document.createTextNode(' ' + r[2])); tip.appendChild(row);
+        });
+        tip.style.display = 'block';
+      };
+      const hide = () => { tip.style.display = 'none'; cross.setAttribute('visibility', 'hidden'); };
+      ch.querySelectorAll('.band').forEach(b => {
+        b.addEventListener('pointerenter', () => show(b)); b.addEventListener('focus', () => show(b));
+        b.addEventListener('pointerleave', hide); b.addEventListener('blur', hide);
+      });
+    });
+  }
+
+  /* ---------- render ---------- */
+  function stage() {
+    switch (S.step) {
+      case 'intro': return vIntro();
+      case 'q1': return vQ1();
+      case 'q1r': return vQ1r();
+      case 'q2x': return vQ2x();
+      case 'q2': return vPlan(2);
+      case 'q2r': return vRes(2);
+      case 'q3': return vPlan(3);
+      case 'q3r': return vRes(3);
+      case 'q4': return vPlan(4);
+      case 'q4r': return vRes(4);
+      default: return vEnd();
+    }
+  }
+  function render(keepScroll) {
+    const y = window.scrollY;
+    SIM = simulate();
+    document.documentElement.lang = S.lang === 'zh' ? 'zh-Hant' : 'en';
+    document.title = `${t('pageTitle')} | ${t('brand')}`;
+    app.innerHTML = top() + rail() + (S.step === 'intro' || S.step === 'end' ? '' : kpis()) + `<main>${stage()}</main><footer>${S.step === 'intro' ? '' : `<p>${t('fictional')}</p>`}<p><a href="../../index.html">${t('backChapter')}</a>　｜　<a href="../../../index.html">${t('backHome')}</a></p></footer>`;
+    UI.armed = null;
+    if (S.step === 'end') bindCharts();
+    if (keepScroll) window.scrollTo(0, y);
+    else { window.scrollTo(0, 0); const h = app.querySelector('h1'); if (h && S.step !== 'intro') h.focus({ preventScroll: true }); }
+  }
+  function go(step) { S.step = step; UI.msg = ''; save(); render(false); }
+  function setMsg(el, text) { UI.msg = text; const m = el.closest('.commit') && el.closest('.commit').querySelector('.msg'); if (m) m.textContent = text; }
+  function disarm() {
+    if (!UI.armed) return;
+    const b = app.querySelector(`[data-act="${UI.armed}"]`);
+    if (b) { b.classList.remove('armed'); b.textContent = b.dataset.label; }
+    UI.armed = null;
+  }
+  // first press arms the button, second press commits
+  function twoStep(btn, act) {
+    if (UI.armed === act) { UI.armed = null; return true; }
+    disarm(); UI.armed = act; btn.classList.add('armed'); btn.textContent = btn.dataset.arm; return false;
+  }
+  function setPath(path, value) {
+    const k = path.split('.'); let o = S;
+    for (let i = 0; i < k.length - 1; i++) o = o[k[i]];
+    o[k[k.length - 1]] = value;
+  }
+
+  app.addEventListener('click', ev => {
+    const btn = ev.target.closest('[data-act]');
+    if (!btn) { if (!ev.target.closest('input,select,textarea,label')) disarm(); return; }
+    const act = btn.dataset.act;
+    if (act !== UI.armed) disarm();
+    if (act === 'lang') { S.lang = btn.dataset.v; save(); render(true); return; }
+    if (act === 'restart') { if (twoStep(btn, act)) { try { localStorage.removeItem(LS_KEY); } catch (e) { /* nothing saved */ } const lang = S.lang; S = fresh(); S.lang = lang; REFS = null; render(false); } return; }
+    if (act === 'start') { if (!S.team.trim()) return setMsg(btn, t('needTeam')); S.team = S.team.trim(); return go('q1'); }
+    if (act === 'sort') { UI.sort = btn.dataset.v; render(true); return; }
+    if (act === 'next') return go(STEPS[stepIdx(S.step) + 1]);
+    if (act === 'excheck') { S.ex.checked = true; save(); render(true); return; }
+    if (act === 'copy') {
+      const text = summaryText(), msg = btn.parentElement.querySelector('.msg');
+      const done = () => { msg.textContent = t('copied'); };
+      const fallback = () => { const ta = document.getElementById('sumtext'); ta.classList.remove('sr'); ta.removeAttribute('aria-hidden'); ta.style.cssText = 'display:block;width:100%;min-height:11rem;margin-top:.8rem'; ta.value = text; ta.select(); msg.textContent = t('copyFail'); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+      return;
+    }
+    if (act === 'lock:odd') {
+      if (S.ex.odd == null) return setMsg(btn, t('needOdd'));
+      if (twoStep(btn, act)) { S.ex.oddDone = true; UI.msg = ''; save(); render(true); }
+      return;
+    }
+    if (act.startsWith('lock:q')) {
+      const qn = +act.slice(6), d = S['q' + qn];
+      if (qn === 1 && !d.list) return setMsg(btn, t('needChoice'));
+      if (qn === 3 && d.ev == null) return setMsg(btn, t('needEvent'));
+      if (qn > 1) { const i = planInfo(qn); if (i.over) return setMsg(btn, t('over', nf(i.total - i.budget))); }
+      if (!d.why.trim()) return setMsg(btn, t('needWhy'));
+      setMsg(btn, '');
+      if (twoStep(btn, act)) go('q' + qn + 'r');
+    }
+  });
+  function onField(ev) {
+    const el = ev.target;
+    if (el.dataset.bind) {
+      let v = el.value;
+      if (el.dataset.bind === 'ex.odd') v = +v;
+      setPath(el.dataset.bind, v); save();
+      if (ev.type === 'change') disarm();
+      return;
+    }
+    if (ev.type !== 'change') return;
+    disarm();
+    const qn = +S.step.slice(1);
+    if (el.dataset.alloc) { S['q' + qn].alloc[el.dataset.alloc] = el.value; save(); refreshBudget(qn); return; }
+    if (el.dataset.test) { S[el.dataset.test].test = el.checked; save(); refreshBudget(qn); return; }
+    if (el.dataset.ev) {
+      const d = S.q3, prev = d.ev != null ? E.EVENTS[SIM.event][d.ev].lock : {};
+      for (const s in prev) d.alloc[s] = 'none';
+      d.ev = +el.dataset.ev; Object.assign(d.alloc, E.EVENTS[SIM.event][d.ev].lock);
+      save(); UI.msg = ''; render(true);
+      const again = app.querySelector(`[data-ev="${d.ev}"]`); if (again) again.focus({ preventScroll: true });
+    }
+  }
+  function refreshBudget(qn) {
+    const b = document.getElementById('budget'); if (b) b.innerHTML = budgetHtml(qn);
+    const m = app.querySelector('.commit .msg'); if (m) m.textContent = ''; UI.msg = '';
+  }
+  app.addEventListener('input', onField);
+  app.addEventListener('change', onField);
+
+  render(false);
+  window.__game = { get state() { return S; }, get sim() { return SIM; } };   // for the console and for tests
+})();
+</script>
+</body>
+</html>

@@ -15,7 +15,7 @@ This website is for teaching the Big Data & Data Science course at National Taiw
 - [航空公司生存戰：預測維護 / Airline Survival: Predictive Maintenance](https://reagan-cheng.github.io/big-data-data-science/chapter-01/games/airline-survival/)
 - [第二章｜大數據行銷 / Chapter 2 | Big Data in Marketing](https://reagan-cheng.github.io/big-data-data-science/chapter-02/)
 - [旅人人格測驗 / Traveler Personality Quiz](https://traveler-classroom-lab.herrowa.chatgpt.site/)（外部網站 / hosted externally）
-- [最後一張優惠券 / The Last Coupon](https://last-coupon-rfm.herrowa.chatgpt.site/)（外部網站 / hosted externally）
+- [最後一張優惠券 / The Last Coupon](https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/last-coupon/)
 - [動態標籤實戰 / Dynamic Labels in Action](https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/dynamic-labels/)
 
 首頁提供課程首頁與各章的 QR Code；各章頁面提供該章每個活動的 QR Code，皆可下載 PNG 圖片。
@@ -28,8 +28,13 @@ The home page carries QR Codes for the course home and each chapter; each chapte
 第一章的四個互動遊戲分別位於 chapter-01/games/ 下的 titanic、predpol、decision-lab、airline-survival。
 四個遊戲 HTML 與提供的原始 ZIP 完全一致，保留原有遊戲邏輯與語言功能。
 
-第二章有三個活動：旅人人格測驗與最後一張優惠券仍放在各自的 ChatGPT Sites 網站，第二章頁面以外部連結開啟；
+第二章有三個活動：旅人人格測驗仍放在自己的 ChatGPT Sites 網站，第二章頁面以外部連結開啟；
+最後一張優惠券位於 chapter-02/games/last-coupon/，右上角可切換中文與英文；
 動態標籤實戰位於 chapter-02/games/dynamic-labels/，中英文同時顯示。
+
+最後一張優惠券是單一 index.html，內含三段程式：ENGINE（顧客模擬模型，參數集中在開頭的 P 物件）、COPY（全部中英文文字）、APP（畫面與流程）。
+網址後加 ?seed=7 可換一批模擬會員，?lang=zh 或 ?lang=en 指定首次開啟的語言，?reset=1 清除該裝置上的進度。
+模型邏輯與建議的時間分配寫在遊戲結算頁最下方「給授課教師的說明」。
 
 首頁及各章頁面支援繁體中文 / English 切換。
 

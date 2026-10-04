@@ -61,15 +61,15 @@
     <article class="game">
       <div class="num">ACTIVITY 02</div>
       <h2 id="g2Title">最後一張優惠券</h2>
-      <p id="g2Desc">扮演咖啡品牌的 CRM 團隊：先為 12 位顧客計算 R、F、M，再經營四個季度，決定把有限預算花在哪一群顧客，觀察回應率、真正增量與長期顧客資產。</p>
+      <p id="g2Desc">扮演咖啡品牌的 CRM 團隊：先親手替 6 位會員做 RFM 分群，再經營四個季度，決定把有限預算花在哪些分群、要發折價券還是寄體驗禮，觀察下單比例、真正多出的購買者與長期顧客資產。</p>
       <div class="game-meta">
         <span class="tag" data-zh="RFM" data-en="RFM">RFM</span>
         <span class="tag" data-zh="顧客分群與行銷決策" data-en="Segmentation & Marketing Decisions">顧客分群與行銷決策</span>
         <span class="tag" data-zh="繁體中文／English" data-en="繁體中文／English">繁體中文／English</span>
       </div>
-      <p class="hint" id="g2Note">公開活動：學生可直接開啟遊戲，或掃描 QR Code 進入。</p>
+      <p class="hint" id="g2Note">公開活動：學生可直接開啟遊戲，或掃描 QR Code 進入。建議每組共用一台裝置；同樣的決定一定得到同樣的結果，方便各組比較。</p>
       <div class="urlbox" id="url2"></div>
-      <div class="qr-code" data-qr-path="https://last-coupon-rfm.herrowa.chatgpt.site/">
+      <div class="qr-code" data-qr-path="/chapter-02/games/last-coupon/">
         <img class="qr-image" src="../assets/qr/last-coupon.png" width="192" height="192" alt="最後一張優惠券 QR Code" data-qr-zh="最後一張優惠券 QR Code" data-qr-en="The Last Coupon QR Code">
         <div>
           <div data-qr-zh="掃描後直接進入遊戲" data-qr-en="Scan to open the game directly" class="qr-help">掃描後直接進入遊戲</div>
@@ -77,7 +77,7 @@
         </div>
       </div>
       <div class="actions">
-        <a class="button" href="https://last-coupon-rfm.herrowa.chatgpt.site/" target="_blank" rel="noopener" id="open2">開啟遊戲</a>
+        <a class="button" href="games/last-coupon/" target="_blank" id="open2">開啟遊戲</a>
         <button class="button secondary" type="button" data-copy="2" id="copy2">複製網址</button>
       </div>
     </article>
@@ -123,7 +123,7 @@
 const COUNT=3;
 const paths=[
  "https://traveler-classroom-lab.herrowa.chatgpt.site/",
- "https://last-coupon-rfm.herrowa.chatgpt.site/",
+ "games/last-coupon/",
  "games/dynamic-labels/"
 ];
 function gameUrl(i){ return new URL(paths[i-1], window.location.href).href; }
@@ -145,8 +145,8 @@ zh:{
  teacherNote:"教師使用方式：每個活動都有獨立網址。上課時建議直接把指定活動的網址做成 QR Code，學生掃描後會直接進入該活動，不需要先經過本頁。",
  g1Title:"旅人人格測驗",g1Desc:"一場雙語旅行風格體驗：完成問卷，取得旅人故事卡，再查看平台如何使用資料與推論。",
  g1Note:"活動答案與操作紀錄只留在自己的瀏覽器，不傳給教師或此課程總站。",
- g2Title:"最後一張優惠券",g2Desc:"扮演咖啡品牌的 CRM 團隊：先為 12 位顧客計算 R、F、M，再經營四個季度，決定把有限預算花在哪一群顧客，觀察回應率、真正增量與長期顧客資產。",
- g2Note:"公開活動：學生可直接開啟遊戲，或掃描 QR Code 進入。",
+ g2Title:"最後一張優惠券",g2Desc:"扮演咖啡品牌的 CRM 團隊：先親手替 6 位會員做 RFM 分群，再經營四個季度，決定把有限預算花在哪些分群、要發折價券還是寄體驗禮，觀察下單比例、真正多出的購買者與長期顧客資產。",
+ g2Note:"公開活動：學生可直接開啟遊戲，或掃描 QR Code 進入。建議每組共用一台裝置；同樣的決定一定得到同樣的結果，方便各組比較。",
  g3Title:"動態標籤實戰",g3Desc:"扮演咖啡品牌的會員行銷經理：系統每週依最新的購買行為替會員重新貼標籤，你要替每一種標籤選擇活動、經營八週，體驗標籤如何跟著行為改變。",
  g3Note:"公開活動：學生可直接開啟遊戲，或掃描 QR Code 進入。同樣的決定一定得到同樣的結果，方便全班比較做法。",
  open1:"開啟活動",open2:"開啟遊戲",open3:"開啟遊戲",copy:"複製網址",qrTitle:"QR Code 圖片下載",
@@ -158,8 +158,8 @@ en:{
  teacherNote:"Instructor use: each activity has its own direct URL. In class, provide the QR code for the specific activity so students enter it directly without browsing this page first.",
  g1Title:"Traveler Personality Quiz",g1Desc:"A bilingual travel-style experience: complete the questionnaire, receive your traveler story card, then see how the platform uses the data and what it infers.",
  g1Note:"Answers and activity records stay in your own browser. They are not sent to the instructor or to this course site.",
- g2Title:"The Last Coupon",g2Desc:"Play the CRM team of a coffee brand: compute R, F, and M for 12 customers, then run four quarters, deciding which customer group gets the limited budget while watching response rate, true incremental lift, and long-term customer equity.",
- g2Note:"Public activity: students can open the game directly or scan the QR code.",
+ g2Title:"The Last Coupon",g2Desc:"Play the CRM team of a coffee brand: sort six members into RFM segments by hand, then run four quarters, deciding which segments get the limited budget and whether they get a coupon or a sample box, while watching the share who order, the buyers each offer really adds, and long-term customer equity.",
+ g2Note:"Public activity: students can open the game directly or scan the QR code. One device per team works best; the same decisions always give the same result, so teams can compare.",
  g3Title:"Dynamic Labels in Action",g3Desc:"Play the membership marketing manager of a coffee brand: every week the system re-labels members from their latest purchase behavior. Choose a campaign for each label, run eight weeks, and see how labels move with behavior.",
  g3Note:"Public activity: students can open the game directly or scan the QR code. The same decisions always give the same result, so the class can compare approaches.",
  open1:"Open Activity",open2:"Open Game",open3:"Open Game",copy:"Copy URL",qrTitle:"Download QR Code Images",
