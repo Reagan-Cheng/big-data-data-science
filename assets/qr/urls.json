@@ -40,5 +40,35 @@
     "zh": "航空公司生存戰：預測維護",
     "en": "Airline Survival: Predictive Maintenance",
     "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-01/games/airline-survival/"
+  },
+  {
+    "file": "chapter-02",
+    "path": "/chapter-02/",
+    "zh": "第二章｜大數據行銷",
+    "en": "Chapter 2 | Big Data in Marketing",
+    "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-02/"
+  },
+  {
+    "file": "traveler",
+    "path": "https://traveler-classroom-lab.herrowa.chatgpt.site/",
+    "zh": "旅人人格測驗",
+    "en": "Traveler Personality Quiz",
+    "url": "https://traveler-classroom-lab.herrowa.chatgpt.site/",
+    "external": true
+  },
+  {
+    "file": "last-coupon",
+    "path": "https://last-coupon-rfm.herrowa.chatgpt.site/",
+    "zh": "最後一張優惠券",
+    "en": "The Last Coupon",
+    "url": "https://last-coupon-rfm.herrowa.chatgpt.site/",
+    "external": true
+  },
+  {
+    "file": "dynamic-labels",
+    "path": "/chapter-02/games/dynamic-labels/",
+    "zh": "動態標籤實戰",
+    "en": "Dynamic Labels in Action",
+    "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/dynamic-labels/"
   }
 ]
