@@ -49,20 +49,6 @@
     "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-02/"
   },
   {
-    "file": "traveler",
-    "path": "/chapter-02/games/traveler/",
-    "zh": "旅人人格測驗",
-    "en": "Traveler Personality Quiz",
-    "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/traveler/"
-  },
-  {
-    "file": "last-coupon",
-    "path": "/chapter-02/games/last-coupon/",
-    "zh": "最後一張優惠券",
-    "en": "The Last Coupon",
-    "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/last-coupon/"
-  },
-  {
     "file": "dynamic-labels",
     "path": "/chapter-02/games/dynamic-labels/",
     "zh": "動態標籤實戰",
@@ -75,5 +61,19 @@
     "zh": "直接用，還是先問為什麼？",
     "en": "Apply It, or Ask Why?",
     "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/apply-or-ask-why/"
+  },
+  {
+    "file": "traveler",
+    "path": "/chapter-02/games/traveler/",
+    "zh": "旅人人格測驗",
+    "en": "Traveler Personality Quiz",
+    "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/traveler/"
+  },
+  {
+    "file": "last-coupon",
+    "path": "/chapter-02/games/last-coupon/",
+    "zh": "最後一張優惠券",
+    "en": "The Last Coupon",
+    "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/last-coupon/"
   }
 ]

@@ -14,10 +14,10 @@ This website is for teaching the Big Data & Data Science course at National Taiw
 - [大數據決策實驗室 / Big Data Decision Lab](https://reagan-cheng.github.io/big-data-data-science/chapter-01/games/decision-lab/)
 - [航空公司生存戰：預測維護 / Airline Survival: Predictive Maintenance](https://reagan-cheng.github.io/big-data-data-science/chapter-01/games/airline-survival/)
 - [第二章｜大數據行銷 / Chapter 2 | Big Data in Marketing](https://reagan-cheng.github.io/big-data-data-science/chapter-02/)
-- [旅人人格測驗 / Traveler Personality Quiz](https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/traveler/)
-- [最後一張優惠券 / The Last Coupon](https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/last-coupon/)
 - [動態標籤實戰 / Dynamic Labels in Action](https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/dynamic-labels/)
 - [直接用，還是先問為什麼？ / Apply It, or Ask Why?](https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/apply-or-ask-why/)
+- [旅人人格測驗 / Traveler Personality Quiz](https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/traveler/)
+- [最後一張優惠券 / The Last Coupon](https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/last-coupon/)
 
 首頁提供課程首頁與各章的 QR Code；各章頁面提供該章每個活動的 QR Code，皆可下載 PNG 圖片。
 The home page carries QR Codes for the course home and each chapter; each chapter page carries the QR Codes for its own activities. All can be downloaded as PNG.
