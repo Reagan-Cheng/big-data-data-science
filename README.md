@@ -34,9 +34,16 @@ The home page carries QR Codes for the course home and each chapter; each chapte
 動態標籤實戰位於 chapter-02/games/dynamic-labels/，中英文同時顯示；
 「直接用，還是先問為什麼？」位於 chapter-02/games/apply-or-ask-why/，中英文同時顯示，對應講義 Causation vs. Correlation 一頁，約 10 分鐘。
 
-最後一張優惠券是單一 index.html，內含三段程式：ENGINE（顧客模擬模型，參數集中在開頭的 P 物件）、COPY（全部中英文文字）、APP（畫面與流程）。
+最後一張優惠券的遊戲本體是 index.html，內含三段程式：ENGINE（顧客模擬模型，參數集中在開頭的 P 物件）、COPY（全部中英文文字）、APP（畫面與流程）。
 網址後加 ?seed=7 可換一批模擬會員，?lang=zh 或 ?lang=en 指定首次開啟的語言，?reset=1 清除該裝置上的進度。
 模型邏輯與建議的時間分配寫在遊戲結算頁最下方「給授課教師的說明」。
+
+最後一張優惠券的班級模式（教師看各組分數與回答、由教師開放下一季）：
+- 教師頁：chapter-02/games/last-coupon/teacher.html。在這裡自訂班級代碼、取得學生用的網址與 QR Code、查看各季各組的決定、回答與四個數字，並按「開放」讓各組進入下一季。
+- 學生從 `?class=班級代碼` 的網址進入才會啟用班級模式；直接開啟遊戲則是單機模式，不會送出任何資料。
+- 資料存在教師自己的 Google 試算表。後端程式是 chapter-02/games/last-coupon/backend/Code.gs，貼進該試算表的 Apps Script 後部署為網頁應用程式（執行身分：我；誰可以存取：所有人）。詳細步驟寫在教師頁。
+- 部署後的網址（結尾 /exec）填在 chapter-02/games/last-coupon/config.js 的 syncUrl。留空時班級模式不啟用。
+- 修改 Code.gs 之後，要在 Apps Script 重新「管理部署作業 → 編輯 → 新版本」才會生效。
 
 首頁及各章頁面支援繁體中文 / English 切換。
 

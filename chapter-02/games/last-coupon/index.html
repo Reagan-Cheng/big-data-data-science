@@ -330,11 +330,24 @@ ol.qs li{margin:.5rem 0}
 .endbar{margin-top:2.2rem;display:flex;gap:.8rem;flex-wrap:wrap;align-items:center}
 footer{max-width:var(--wrap);margin:0 auto;padding:0 var(--gutter) 2.5rem;font-size:.82rem;color:var(--ink-3)}
 footer p{margin:.3rem 0}
+
+/* ---------- class mode ---------- */
+.sync{font-size:.8rem;color:var(--ink-2);white-space:nowrap;margin-right:.3rem}
+.sync.err{color:var(--bad)}
+@media(max-width:620px){.sync{display:none}}
+.wait{margin-top:1.4rem;padding:1rem 1.15rem;border:1px dashed var(--ink-3);border-radius:6px;background:var(--surface);max-width:46rem}
+.wait strong{display:block;font-family:var(--display);font-size:1.1rem}
+.wait span{display:block;color:var(--ink-2);margin-top:.2rem}
+.wait .commit{margin-top:.8rem}
+.answer{margin-top:1.2rem;max-width:74ch}
+.answer .field:first-of-type{margin-top:.6rem}
 </style>
 </head>
 <body>
 <div id="app"></div>
 <noscript><p style="padding:2rem;font-family:sans-serif">This game needs JavaScript. 這個遊戲需要啟用 JavaScript。</p></noscript>
+<!-- Class mode is switched on in config.js. Without it the game runs on its own. -->
+<script src="config.js"></script>
 <script>
 /* ============================================================
    ENGINE — The Last Coupon (RFM simulation)
@@ -756,6 +769,7 @@ const T = {
 
   backChapter: ['Back to Chapter 2', '返回第二章'],
   backHome: ['Back to course home', '返回課程首頁'],
+  teacherPage: ['Instructor page', '教師頁'],
 
   rail: [['Brief', 'Q1', 'Q2', 'Q3', 'Q4', 'Debrief'], ['任務說明', '第一季', '第二季', '第三季', '第四季', '結算']],
 
@@ -824,7 +838,32 @@ const T = {
   start: ['Start Q1', '開始第一季'],
 
   /* ---------- shared decision UI ---------- */
-  whyLabel: ['Your reasoning, in one sentence', '用一句話寫下你們的理由'],
+  whyQ: [[
+    'Why these 300? Answer in one sentence.',
+    'Which segment did you leave out, and why?',
+    'Why this response? Who in your team disagreed?',
+    'With 30% less to spend, what did you cut first, and why?'
+  ], [
+    '為什麼是這 300 人？用一句話回答。',
+    '你們放棄了哪一群會員？為什麼？',
+    '為什麼這樣回應？組內誰不同意？',
+    '預算少了三成，你們先砍掉什麼？為什麼？'
+  ]],
+  clsLabel: ['Class', '班級'],
+  clsNotice: [c => `You are playing with class ${c}. Each time you lock in a quarter, your decision, your answer and your four numbers go to your instructor. After each quarter you wait until the instructor opens the next one.`, c => `你們加入的是班級 ${c}。每一季鎖定後，你們的決定、回答和四個數字會送給老師。每季結束後，要等老師開放才能進入下一季。`],
+  syncPending: ['sending', '傳送中'],
+  syncRetry: ['not sent yet, retrying', '尚未送出，會自動重試'],
+  waitTitle: [n => n === 5 ? 'Waiting for your instructor to open the debrief' : `Waiting for your instructor to open Q${n}`, n => `等待老師開放${['', '', '第二季', '第三季', '第四季', '結算'][n]}`],
+  waitText: ['Your decision has been recorded. This page checks every few seconds and will let you continue as soon as it is open.', '你們的決定已經記錄。這個頁面每隔幾秒會自動檢查，開放後就能繼續。'],
+  waitOffline: ['This page cannot reach the class server. Check the connection. If your instructor says so, you can continue without waiting.', '這個頁面連不上課堂伺服器，請檢查網路。如果老師同意，可以不等待直接繼續。'],
+  recheck: ['Check again', '重新檢查'],
+  bypass: ['Continue without waiting', '不等待，直接繼續'],
+  ansH: ['Answer one question for your instructor', '回答一題給老師'],
+  ansPick: ['Question', '題目'],
+  ansLabel: ['Your team’s answer', '你們的回答'],
+  ansSend: ['Send to the instructor', '送出給老師'],
+  ansSent: ['Sent. You can edit it and send again.', '已送出。可以修改後再送一次。'],
+  ansNeed: ['Write an answer first.', '請先寫下回答。'],
   whyPh: ['We chose this because…', '我們這樣選，是因為⋯⋯'],
   needWhy: ['Write one sentence of reasoning before you lock in.', '鎖定前請先寫下一句理由。'],
   needChoice: ['Pick one option first.', '請先選一個方案。'],
@@ -1174,7 +1213,8 @@ const T = {
     'The Q3 event depends on the Q2 plan. Win-back coupons with nothing for Champions bring the loyalty penalty; coupons for Champions bring the coupon habit; nothing for New members brings the second-order cliff; anything else brings the rival.',
     'About 35 members buy only before Lunar New Year, which falls in Q3.',
     'The same decisions always give the same result, so teams can be compared. Add ?seed=7 to the address for a different member base, and ?lang=en or ?lang=zh to set the language.',
-    'Suggested timing: brief 5 minutes, Q1 5, Q2 12, Q3 10, Q4 6, debrief 10.'
+    'Suggested timing: brief 5 minutes, Q1 5, Q2 12, Q3 10, Q4 6, debrief 10.',
+    'Class mode: on the instructor page you choose a class code and get a link for students. Their decisions, answers and numbers then appear on that page each quarter, and each team waits until you open the next quarter. In class mode the Start over button is hidden; add ?reset=1 to the link if a team has to begin again.'
   ], [
     '每位會員都有一個隱藏的「投入程度」。下單會讓它上升，一整季沒下單會讓它下降。',
     '折價券或體驗禮對「中間」的會員最有效。冠軍客本來就會買，久未下單的會員則很少回應。',
@@ -1184,7 +1224,8 @@ const T = {
     '第三季的事件取決於第二季的方案：發挽回券但冠軍客什麼都沒有，出現「忠誠的懲罰」；發券給冠軍客，出現「被養成的習慣」；新客什麼都沒有，出現「第二單的懸崖」；其他情況則是「對手進場」。',
     '約有 35 位會員只在農曆年前下單，而農曆年落在第三季。',
     '相同的決定一定得到相同的結果，方便各組互相比較。在網址後面加上 ?seed=7 可以換一批會員，加上 ?lang=en 或 ?lang=zh 可以指定語言。',
-    '建議時間：任務說明 5 分鐘、第一季 5、第二季 12、第三季 10、第四季 6、結算 10。'
+    '建議時間：任務說明 5 分鐘、第一季 5、第二季 12、第三季 10、第四季 6、結算 10。',
+    '班級模式：在教師頁自訂班級代碼，取得學生用的網址。之後每一季各組的決定、回答和數字都會出現在教師頁，各組要等您開放才能進入下一季。班級模式下不顯示「重新開始」；如果某一組必須重來，請在網址後面加上 ?reset=1。'
   ]],
   sumTeam: ['Team', '隊名'],
   sumDecisions: ['Decisions', '決定'],
@@ -1208,6 +1249,14 @@ const T = {
   const qs = new URLSearchParams(location.search);
   const SEED = qs.has('seed') && /^\d+$/.test(qs.get('seed')) ? parseInt(qs.get('seed'), 10) : E.P.seed;
   const ODD_ANSWER = 2;                                   // Mrs. Lin
+  // Class mode: config.js holds the address of the instructor's Google Sheet backend,
+  // and the link students open carries ?class=CODE. Without both, the game runs on its own.
+  const CFG = window.LAST_COUPON_CONFIG || {};
+  const SYNC_URL = /^https?:\/\//.test(CFG.syncUrl || '') ? CFG.syncUrl : '';
+  const normClass = v => String(v || '').toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 20);
+  const URL_CLASS = SYNC_URL ? normClass(qs.get('class')) : '';
+  const NEED = { q1r: 2, q2r: 3, q3r: 4, q4r: 5 };        // stage the instructor must open before leaving each results page
+  const POLL_MS = +CFG.pollMs || 6000;
   const Q_START = ['2026-07-01', '2026-10-01', '2027-01-01', '2027-04-01'];
   const PEOPLE = [
     { last: '2026-09-22', orders: 22, spend: 21400, tl: [2, 3, 3, 2, 3, 3, 3, 3] },
@@ -1233,9 +1282,17 @@ const T = {
     if (q === 'en' || q === 'zh') return q;
     return /^zh/i.test(navigator.language || '') ? 'zh' : 'en';
   }
+  // One id per device, so a team that starts over replaces its own rows in the instructor's sheet
+  function deviceId() {
+    const make = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+    try { let id = localStorage.getItem(LS_KEY + '.tid'); if (!id) { id = make(); localStorage.setItem(LS_KEY + '.tid', id); } return id; }
+    catch (e) { return make(); }
+  }
   function fresh() {
     return {
       v: 1, seed: SEED, lang: initialLang(), team: '', step: 'intro',
+      cls: URL_CLASS, tid: deviceId(), out: [],
+      end: { q: 0, a: '', sent: false },
       q1: { list: null, why: '' },
       ex: { ans: {}, checked: false, odd: null, oddDone: false },
       q2: { alloc: noneAlloc(), test: false, why: '' },
@@ -1248,13 +1305,15 @@ const T = {
       if (qs.has('reset')) { localStorage.removeItem(LS_KEY); return null; }
       const s = JSON.parse(localStorage.getItem(LS_KEY) || 'null');
       if (!s || s.v !== 1 || s.seed !== SEED || !STEPS.includes(s.step)) return null;
-      return s;
+      if (URL_CLASS && s.cls !== URL_CLASS) return null;           // a class link always starts that class's game
+      return Object.assign(fresh(), s);
     } catch (e) { return null; }
   }
   function save() { try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) { /* private mode: play on without saving */ } }
   let S = load() || fresh();
   let SIM = null;
-  const UI = { sort: 'm', armed: null, msg: '' };
+  const UI = { sort: 'm', armed: null, msg: '', gate: null, gateFails: 0, bypass: false, nextLabel: '', timer: null, syncErr: false };
+  const classMode = () => !!(SYNC_URL && S.cls);
 
   /* ---------- formatting ---------- */
   const L = () => (S.lang === 'zh' ? 1 : 0);
@@ -1344,16 +1403,93 @@ const T = {
   const hasTestInfo = qn => (qn === 3 && S.q2.test) || (qn === 4 && (S.q2.test || S.q3.test));
   const canTest = qn => qn === 2 || (qn === 3 && !S.q2.test);
 
+  /* ---------- class mode: send decisions, wait for the instructor ---------- */
+  async function api(method, payload) {
+    let r;
+    if (method === 'GET') r = await fetch(SYNC_URL + '?' + new URLSearchParams(payload), { cache: 'no-store' });
+    else r = await fetch(SYNC_URL, { method: 'POST', body: JSON.stringify(payload) });   // sent as text/plain, which Apps Script accepts without a preflight
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || 'refused');
+    return j;
+  }
+  let flushing = false;
+  async function flush() {
+    if (!classMode() || flushing || !S.out.length) return;
+    flushing = true;
+    try {
+      while (S.out.length) {
+        const j = await api('POST', S.out[0]);
+        S.out.shift(); save();
+        if (j.open != null) setGate(j.open);
+      }
+      UI.syncErr = false;
+    } catch (e) { UI.syncErr = true; }
+    flushing = false; updateSync();
+  }
+  function queue(p) {
+    if (!classMode()) return;
+    S.out = S.out.filter(x => x.stage !== p.stage); S.out.push(p); save(); updateSync(); flush();
+  }
+  function setGate(n) { if (n !== UI.gate) { UI.gate = n; updateWait(); } }
+  async function checkGate() {
+    if (!classMode()) return;
+    try { const j = await api('GET', { action: 'gate', cls: S.cls }); UI.gateFails = 0; setGate(j.open); }
+    catch (e) { UI.gateFails++; }
+    updateWait(); flush();
+  }
+  const gateOpen = () => { const need = NEED[S.step]; return !classMode() || !need || UI.bypass || (UI.gate != null && UI.gate >= need); };
+  function poll() {
+    clearTimeout(UI.timer);
+    if (!classMode() || !NEED[S.step] || gateOpen()) return;
+    UI.timer = setTimeout(async () => { await checkGate(); poll(); }, POLL_MS + Math.random() * 1500);
+  }
+  function syncText() {
+    if (!classMode()) return '';
+    return `${t('clsLabel')} ${S.cls}` + (S.out.length ? `, ${t(UI.syncErr ? 'syncRetry' : 'syncPending')}` : '');
+  }
+  function updateSync() { const el = document.getElementById('sync'); if (el) { el.textContent = syncText(); el.classList.toggle('err', UI.syncErr && S.out.length > 0); } }
+  function gateHtml() {
+    if (gateOpen()) return nextBtn(UI.nextLabel);
+    const need = NEED[S.step], off = UI.gateFails >= 3;
+    return `<div class="wait" role="status" aria-live="polite"><strong>${t('waitTitle', need)}</strong><span>${t(off ? 'waitOffline' : 'waitText')}</span>
+      <div class="commit"><button type="button" class="btn-ghost" data-act="recheck">${t('recheck')}</button>${off ? `<button type="button" class="btn-ghost" data-act="bypass">${t('bypass')}</button>` : ''}</div></div>`;
+  }
+  function gateBtn(label) { UI.nextLabel = label; return `<div id="gatebox">${gateHtml()}</div>`; }
+  function updateWait() { const box = document.getElementById('gatebox'); if (box) box.innerHTML = gateHtml(); if (gateOpen()) clearTimeout(UI.timer); }
+  // What the instructor's sheet receives. Always written in Chinese so the sheet reads the same whatever language a team plays in.
+  const zh1 = (key, ...a) => { const v = T[key][1]; return typeof v === 'function' ? v(...a) : v; };
+  const planZh = al => E.SEGS.filter(s => al[s] !== 'none').map(s => `${T.seg[1][s][0]}：${zh1(al[s] === 'perk' ? 'tPerk' : 'tCoupon')}`).join('；') || '沒有對任何人發優惠';
+  function payloadFor(stage) {
+    const base = { action: 'submit', cls: S.cls, team: S.team, tid: S.tid, stage, lang: S.lang };
+    if (stage === 'end') {
+      const k = kpiOf(SIM.res);
+      return Object.assign(base, { text: T.qs[1][S.end.q], why: S.end.a, pc: k.profit, active: k.active, equity: k.equity, trust: k.trust, d: JSON.stringify({ q: S.end.q }) });
+    }
+    const qn = +stage.slice(1), r = SIM.res[qn - 1], d = S['q' + qn];
+    let text, code;
+    if (qn === 1) { text = '折價券發給：' + T.q1Opts[1][d.list][0]; code = { list: d.list }; }
+    else {
+      text = planZh(d.alloc) + (d.test ? '。做了對照組測試' : ''); code = { alloc: d.alloc, test: !!d.test };
+      if (qn === 2) {
+        const right = PEOPLE.filter((_, i) => S.ex.ans[i] === person(i).seg).length, spotted = S.ex.oddDone && S.ex.odd === ODD_ANSWER;
+        text += `。親手分群答對 ${right}／6；${spotted ? '看出' : '沒看出'}年節送禮型會員`; code.ex = { right, spotted };
+      }
+      if (qn === 3) { const ev = T.events[1][SIM.event]; text = `事件「${ev.title}」：${ev.opts[d.ev][0]}。` + text; code.ev = SIM.event; code.opt = d.ev; }
+    }
+    return Object.assign(base, { text, why: d.why, pq: r.profit, pc: SIM.res.slice(0, qn).reduce((s, x) => s + x.profit, 0), active: r.active, equity: r.equity, trust: r.trust, d: JSON.stringify(code) });
+  }
+
   /* ---------- chrome ---------- */
   function top() {
     return `<header class="top">
       <div class="brand">${t('brand')}<small>${t('desk')}</small></div>
       <div class="top-actions">
+        ${classMode() ? `<span class="sync${UI.syncErr && S.out.length ? ' err' : ''}" id="sync">${esc(syncText())}</span>` : ''}
         <div class="lang" role="group" aria-label="Language / 語言">
           <button type="button" data-act="lang" data-v="en" aria-pressed="${S.lang === 'en'}">EN</button>
           <button type="button" data-act="lang" data-v="zh" aria-pressed="${S.lang === 'zh'}">中文</button>
         </div>
-        ${S.step !== 'intro' ? `<button type="button" class="quiet" data-act="restart" data-label="${esc(t('restart'))}" data-arm="${esc(t('restartArm'))}">${t('restart')}</button>` : ''}
+        ${S.step !== 'intro' && !classMode() ? `<button type="button" class="quiet" data-act="restart" data-label="${esc(t('restart'))}" data-arm="${esc(t('restartArm'))}">${t('restart')}</button>` : ''}
       </div>
     </header>`;
   }
@@ -1376,7 +1512,7 @@ const T = {
     </section>`;
   }
   const head = (period, title, text) => `<p class="period">${period}</p><h1 class="stage-title" tabindex="-1">${title}</h1>${text ? `<p class="lede">${text}</p>` : ''}`;
-  const whyField = key => `<label class="field"><span>${t('whyLabel')}</span><textarea data-bind="${key}.why" maxlength="240" placeholder="${esc(t('whyPh'))}">${esc(S[key].why)}</textarea></label>`;
+  const whyField = key => `<label class="field"><span>${T.whyQ[L()][+key.slice(1) - 1]}</span><textarea data-bind="${key}.why" maxlength="240" placeholder="${esc(t('whyPh'))}">${esc(S[key].why)}</textarea></label>`;
   const commit = (act, label) => `<div class="commit"><button type="button" class="btn-ticket" data-act="${act}" data-label="${esc(label)}" data-arm="${esc(t('confirm'))}">${label}</button><span class="msg" role="status" aria-live="polite">${esc(UI.msg)}</span></div>`;
   const nextBtn = (label) => `<div class="commit"><button type="button" class="btn-plain" data-act="next">${label}</button></div>`;
 
@@ -1396,6 +1532,7 @@ const T = {
         <section><h2>${t('scoreH')}</h2>${dl(T.score[L()])}</section>
         <section><h2>${t('toolsH')}</h2>${dl(T.tools[L()])}</section>
       </div>
+      ${classMode() ? `<p class="callout">${t('clsNotice', esc(S.cls))}</p>` : ''}
       <label class="field narrow"><span>${t('teamLabel')}</span><input type="text" data-bind="team" maxlength="40" value="${esc(S.team)}" placeholder="${esc(t('teamPh'))}" autocomplete="off"></label>
       <div class="commit"><button type="button" class="btn-plain" data-act="start">${t('start')}</button><span class="msg" role="status" aria-live="polite">${esc(UI.msg)}</span></div>`;
   }
@@ -1428,7 +1565,7 @@ const T = {
     return head(t('q1Period'), t('q1ResTitle')) + `<div style="margin-top:1.4rem">` + tiles([
       [t('tSent'), nf(r.coupons)], [t('tRedeemed'), nf(r.redeemed), p + '%'], [t('tRevenue'), money(r.revenue)],
       [t('tCampaign'), money(r.campaign)], [t('tProfit'), money(r.profit)]
-    ]) + `</div><p class="callout">${t('q1Comment', p)}</p>${r.active < SIM.start.active ? `<p class="callout">${t('q1Active', nf(SIM.start.active - r.active))}</p>` : ''}` + nextBtn(t('toQ', 2));
+    ]) + `</div><p class="callout">${t('q1Comment', p)}</p>${r.active < SIM.start.active ? `<p class="callout">${t('q1Active', nf(SIM.start.active - r.active))}</p>` : ''}` + gateBtn(t('toQ', 2));
   }
 
   /* ---------- RFM exercise ---------- */
@@ -1609,7 +1746,7 @@ const T = {
         <thead><tr><th>${t('cSeg')}</th><th class="l">${t('cOffer')}</th><th>${t('cMembers')}</th><th>${t('cTargeted')}</th><th>${t('cOrdered')}</th><th>${t('cRate')}</th><th>${t('cCost')}</th></tr></thead>
         <tbody>${E.SEGS.map(s => { const x = r.seg[s]; return `<tr><th>${segName(s)}</th><td class="l">${tacName(r.alloc[s])}</td><td>${nf(x.n)}</td><td>${nf(x.targeted)}</td><td>${nf(x.buyers)}</td><td>${x.n ? pct(x.buyers / x.n) : '–'}</td><td>${nf(x.cost)}</td></tr>`; }).join('')}</tbody>
       </table>${r.targeted && (SIM.w.filterSeasonal || r.test) ? `<p class="tfoot">${t('recvNote')}</p>` : ''}</div>
-      ${nextBtn(qn < 4 ? t('toQ', qn + 1) : t('toEnd'))}`;
+      ${gateBtn(qn < 4 ? t('toQ', qn + 1) : t('toEnd'))}`;
   }
 
   /* ---------- debrief ---------- */
@@ -1689,6 +1826,10 @@ const T = {
       <div class="block scroll"><table class="data"><thead><tr><th>${t('refCol')}</th><th>${t('kProfit')}</th><th>${t('kActive')}</th><th>${t('kEquity')}</th><th>${t('kTrust')}</th></tr></thead><tbody>${refRows}</tbody></table></div>
       <h2>${t('qsH')}</h2>
       <ol class="qs">${T.qs[L()].map(q => `<li>${q}</li>`).join('')}</ol>
+      ${classMode() ? `<div class="block pad answer"><h3>${t('ansH')}</h3>
+        <label class="field"><span>${t('ansPick')}</span><select data-bind="end.q">${T.qs[L()].map((q, i) => `<option value="${i}"${S.end.q === i ? ' selected' : ''}>${i + 1}. ${q}</option>`).join('')}</select></label>
+        <label class="field"><span>${t('ansLabel')}</span><textarea data-bind="end.a" maxlength="400">${esc(S.end.a)}</textarea></label>
+        <div class="commit"><button type="button" class="btn-plain" data-act="sendend">${t('ansSend')}</button><span class="msg" role="status" aria-live="polite" style="color:var(--ink-2)">${S.end.sent ? t('ansSent') : ''}</span></div></div>` : ''}
       <div class="endbar"><button type="button" class="btn-plain" data-act="copy">${t('copy')}</button><span class="msg" role="status" aria-live="polite" style="color:var(--ink-2)"></span></div>
       <textarea id="sumtext" class="sr" aria-hidden="true" tabindex="-1" readonly></textarea>
       <details><summary>${t('teachH')}</summary><ul class="plain" style="max-width:74ch">${T.teach[L()].map(x => `<li>${x}</li>`).join('')}</ul></details>`;
@@ -1778,13 +1919,15 @@ const T = {
     SIM = simulate();
     document.documentElement.lang = S.lang === 'zh' ? 'zh-Hant' : 'en';
     document.title = `${t('pageTitle')} | ${t('brand')}`;
-    app.innerHTML = top() + rail() + (S.step === 'intro' || S.step === 'end' ? '' : kpis()) + `<main>${stage()}</main><footer>${S.step === 'intro' ? '' : `<p>${t('fictional')}</p>`}<p><a href="../../index.html">${t('backChapter')}</a>　｜　<a href="../../../index.html">${t('backHome')}</a></p></footer>`;
+    app.innerHTML = top() + rail() + (S.step === 'intro' || S.step === 'end' ? '' : kpis()) + `<main>${stage()}</main><footer>${S.step === 'intro' ? '' : `<p>${t('fictional')}</p>`}<p><a href="../../index.html">${t('backChapter')}</a>　｜　<a href="../../../index.html">${t('backHome')}</a>　｜　<a href="teacher.html">${t('teacherPage')}</a></p></footer>`;
     UI.armed = null;
     if (S.step === 'end') bindCharts();
+    clearTimeout(UI.timer);
+    if (classMode()) { if (NEED[S.step] && !gateOpen()) checkGate().then(poll); else flush(); }
     if (keepScroll) window.scrollTo(0, y);
     else { window.scrollTo(0, 0); const h = app.querySelector('h1'); if (h && S.step !== 'intro') h.focus({ preventScroll: true }); }
   }
-  function go(step) { S.step = step; UI.msg = ''; save(); render(false); }
+  function go(step) { S.step = step; UI.msg = ''; UI.bypass = false; UI.gateFails = 0; save(); render(false); }
   function setMsg(el, text) { UI.msg = text; const m = el.closest('.commit') && el.closest('.commit').querySelector('.msg'); if (m) m.textContent = text; }
   function disarm() {
     if (!UI.armed) return;
@@ -1812,7 +1955,14 @@ const T = {
     if (act === 'restart') { if (twoStep(btn, act)) { try { localStorage.removeItem(LS_KEY); } catch (e) { /* nothing saved */ } const lang = S.lang; S = fresh(); S.lang = lang; REFS = null; render(false); } return; }
     if (act === 'start') { if (!S.team.trim()) return setMsg(btn, t('needTeam')); S.team = S.team.trim(); return go('q1'); }
     if (act === 'sort') { UI.sort = btn.dataset.v; render(true); return; }
-    if (act === 'next') return go(STEPS[stepIdx(S.step) + 1]);
+    if (act === 'next') { if (!gateOpen()) return; return go(STEPS[stepIdx(S.step) + 1]); }
+    if (act === 'recheck') { checkGate().then(poll); return; }
+    if (act === 'bypass') { UI.bypass = true; updateWait(); return; }
+    if (act === 'sendend') {
+      const msg = btn.parentElement.querySelector('.msg');
+      if (!S.end.a.trim()) { msg.textContent = t('ansNeed'); return; }
+      S.end.sent = true; save(); queue(payloadFor('end')); msg.textContent = t('ansSent'); return;
+    }
     if (act === 'excheck') { S.ex.checked = true; save(); render(true); return; }
     if (act === 'copy') {
       const text = summaryText(), msg = btn.parentElement.querySelector('.msg');
@@ -1833,14 +1983,14 @@ const T = {
       if (qn > 1) { const i = planInfo(qn); if (i.over) return setMsg(btn, t('over', nf(i.total - i.budget))); }
       if (!d.why.trim()) return setMsg(btn, t('needWhy'));
       setMsg(btn, '');
-      if (twoStep(btn, act)) go('q' + qn + 'r');
+      if (twoStep(btn, act)) { go('q' + qn + 'r'); queue(payloadFor('q' + qn)); }
     }
   });
   function onField(ev) {
     const el = ev.target;
     if (el.dataset.bind) {
       let v = el.value;
-      if (el.dataset.bind === 'ex.odd') v = +v;
+      if (el.dataset.bind === 'ex.odd' || el.dataset.bind === 'end.q') v = +v;
       setPath(el.dataset.bind, v); save();
       if (ev.type === 'change') disarm();
       return;
@@ -1866,7 +2016,7 @@ const T = {
   app.addEventListener('change', onField);
 
   render(false);
-  window.__game = { get state() { return S; }, get sim() { return SIM; } };   // for the console and for tests
+  window.__game = { get state() { return S; }, get sim() { return SIM; }, get ui() { return UI; } };   // for the console and for tests
 })();
 </script>
 </body>

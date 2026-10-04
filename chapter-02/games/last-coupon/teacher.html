@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>最後一張優惠券｜教師頁</title>
+<meta name="robots" content="noindex">
+<!-- ============================================================
+     最後一張優惠券｜教師頁
+     看各組每一季的分數與回答，並決定何時開放下一季。
+     資料存在教師自己的 Google 試算表，連線位址寫在 config.js。
+     ============================================================ -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Instrument+Sans:wght@400..700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --paper:#F1F4EE;--surface:#FFFFFF;--ink:#16201B;--ink-2:#47544D;--ink-3:#6F7C75;--line:#D3DAD2;--line-2:#E6EBE4;
+  --accent:#1E6B55;--accent-deep:#104435;--accent-wash:#E1EEE8;--stamp:#C4352B;--stamp-deep:#9C261E;--stamp-wash:#FBEAE7;--good:#0B7A0B;--bad:#B42B2B;
+  --display:"Bricolage Grotesque","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --body:"Instrument Sans","Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --gutter:clamp(1rem,3vw,2.25rem);
+}
+*{box-sizing:border-box}
+html{font-size:106.25%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);line-height:1.7;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--display);font-weight:700;line-height:1.3;margin:0}
+p{margin:0}
+button,input,select{font:inherit;color:inherit}
+a{color:var(--accent-deep)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+[hidden]{display:none!important}
+.top{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;flex-wrap:wrap;padding:.8rem var(--gutter);background:var(--surface);border-bottom:1px solid var(--line)}
+.top h1{font-size:1.15rem}
+.top h1 small{font-family:var(--body);font-weight:400;font-size:.84rem;color:var(--ink-3);margin-left:.6rem}
+.top nav{font-size:.9rem;display:flex;gap:1.1rem;flex-wrap:wrap}
+main{padding:1.4rem var(--gutter) 4rem;max-width:92rem;margin:0 auto}
+h2{font-size:1.25rem;margin:0 0 .7rem}
+section{margin-top:1.8rem}
+section:first-child{margin-top:0}
+.block{background:var(--surface);border:1px solid var(--line);border-radius:6px}
+.pad{padding:1rem 1.15rem}
+.small{font-size:.86rem;color:var(--ink-3)}
+.row{display:flex;gap:.7rem 1rem;flex-wrap:wrap;align-items:flex-end}
+label.f{display:block}
+label.f span{display:block;font-size:.88rem;font-weight:600;margin-bottom:.2rem}
+input[type=text],input[type=password]{border:1px solid var(--ink-3);border-radius:5px;padding:.5rem .65rem;background:var(--surface);width:12rem;max-width:100%}
+.btn{border:0;cursor:pointer;background:var(--ink);color:#fff;font-family:var(--display);font-weight:700;padding:.6rem 1.2rem;border-radius:5px}
+.btn:hover{background:var(--accent-deep)}
+.btn.go{background:var(--stamp)}
+.btn.go:hover{background:var(--stamp-deep)}
+.btn.armed{background:var(--ink)}
+.btn[disabled]{background:#B9C0BA;cursor:not-allowed}
+.ghost{border:1px solid var(--ink-3);cursor:pointer;background:transparent;font-weight:600;padding:.5rem 1rem;border-radius:5px}
+.ghost:hover{border-color:var(--ink);background:var(--surface)}
+.msg{font-size:.92rem;font-weight:500}
+.msg.bad{color:var(--bad)}
+.msg.good{color:var(--good)}
+ol.setup{margin:.4rem 0 0;padding-left:1.4rem;max-width:74ch}
+ol.setup li{margin:.55rem 0}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.9em;background:var(--line-2);padding:.05rem .3rem;border-radius:3px}
+.grid2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:.8rem}
+@media(max-width:900px){.grid2{grid-template-columns:minmax(0,1fr)}}
+/* stage rail */
+.stages{list-style:none;margin:.2rem 0 1rem;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:.4rem}
+.stages li{border-top:4px solid var(--line-2);padding-top:.45rem;min-width:0}
+.stages li.open{border-top-color:var(--accent)}
+.stages li.cur{border-top-color:var(--ink)}
+.stages b{display:block;font-family:var(--display)}
+.stages span{display:block;font-size:.82rem;color:var(--ink-3)}
+.stages li.open span,.stages li.cur span{color:var(--ink-2)}
+/* entry */
+.entry{display:grid;grid-template-columns:auto minmax(0,1fr);gap:1rem;align-items:center}
+.entry .qr{width:132px;height:132px}
+.entry .qr svg{display:block;width:100%;height:100%}
+.url{font-size:.92rem;word-break:break-all;background:var(--line-2);border-radius:4px;padding:.4rem .55rem;margin:.3rem 0 .5rem}
+/* board */
+.tabs{display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:.6rem}
+.tabs button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:.3rem .95rem;cursor:pointer;font-size:.94rem}
+.tabs button[aria-selected="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tabs button i{font-style:normal;font-size:.82rem;opacity:.75;margin-left:.3rem}
+.ask{font-size:1.02rem;margin:.2rem 0 .7rem;max-width:70ch}
+.ask b{font-family:var(--display)}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+th,td{padding:.6rem .75rem;border-top:1px solid var(--line-2);text-align:right;vertical-align:top;font-variant-numeric:tabular-nums;white-space:nowrap}
+thead th{border-top:0;font-size:.84rem;color:var(--ink-2);font-weight:600;vertical-align:bottom}
+th:first-child,td:first-child{text-align:left;padding-left:1.15rem}
+td:last-child,th:last-child{padding-right:1.15rem}
+tbody th{font-weight:700;font-family:var(--display)}
+td.t,th.t{text-align:left;white-space:normal;min-width:15rem;max-width:30rem;line-height:1.55}
+td.why{font-size:1.02rem;color:var(--ink)}
+td.dec{color:var(--ink-2)}
+td.best{font-weight:700}
+td.best::after{content:"";display:inline-block;width:.45rem;height:.45rem;border-radius:50%;background:var(--accent);margin-left:.4rem;vertical-align:.08em}
+tr.pending th,tr.pending td{color:var(--ink-3);font-weight:400}
+.foot{display:flex;gap:.6rem 1.2rem;flex-wrap:wrap;align-items:center;margin-top:.7rem}
+details{margin-top:1.8rem}
+summary{cursor:pointer;font-weight:600;color:var(--accent-deep)}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>最後一張優惠券<small>教師頁</small></h1>
+  <nav><a href="./" target="_blank" rel="noopener">開啟遊戲（單機）</a><a href="../../index.html">返回第二章</a></nav>
+</header>
+<main>
+
+  <section id="needSetup" hidden>
+    <h2>還沒有連上試算表</h2>
+    <p style="max-width:70ch">這一頁要連到您自己的 Google 試算表，才能收到各組的決定並控制放行。設定只需要做一次，之後每個班級、每個學期都用同一份試算表。</p>
+    <div class="block pad" style="margin-top:.8rem">
+      <ol class="setup" id="setupSteps"></ol>
+    </div>
+  </section>
+
+  <section id="login" hidden>
+    <h2>連線到班級</h2>
+    <form class="row" id="loginForm">
+      <label class="f"><span>班級代碼</span><input type="text" id="cls" maxlength="20" placeholder="例如 A1" autocomplete="off" required></label>
+      <label class="f"><span>教師密碼</span><input type="password" id="key" autocomplete="off" required></label>
+      <button class="btn" type="submit">連線</button>
+      <span class="msg" id="loginMsg" role="status" aria-live="polite"></span>
+    </form>
+    <p class="small" style="margin-top:.6rem;max-width:74ch">班級代碼由您自訂，只能用英文字母、數字、底線與連字號；換一個代碼就是一個全新的班級。教師密碼在試算表的「設定」分頁，第一次連線後會自動產生。</p>
+  </section>
+
+  <div id="live" hidden>
+    <section class="grid2">
+      <div class="block pad">
+        <h2>放行</h2>
+        <ol class="stages" id="stages"></ol>
+        <div class="row">
+          <button class="btn go" type="button" id="openNext"></button>
+          <button class="ghost" type="button" id="openBack">收回一個階段</button>
+          <span class="msg" id="gateMsg" role="status" aria-live="polite"></span>
+        </div>
+        <p class="small" style="margin-top:.6rem">各組鎖定一季後會停在結果頁，等您按下開放才能進入下一階段。學生端大約每 6 秒檢查一次。</p>
+      </div>
+      <div class="block pad">
+        <h2>學生入口</h2>
+        <div class="entry">
+          <div class="qr" id="qr" role="img" aria-label="學生入口 QR Code"></div>
+          <div>
+            <div class="small">班級 <b id="clsName"></b> 的學生請掃描或開啟這個網址</div>
+            <div class="url" id="url"></div>
+            <button class="ghost" type="button" id="copyUrl">複製網址</button>
+            <button class="ghost" type="button" id="leave">換班級</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>各組的分數與回答</h2>
+      <div class="tabs" id="tabs" role="tablist"></div>
+      <p class="ask" id="ask"></p>
+      <div class="block scroll"><table id="board"><thead></thead><tbody></tbody></table></div>
+      <div class="foot">
+        <span class="small" id="stamp" role="status"></span>
+        <button class="ghost" type="button" id="pause">暫停自動更新</button>
+        <span class="small">圓點標示該欄最高的一組。完整紀錄在試算表的「各組提交」分頁。</span>
+      </div>
+    </section>
+  </div>
+
+  <details id="setupAgain" hidden>
+    <summary>試算表後端的設定步驟</summary>
+    <div class="block pad" style="margin-top:.6rem"><ol class="setup" id="setupSteps2"></ol></div>
+  </details>
+</main>
+
+<script src="config.js"></script>
+<script src="../../../assets/vendor/qrcode.js"></script>
+<script>
+(() => {
+  'use strict';
+  const CFG = window.LAST_COUPON_CONFIG || {};
+  const SYNC_URL = /^https?:\/\//.test(CFG.syncUrl || '') ? CFG.syncUrl : '';
+  const LS = 'lastcoupon.teacher';
+  const $ = id => document.getElementById(id);
+  const STAGE = ['q1', 'q2', 'q3', 'q4', 'end'];
+  const NAME = ['第一季', '第二季', '第三季', '第四季', '結算'];
+  const ASK = [
+    '為什麼是這 300 人？',
+    '你們放棄了哪一群會員？為什麼？',
+    '為什麼這樣回應？組內誰不同意？',
+    '預算少了三成，你們先砍掉什麼？為什麼？',
+    '各組自選一題課堂討論題作答。'
+  ];
+  const state = { cls: '', key: '', open: 1, rows: [], tab: 0, paused: false, timer: null, armed: null, busy: false, pinned: false };
+  const nf = n => (n === '' || n == null || isNaN(Number(n))) ? '–' : Math.round(Number(n)).toLocaleString('en-US');
+  const normClass = v => String(v || '').toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 20);
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+
+  /* ---------- setup steps (shown until config.js has an address) ---------- */
+  function setupSteps(ol) {
+    const steps = [
+      ['用個人 Gmail 帳號開一份新的 Google 試算表。在瀏覽器網址列輸入 ', ['code', 'sheets.new'], ' 最快。學校帳號有時不允許對外公開，學生會連不上。'],
+      ['在試算表選單按「擴充功能 → Apps Script」，把編輯器裡原有的內容全部刪掉，貼上後端程式碼。', ['copy', '複製後端程式碼']],
+      ['按右上角「部署 → 新增部署作業」，類型選「網頁應用程式」，執行身分選「我」，誰可以存取選「所有人」，再按「部署」。第一次會要求授權，請依畫面同意。'],
+      ['複製畫面上的「網頁應用程式」網址（結尾是 ', ['code', '/exec'], '），貼進這個資料夾的 ', ['code', 'config.js'], ' 裡 ', ['code', "syncUrl: ''"], ' 的引號中，再推送到 GitHub。'],
+      ['回到這一頁，輸入任意班級代碼和任意密碼按一次「連線」。這時試算表會出現「設定」分頁，裡面就是教師密碼。']
+    ];
+    ol.textContent = '';
+    for (const parts of steps) {
+      const li = el('li');
+      for (const p of parts) {
+        if (typeof p === 'string') li.appendChild(document.createTextNode(p));
+        else if (p[0] === 'code') li.appendChild(el('code', '', p[1]));
+        else {
+          const b = el('button', 'ghost', p[1]); b.type = 'button'; b.style.marginLeft = '.4rem';
+          const m = el('span', 'msg', ''); m.style.marginLeft = '.5rem';
+          b.addEventListener('click', async () => {
+            try {
+              const code = await (await fetch('backend/Code.gs', { cache: 'no-store' })).text();
+              await navigator.clipboard.writeText(code); m.className = 'msg good'; m.textContent = '已複製，可以貼到 Apps Script';
+            } catch (e) { m.className = 'msg bad'; m.textContent = '無法自動複製，請直接開啟 backend/Code.gs'; window.open('backend/Code.gs', '_blank', 'noopener'); }
+          });
+          li.appendChild(b); li.appendChild(m);
+        }
+      }
+      ol.appendChild(li);
+    }
+  }
+
+  /* ---------- talking to the sheet ---------- */
+  async function call(payload) {
+    const r = await fetch(SYNC_URL, { method: 'POST', body: JSON.stringify(Object.assign({ cls: state.cls, key: state.key }, payload)) });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || 'refused');
+    return j;
+  }
+  function take(j) { state.open = j.open; state.rows = j.rows || []; if (!state.pinned) state.tab = Math.min(4, state.open - 1); draw(); $('stamp').textContent = '最後更新 ' + new Date().toLocaleTimeString('zh-TW', { hour12: false }); }
+  async function refresh() {
+    if (state.busy) return;
+    try { take(await call({ action: 'board' })); $('gateMsg').textContent = ''; }
+    catch (e) { $('stamp').textContent = '更新失敗，稍後自動重試'; }
+  }
+  function loop() {
+    clearTimeout(state.timer);
+    if (state.paused || !state.cls) return;
+    state.timer = setTimeout(async () => { if (document.visibilityState === 'visible') await refresh(); loop(); }, 5000);
+  }
+
+  /* ---------- drawing ---------- */
+  function teams() {
+    const map = new Map();
+    for (const r of state.rows) { const x = map.get(r.tid); if (!x || r.t > x.t) map.set(r.tid, { tid: r.tid, team: r.team, t: r.t }); }
+    return [...map.values()].sort((a, b) => a.team.localeCompare(b.team, 'zh-Hant', { numeric: true }));
+  }
+  function draw() {
+    const all = teams(), n = all.length;
+    const done = STAGE.map(s => state.rows.filter(r => r.stage === s).length);
+    // stage rail
+    const st = $('stages'); st.textContent = '';
+    NAME.forEach((name, i) => {
+      const li = el('li', i + 1 < state.open ? 'open' : i + 1 === state.open ? 'cur' : '');
+      li.appendChild(el('b', '', name));
+      li.appendChild(el('span', '', i + 1 <= state.open ? '已開放' : '尚未開放'));
+      if (n) li.appendChild(el('span', '', `${i === 4 ? '已回答' : '已鎖定'} ${done[i]}／${n} 組`));
+      st.appendChild(li);
+    });
+    const next = $('openNext');
+    next.dataset.label = state.open >= 5 ? '已全部開放' : '開放' + NAME[state.open];
+    next.textContent = state.armed === 'next' ? `確認開放${NAME[state.open]}` : next.dataset.label;
+    next.classList.toggle('armed', state.armed === 'next');
+    next.disabled = state.open >= 5;
+    $('openBack').disabled = state.open <= 1;
+    // tabs
+    const tabs = $('tabs'); tabs.textContent = '';
+    NAME.forEach((name, i) => {
+      const b = el('button', '', name); b.type = 'button'; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', String(state.tab === i));
+      b.appendChild(el('i', '', `${done[i]}／${n}`));
+      b.addEventListener('click', () => { state.tab = i; state.pinned = true; draw(); });
+      tabs.appendChild(b);
+    });
+    // board
+    const i = state.tab, end = i === 4, stage = STAGE[i];
+    const ask = $('ask'); ask.textContent = ''; ask.appendChild(el('b', '', end ? '結算問答：' : '本季提問：')); ask.appendChild(document.createTextNode(ASK[i]));
+    const head = $('board').querySelector('thead'), body = $('board').querySelector('tbody');
+    const cols = end ? [['pc', '累計利潤'], ['active', '活躍會員'], ['equity', '顧客資產'], ['trust', '品牌信任']]
+                     : [['pq', '本季利潤'], ['pc', '累計利潤'], ['active', '活躍會員'], ['equity', '顧客資產'], ['trust', '品牌信任']];
+    head.textContent = ''; body.textContent = '';
+    const hr = el('tr'); hr.appendChild(el('th', '', '隊名')); hr.appendChild(el('th', 't', end ? '選的題目' : '決定')); hr.appendChild(el('th', 't', '回答'));
+    cols.forEach(c => hr.appendChild(el('th', '', c[1]))); head.appendChild(hr);
+    const got = new Map(state.rows.filter(r => r.stage === stage).map(r => [r.tid, r]));
+    const best = {}; cols.forEach(c => { const v = [...got.values()].map(r => Number(r[c[0]])).filter(x => !isNaN(x)); best[c[0]] = v.length > 1 && Math.min(...v) < Math.max(...v) ? Math.max(...v) : null; });
+    if (!n) { const tr = el('tr', 'pending'); const td = el('td', 't', '還沒有任何一組送出資料。學生用上方的網址進入後，鎖定第一季就會出現在這裡。'); td.colSpan = cols.length + 3; tr.appendChild(td); body.appendChild(tr); return; }
+    for (const tm of all) {
+      const r = got.get(tm.tid), tr = el('tr', r ? '' : 'pending');
+      tr.appendChild(el('th', '', r ? r.team : tm.team));
+      if (!r) { const td = el('td', 't', end ? '尚未回答' : '尚未鎖定'); td.colSpan = cols.length + 2; tr.appendChild(td); }
+      else {
+        tr.appendChild(el('td', 't dec', r.text)); tr.appendChild(el('td', 't why', r.why));
+        cols.forEach(c => tr.appendChild(el('td', best[c[0]] != null && Number(r[c[0]]) === best[c[0]] ? 'best' : '', nf(r[c[0]]))));
+      }
+      body.appendChild(tr);
+    }
+  }
+  function entry() {
+    const url = new URL('.', location.href).href + '?class=' + encodeURIComponent(state.cls);
+    $('clsName').textContent = state.cls; $('url').textContent = url;
+    try { const q = qrcode(0, 'M'); q.addData(url, 'Byte'); q.make(); $('qr').innerHTML = q.createSvgTag({ cellSize: 4, margin: 2, scalable: true }); }
+    catch (e) { $('qr').textContent = ''; }
+    return url;
+  }
+
+  /* ---------- wiring ---------- */
+  function show(which) { ['needSetup', 'login', 'live'].forEach(id => { $(id).hidden = id !== which; }); $('setupAgain').hidden = which === 'needSetup'; }
+  async function connect(cls, key, quiet) {
+    state.cls = cls; state.key = key;
+    const msg = $('loginMsg'); msg.className = 'msg'; msg.textContent = quiet ? '' : '連線中…';
+    try {
+      const j = await call({ action: 'board' });
+      try { localStorage.setItem(LS, JSON.stringify({ cls, key })); } catch (e) { /* 無法儲存時每次重新輸入即可 */ }
+      state.pinned = false; show('live'); entry(); take(j); loop(); msg.textContent = '';
+    } catch (e) {
+      state.cls = ''; show('login'); $('cls').value = cls; msg.className = 'msg bad';
+      msg.textContent = String(e.message) === 'bad key' ? '密碼不對。請到試算表的「設定」分頁查看教師密碼。' : '連不上試算表。請確認 config.js 的網址正確，且部署時「誰可以存取」選了「所有人」。';
+    }
+  }
+  async function setOpen(n) {
+    state.busy = true; $('gateMsg').className = 'msg'; $('gateMsg').textContent = '處理中…';
+    try { take(await call({ action: 'open', open: n })); $('gateMsg').className = 'msg good'; $('gateMsg').textContent = n >= 5 ? '已開放結算' : `目前開放到${NAME[n - 1]}`; }
+    catch (e) { $('gateMsg').className = 'msg bad'; $('gateMsg').textContent = '沒有成功，請再按一次'; }
+    state.busy = false;
+  }
+  $('loginForm').addEventListener('submit', ev => { ev.preventDefault(); const c = normClass($('cls').value); if (!c) { $('loginMsg').className = 'msg bad'; $('loginMsg').textContent = '請輸入班級代碼（英文字母或數字）。'; return; } connect(c, $('key').value.trim()); });
+  $('openNext').addEventListener('click', () => {
+    if (state.open >= 5) return;
+    if (state.armed !== 'next') { state.armed = 'next'; draw(); return; }      // first press arms, second press opens
+    state.armed = null; state.pinned = false; setOpen(state.open + 1);
+  });
+  $('openBack').addEventListener('click', () => { state.armed = null; if (state.open > 1) { state.pinned = false; setOpen(state.open - 1); } });
+  document.addEventListener('click', ev => { if (state.armed && !ev.target.closest('#openNext')) { state.armed = null; draw(); } });
+  $('copyUrl').addEventListener('click', async () => { const b = $('copyUrl'); try { await navigator.clipboard.writeText($('url').textContent); b.textContent = '已複製'; } catch (e) { b.textContent = '請手動選取網址'; } setTimeout(() => { b.textContent = '複製網址'; }, 1500); });
+  $('leave').addEventListener('click', () => { clearTimeout(state.timer); state.cls = ''; try { localStorage.removeItem(LS); } catch (e) { /* 沒有儲存 */ } show('login'); $('key').value = ''; });
+  $('pause').addEventListener('click', () => { state.paused = !state.paused; $('pause').textContent = state.paused ? '恢復自動更新' : '暫停自動更新'; if (!state.paused) { refresh(); loop(); } else clearTimeout(state.timer); });
+
+  setupSteps($('setupSteps')); setupSteps($('setupSteps2'));
+  if (!SYNC_URL) { show('needSetup'); return; }
+  show('login');
+  let saved = null; try { saved = JSON.parse(localStorage.getItem(LS) || 'null'); } catch (e) { saved = null; }
+  if (saved && saved.cls) { $('cls').value = saved.cls; $('key').value = saved.key || ''; connect(saved.cls, saved.key || '', true); }
+  window.__teacher = state;
+})();
+</script>
+</body>
+</html>
