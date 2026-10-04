@@ -709,27 +709,8 @@ function renderEnd() {
     '<div class="tiles">' + tile('main', '總利潤', 'Total profit', G.profit) + tile('', '三個發現小計', 'Three findings', sub) + tile('', '新門市（' + G.final + '）', 'New store (' + G.final + ')', SITES[G.final].profit) + '</div>' +
     '<p class="small">' + bi('最高可能的總利潤是 ' + zhAmt(BEST).replace('+', '') + '。每一題都直接套用、再把門市開在人最多的 A，會得到 −NT$200 萬。',
                              'The highest possible total is ' + enAmt(BEST).replace('+', '') + '. Applying every finding directly and then opening at A, the busiest site, gives −NT$2M.') + '</p>' +
-    '<div class="recap">' + rows + '</div></section>' +
-
-  '<section class="card"><h2>' + bi('什麼時候「知道關聯就夠了」？', 'When is the association alone enough?') + '</h2>' +
-    '<p>' + bi('三個發現的統計關聯都是真的，但只有第一個可以直接用。動手之前先問四個問題：', 'All three associations were real in the data, yet only the first was safe to apply directly. Four questions to ask before you act:') + '</p>' +
-    '<ol class="four">' +
-    '<li>' + bi('<b>做錯的代價大不大？能不能收回？</b>', 'How costly is it to be wrong, and can you undo it?') + '</li>' +
-    '<li>' + bi('<b>等得起嗎？</b>', 'Can you afford to wait?') + '</li>' +
-    '<li>' + bi('<b>要用多久？人的行為變了，它還成立嗎？</b>', 'How long must it hold? Would it survive a change in behavior?') + '</li>' +
-    '<li>' + bi('<b>資料裡的這些人，是怎麼出現在資料裡的？</b>', 'How did the people in the data come to be in the data?') + '</li></ol></section>' +
-
-  '<section class="card"><h2>' + bi('小組討論', 'Team discussion') + '</h2><ol class="disc">' +
-    '<li>' + bi('三個發現裡，哪一個讓你們組內意見最分歧？最後是什麼理由讓你們做了決定？', 'Which of the three findings divided your team the most? What reason settled it in the end?') + '</li>' +
-    '<li>' + bi('投影片說大數據時代是「找出關聯，直接使用」。根據剛才的經驗，這句話在什麼條件下成立？什麼條件下很危險？',
-                'The slide says that in the big data era we "map the associations and apply directly." From what you just experienced, under what conditions does that hold, and when is it dangerous?') + '</li></ol></section>' +
-
-  '<section class="card"><h2>' + bi('三個發現背後的真實案例', 'The real cases behind the three findings') + '</h2>' +
-    ROUNDS.map((r, i) => '<div class="case"><b>' + (i + 1) + '. ' + r.kind[0] + '</b> <span class="small" lang="en">' + r.kind[1] + '</span>' +
-      '<p style="margin:5px 0 0">' + bi(r.real[0], r.real[1]) + '</p>' +
-      r.src.map(s => '<div class="src">' + s + '</div>').join('') + '</div>').join('') +
-    '<p class="small" style="margin-top:10px">' + bi('遊戲裡的品牌、金額與資料都是教學用的虛構設定；選址那一題沒有對應的真實案例。',
-      'The brand, the amounts, and the data in the game are invented for teaching. The store-location round is not based on a real case.') + '</p>' +
+    '<div class="recap">' + rows + '</div>' +
+    '<p class="small" style="margin-top:12px">' + bi('遊戲裡的品牌、金額與資料都是教學用的虛構設定。', 'The brand, the amounts, and the data in the game are invented for teaching.') + '</p>' +
     '<div class="btnrow"><button class="primary" id="again" type="button">' + bi('再玩一次', 'Play again') + '</button></div></section>';
   $('#again').onclick = renderIntro;
 }
