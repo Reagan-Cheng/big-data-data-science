@@ -1,0 +1,810 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>動態標籤實戰 | Dynamic Labels in Action</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%23102a56%22/%3E%3Cpath%20d%3D%22M8%2024V17h4v7zm6%200V11h4v13zm6%200V6h4v18z%22%20fill%3D%22%23ffffff%22/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#f5f7fb; --panel:#fff; --ink:#172b4d; --muted:#5b6b82; --line:#dce5f0;
+  --blue:#1f5fb8; --blue2:#102a56; --soft:#eef5ff; --good:#15803d; --bad:#b91c1c; --warn:#b45309;
+  --N:#1e7b34;  --N-bg:#e4f5e8;
+  --E0:#1f5fb8; --E0-bg:#e3eeff;
+  --R:#0b7285;  --R-bg:#dcf3f7;
+  --S1:#946200; --S1-bg:#fff1c9;
+  --S2:#b3400f; --S2-bg:#ffe1cf;
+  --S3:#465366; --S3-bg:#e3e8ef;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+button{font:inherit;color:inherit}
+.wrap{max-width:1040px;margin:0 auto}
+header.site{background:linear-gradient(135deg,var(--blue2),var(--blue));color:#fff;padding:22px 16px}
+header.site .crumb{font-size:13px;color:#dbeafe}
+header.site h1{margin:4px 0 0;font-size:clamp(26px,5vw,42px);line-height:1.1}
+header.site .sub{margin-top:6px;font-size:16px;opacity:.92}
+main{padding:16px 14px 72px}
+.hide{display:none!important}
+
+/* bilingual pair: Chinese line, then English line */
+.zh{display:block}
+.en{display:block;font-size:.88em;color:var(--muted);font-weight:500}
+header.site .en,.primary .en,.steps li.on .en{color:inherit;opacity:.88}
+p{margin:0 0 12px}
+h2{margin:0 0 10px;font-size:21px;line-height:1.25}
+h3{margin:0 0 8px;font-size:17px;line-height:1.3}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 8px 22px rgba(15,23,42,.05)}
+.note{background:#f8fbff;border-left:5px solid var(--blue);padding:12px 14px;border-radius:12px;margin:12px 0}
+.note.good{background:#f0fdf4;border-left-color:var(--good)}
+.note.bad{background:#fff5f5;border-left-color:var(--bad)}
+.note.warn{background:#fffaf0;border-left-color:var(--warn)}
+.small{font-size:13px;color:var(--muted)}
+.primary,.ghost{border-radius:12px;font-weight:800;cursor:pointer;padding:11px 18px;text-align:center}
+.primary{border:0;background:var(--blue);color:#fff}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.ghost{border:1px solid var(--line);background:#fff}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+:focus-visible{outline:3px solid #f59f00;outline-offset:2px}
+
+.steps{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:0 0 4px;padding:0}
+.steps li{background:#e8eef9;border-radius:10px;padding:7px 8px;font-size:13px;font-weight:800;color:#3b4d6b;text-align:center;line-height:1.3}
+.steps li.on{background:var(--blue2);color:#fff}
+.steps .en{font-size:11px}
+
+/* label reference table */
+.dims{display:grid;gap:8px}
+.dim{display:grid;grid-template-columns:150px 1fr;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:9px 11px;background:#fbfdff}
+.dim b{font-size:14px}
+.chips{display:flex;gap:5px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:baseline;gap:5px;border-radius:999px;padding:3px 9px;font-size:12px;font-weight:700;background:#eef2f8;color:#334861;border:1.5px solid transparent;line-height:1.35}
+.chip{white-space:nowrap}
+.chip.wrapok{white-space:normal;border-radius:12px}
+.chip i{font-style:normal;font-weight:500;font-size:11px;opacity:.85}
+.chip.npt{background:#fde9f1;color:#9c1c56}
+.chip.chg{border-color:#f59f00;box-shadow:0 0 0 2px rgba(245,159,0,.22)}
+.st-N{background:var(--N-bg);color:var(--N)} .st-E0{background:var(--E0-bg);color:var(--E0)} .st-R{background:var(--R-bg);color:var(--R)}
+.st-S1{background:var(--S1-bg);color:var(--S1)} .st-S2{background:var(--S2-bg);color:var(--S2)} .st-S3{background:var(--S3-bg);color:var(--S3)}
+
+/* cycle ruler */
+.ruler{position:relative;height:14px;border-radius:999px;overflow:hidden;background:linear-gradient(90deg,var(--E0-bg) 0 57.14%,var(--S1-bg) 57.14% 71.43%,var(--S2-bg) 71.43% 85.71%,var(--S3-bg) 85.71% 100%);border:1px solid #cbd6e6}
+.ruler .fill{position:absolute;left:0;top:0;bottom:0;background:rgba(16,42,86,.3)}
+.ruler .pin{position:absolute;top:-1px;bottom:-1px;width:4px;margin-left:-2px;background:var(--blue2);border-radius:2px}
+.rulerkey{display:grid;grid-template-columns:57.14% 14.29% 14.29% 14.28%;font-size:11px;font-weight:700;margin-top:4px;text-align:center;line-height:1.25}
+.rulerkey span:nth-child(1){color:var(--E0)} .rulerkey span:nth-child(2){color:var(--S1)} .rulerkey span:nth-child(3){color:var(--S2)} .rulerkey span:nth-child(4){color:var(--S3)}
+.rulerkey small{display:block;font-weight:500;color:var(--muted);font-size:10px}
+
+/* warm-up */
+.qitem{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:9px 11px;margin:7px 0}
+.qitem.ok{border-color:#86d39b;background:#f0fdf4} .qitem.no{border-color:#f1a5a5;background:#fff5f5}
+.seg{display:flex;gap:6px}
+.seg button,.opt{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:7px 10px;font-weight:800;cursor:pointer;font-size:13px;line-height:1.25;text-align:center}
+.seg button[aria-pressed="true"],.opt[aria-pressed="true"]{border-color:var(--blue);background:var(--soft)}
+.opts{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:10px 0}
+.opt{padding:11px 10px;font-size:15px}
+.opt.right{border-color:#34a853;background:#eafaf0} .opt.wrong{border-color:#e06666;background:#fff1f1}
+.opt:disabled,.seg button:disabled{cursor:default}
+
+/* HUD */
+.hud{position:sticky;top:0;z-index:6;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 4px 14px rgba(15,23,42,.06)}
+.hud .wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:8px 14px}
+.hud .m{min-width:0}
+.hud .k{font-size:12px;color:#3b4d6b;font-weight:800;line-height:1.2}
+.hud .k span{display:block;font-size:10.5px;font-weight:600;color:var(--muted)}
+.hud .v{font-size:19px;font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap}
+.hud .v.neg{color:var(--bad)}
+
+/* campaign guide */
+details.guide{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin:12px 0}
+details.guide summary{cursor:pointer;font-weight:800}
+.play{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;padding:8px 0;border-top:1px dashed var(--line)}
+.play:first-of-type{border-top:0}
+.play .ic{font-size:20px;line-height:1.2}
+.play .cost{font-weight:900;white-space:nowrap}
+
+/* groups */
+.grp{background:#fff;border:1px solid var(--line);border-radius:16px;margin:12px 0;overflow:hidden}
+.grp>header{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line)}
+.grp>header .nm{font-weight:900;font-size:16px;line-height:1.25}
+.grp>header .nm i{font-style:normal;font-weight:600;font-size:13px;opacity:.9}
+.grp>header .rule{font-size:12px;font-weight:600;opacity:.92;line-height:1.3}
+.grp>header .cnt{font-weight:900;font-size:15px;white-space:nowrap;text-align:right;line-height:1.25}
+.grp.empty>header{border-bottom:0;opacity:.62}
+.grp .body{padding:4px 14px 10px}
+.cust{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:10px 0;border-bottom:1px dashed var(--line)}
+.cust:last-of-type{border-bottom:0}
+.ava{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:15px}
+.cust .top{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:5px}
+.cust .name{font-weight:900}
+.cust .moved{font-size:11px;font-weight:800;background:#fff4d6;color:#7a5200;border-radius:6px;padding:2px 6px;line-height:1.3}
+.cust .meta{font-size:12.5px;margin:5px 0 6px;line-height:1.35}
+.cust .meta .en{font-size:11.5px}
+.cust .chips .chip{font-size:11px;padding:2px 8px}
+.cust .chips .chip i{font-size:10.5px}
+.cust .moved.join{background:#e4f5e8;color:#1e7b34}
+.cust .meta b{font-variant-numeric:tabular-nums}
+.trail{display:flex;gap:3px;align-items:center;margin-top:6px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
+.dot{width:18px;height:18px;border-radius:5px;display:grid;place-items:center;font-size:10.5px;font-weight:900}
+.dot.off{background:transparent;color:#b6c2d3}
+.acts{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:10px 14px 14px;background:#f8fafd;border-top:1px solid var(--line)}
+.acts .lead{grid-column:1/-1;font-size:12px;font-weight:800;color:#3b4d6b;line-height:1.3}
+.act{border:1.5px solid var(--line);background:#fff;border-radius:11px;padding:7px 5px;cursor:pointer;text-align:center;line-height:1.25;min-width:0}
+.act .a1{display:block;font-weight:800;font-size:13px}
+.act .a2{display:block;font-size:11px;color:var(--muted)}
+.act .a3{display:block;font-size:12px;font-weight:900;margin-top:2px;font-variant-numeric:tabular-nums}
+.act[aria-pressed="true"]{border-color:var(--blue);background:var(--soft);box-shadow:0 0 0 2px rgba(31,95,184,.18)}
+
+.bar{position:sticky;bottom:0;z-index:6;background:#fff;border-top:1px solid var(--line);box-shadow:0 -4px 14px rgba(15,23,42,.07)}
+.bar .wrap{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 14px;flex-wrap:wrap}
+.bar .spend{font-weight:900;font-variant-numeric:tabular-nums;line-height:1.3}
+.bar.over .spend{color:var(--bad)}
+
+/* results */
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0}
+.tile{border:1px solid var(--line);background:#f8fafc;border-radius:13px;padding:10px}
+.tile .k{font-size:12px;color:var(--muted);font-weight:700;line-height:1.3}
+.tile .v{font-size:21px;font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rrow{display:grid;grid-template-columns:64px 1fr;gap:10px;padding:9px 0;border-top:1px dashed var(--line);align-items:start}
+.rrow .who{font-weight:900}
+.rrow .move{display:flex;gap:5px;align-items:center;flex-wrap:wrap;margin-bottom:3px}
+.rrow .arrow{font-weight:900;color:var(--muted)}
+.rrow .out{font-size:13px;line-height:1.4}
+.rrow .out .zh{font-weight:700}
+.tone-good .out .zh{color:var(--good)} .tone-bad .out .zh{color:var(--bad)} .tone-mid .out .zh{color:#3b4d6b}
+.amt{font-weight:900;font-variant-numeric:tabular-nums}
+
+/* debrief */
+.cmp{display:grid;gap:8px;margin:10px 0}
+.cmp .row{display:grid;grid-template-columns:150px 1fr 86px;gap:10px;align-items:center}
+.cmp .lab{font-weight:800;font-size:14px;line-height:1.25}
+.cmp .track{position:relative;height:30px;background:#eef2f8;border-radius:8px}
+.cmp .val{position:absolute;left:0;top:0;bottom:0;border-radius:8px;background:#9db4d6;min-width:2px}
+.cmp .row.me .val{background:var(--blue)}
+.cmp .num{font-weight:900;font-variant-numeric:tabular-nums;font-size:15px;text-align:right;white-space:nowrap}
+.cmp .row.me .num{color:var(--blue)}
+.stars{font-size:30px;letter-spacing:4px;line-height:1.1}
+.tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:5px 6px;text-align:center;border-bottom:1px solid var(--line);line-height:1.3}
+th{font-size:12px;color:#3b4d6b}
+th:first-child,td:first-child{text-align:left}
+td.num{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+.heat td{padding:3px 2px}
+.heat .dot{margin:auto;width:24px;height:24px;font-size:12px}
+.mix{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.mix .chip{font-size:12.5px;padding:4px 10px}
+.mix .d{font-weight:900;font-size:11px}
+.legend{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.eff{border-top:1px dashed var(--line);padding:10px 0}
+.eff .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}
+.eff .stats .k{font-size:12px;color:var(--muted);font-weight:700;line-height:1.25}
+.eff .stats .k .en{font-size:11px}
+.eff .stats .v{font-weight:900;font-variant-numeric:tabular-nums;font-size:16px;white-space:nowrap}
+.pb{border-top:1px dashed var(--line);padding:11px 0}
+.pb .move{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:4px}
+.pb .arrow{font-weight:900;color:var(--muted)}
+.fresh{display:grid;grid-template-columns:repeat(9,1fr);gap:5px;align-items:end;height:130px;margin-top:8px}
+.fresh .c{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;font-size:12px;font-weight:800}
+.fresh .b{width:100%;max-width:44px;background:var(--blue);border-radius:6px 6px 0 0;min-height:2px}
+.fresh .w{color:var(--muted);font-weight:700;margin-top:3px}
+ol.disc{padding-left:22px;margin:0}
+ol.disc li{margin:0 0 12px}
+footer{padding:18px 16px 36px;text-align:center;color:var(--muted);font-size:12px}
+footer a{color:var(--blue);font-weight:700}
+
+@media(min-width:860px){
+  .grp .body{display:grid;grid-template-columns:1fr 1fr;column-gap:26px}
+  .grp .body .cust{border-bottom:1px dashed var(--line)}
+}
+@media(max-width:640px){
+  .dim{grid-template-columns:1fr;gap:5px}
+  .acts{grid-template-columns:repeat(2,1fr)}
+  .acts .act:nth-of-type(1){grid-column:1/-1}
+  .cmp .row{grid-template-columns:96px 1fr 76px;gap:8px}
+  .cmp .lab{font-size:13px}
+  .eff .stats{grid-template-columns:repeat(2,1fr)}
+  .cmp .num{font-size:14px}
+  .heat th,.heat td{padding:3px 1px}
+  .heat th{font-size:11px}
+  .heat .dot{width:22px;height:22px;font-size:11.5px}
+  .hud .v{font-size:17px}
+  .tile .v{font-size:17px}
+  .card{padding:15px}
+  .bar .wrap{display:block}
+  .bar .primary{width:100%;margin-top:8px;padding:9px 12px}
+  .steps li{padding:6px 3px;font-size:12px}
+}
+@media(max-width:420px){
+  .tiles{grid-template-columns:1fr;gap:6px}
+  .tile{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 12px}
+  .hud .v{font-size:15px}
+}
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <div class="crumb">大數據與資料科學｜第二章 大數據行銷 · Big Data &amp; Data Science | Chapter 2: Big Data in Marketing</div>
+    <h1>動態標籤實戰</h1>
+    <div class="sub">Dynamic Labels in Action: an 8-week membership challenge</div>
+  </div>
+</header>
+
+<div class="hud hide" id="hud"><div class="wrap">
+  <div class="m"><div class="k">週次<span lang="en">Week</span></div><div class="v" id="hudWeek">1 / 8</div></div>
+  <div class="m"><div class="k">累積淨利<span lang="en">Profit so far</span></div><div class="v" id="hudProfit">NT$0</div></div>
+  <div class="m"><div class="k">本週剩餘預算<span lang="en">Budget left</span></div><div class="v" id="hudBudget">NT$300</div></div>
+</div></div>
+
+<main class="wrap">
+  <ol class="steps" id="steps">
+    <li data-s="intro"><span class="zh">① 概念</span><span class="en">Concept</span></li>
+    <li data-s="warm"><span class="zh">② 暖身</span><span class="en">Warm-up</span></li>
+    <li data-s="game"><span class="zh">③ 八週經營</span><span class="en">8-week run</span></li>
+    <li data-s="end"><span class="zh">④ 檢討</span><span class="en">Debrief</span></li>
+  </ol>
+  <div id="view"></div>
+</main>
+
+<div class="bar hide" id="bar"><div class="wrap">
+  <div class="spend" id="barSpend"></div>
+  <button class="primary" id="barBtn" type="button"><span class="zh">送出活動，前進一週 ▶</span><span class="en">Send campaigns &amp; advance one week</span></button>
+</div></div>
+
+<footer>
+  <span class="zh">本活動僅供國立台灣科技大學「大數據與資料科學」課程教學使用｜網站建立者：成力庚</span>
+  <span class="en">For teaching use in the Big Data &amp; Data Science course at National Taiwan University of Science and Technology | Website creator: 成力庚</span>
+  <p style="margin-top:8px"><a href="../../../index.html">返回課程首頁 · Back to course home</a></p>
+</footer>
+
+<script>
+/* ===== ENGINE (no DOM) ===== */
+const WEEKS = 8;
+const BUDGET = 300;
+const STORE_CYCLE = 16;
+const MARGIN_RATE = 0.4;
+const DEFAULT_SEED = 61;
+const ST = ['N', 'E0', 'R', 'S1', 'S2', 'S3'];
+const ACTS = ['none', 'welcome', 'perks', 'remind', 'coupon'];
+const COST = { none: 0, welcome: 30, perks: 30, remind: 20, coupon: 70 };
+/* extra purchase probability a campaign adds, by the member's true label */
+const LIFT = {
+  N:  { none: 0, welcome: 0.32, perks: 0.05, remind: 0.10, coupon: 0.25 },
+  E0: { none: 0, welcome: 0.02, perks: 0.10, remind: 0.06, coupon: 0.12 },
+  R:  { none: 0, welcome: 0.08, perks: 0.24, remind: 0.10, coupon: 0.14 },
+  S1: { none: 0, welcome: 0.03, perks: 0.05, remind: 0.34, coupon: 0.38 },
+  S2: { none: 0, welcome: 0.02, perks: 0.03, remind: 0.09, coupon: 0.38 },
+  S3: { none: 0, welcome: 0.01, perks: 0.01, remind: 0.02, coupon: 0.12 }
+};
+const BASE = { S1: 0.14, S2: 0.07, S3: 0.03, npt: 0.42, early: 0.06, overdue: 0.20 };
+const STMULT = { N: 0.5, R: 0.75 };
+const PERK_UPSELL = 0.25;
+
+/* h = bought in each of the last 8 weeks (oldest to newest); join = week index at which a later sign-up appears */
+const ROSTER = [
+  { name: 'Ava',  cycle: 14, t: 3,  n: 14, ticket: 800, joined: 90, loyalty: 1.15, h: [1,0,1,1,0,1,0,1] },
+  { name: 'Ben',  cycle: 21, t: 17, n: 9,  ticket: 500, joined: 60, loyalty: 1.0,  h: [0,1,0,0,1,0,1,0] },
+  { name: 'Cora', cycle: 16, t: 24, n: 8,  ticket: 500, joined: 40, loyalty: 0.9,  h: [1,0,1,0,1,0,0,0] },
+  { name: 'Dan',  cycle: 14, t: 24, n: 6,  ticket: 300, joined: 20, loyalty: 0.85, h: [0,1,0,1,1,0,0,0] },
+  { name: 'Eli',  cycle: 18, t: 38, n: 11, ticket: 800, joined: 70, loyalty: 1.0,  h: [1,0,1,0,0,0,0,0] },
+  { name: 'Fay',  cycle: 14, t: 31, n: 7,  ticket: 500, joined: 30, loyalty: 0.95, h: [0,1,1,1,0,0,0,0] },
+  { name: 'Gus',  cycle: 16, t: 45, n: 5,  ticket: 500, joined: 26, loyalty: 0.9,  h: [1,1,0,0,0,0,0,0] },
+  { name: 'Hana', cycle: 21, t: 59, n: 10, ticket: 800, joined: 80, loyalty: 1.0,  h: [1,0,0,0,0,0,0,0] },
+  { name: 'Ian',  cycle: 14, t: 52, n: 4,  ticket: 300, joined: 18, loyalty: 0.85, h: [1,0,0,0,0,0,0,0] },
+  { name: 'Joy',  cycle: 18, t: 80, n: 6,  ticket: 500, joined: 45, loyalty: 0.9,  h: [0,0,0,0,0,0,0,0] },
+  { name: 'Kai',  cycle: 16, t: 3,  n: 1,  ticket: 300, joined: 1,  loyalty: 1.0,  h: [0,0,0,0,0,0,0,1] },
+  { name: 'Lia',  cycle: 16, t: 10, n: 1,  ticket: 500, joined: 2,  loyalty: 1.0,  h: [0,0,0,0,0,0,1,0] },
+  { name: 'Max',  cycle: 14, t: 3,  n: 1,  ticket: 500, joined: 1,  loyalty: 1.0,  h: [0,0,0,0,0,0,0,1], join: 2 },
+  { name: 'Nia',  cycle: 18, t: 3,  n: 1,  ticket: 800, joined: 1,  loyalty: 0.95, h: [0,0,0,0,0,0,0,1], join: 4 },
+  { name: 'Oli',  cycle: 16, t: 3,  n: 1,  ticket: 300, joined: 1,  loyalty: 1.0,  h: [0,0,0,0,0,0,0,1], join: 5 }
+];
+
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+/* one fixed draw per member per week, so the same decisions always give the same result */
+function makeDraws(seed) {
+  const rnd = mulberry32(seed);
+  const u = [];
+  for (let w = 0; w < WEEKS; w++) { u.push([]); for (let i = 0; i < ROSTER.length; i++) u[w].push(rnd()); }
+  return u;
+}
+function freshRoster() {
+  return ROSTER.map((c, i) => ({ id: i, name: c.name, cycle: c.cycle, t: c.t, n: c.n, ticket: c.ticket,
+    joined: c.joined, loyalty: c.loyalty, h: c.h.slice(), returned: false, join: c.join || 0 }));
+}
+/* members who have signed up by week index w */
+function present(custs, w) { return custs.filter(c => c.join <= w); }
+/* a first-time buyer has no personal cycle yet, so the store average stands in */
+function cyc(c) { return c.n <= 1 ? STORE_CYCLE : c.cycle; }
+function ratio(c) { return c.t / cyc(c); }
+function nes(c) {
+  const r = ratio(c);
+  if (r > 3) return 'S3';
+  if (r > 2.5) return 'S2';
+  if (r > 2) return 'S1';
+  if (c.n <= 1) return 'N';
+  if (c.returned) return 'R';
+  return 'E0';
+}
+function npt7(c) {
+  const s = nes(c);
+  if (s !== 'N' && s !== 'E0' && s !== 'R') return false;
+  const k = cyc(c);
+  return (k - c.t) <= 7 && c.t <= 1.5 * k;
+}
+function tagL(c) { return c.joined > 52 ? 'L1' : c.joined >= 13 ? 'L2' : 'L3'; }
+function tagR(c) { return c.t <= 14 ? 'R1' : c.t <= 45 ? 'R2' : 'R3'; }
+function tagF(c) { const f = c.h.reduce((a, b) => a + b, 0); return f >= 4 ? 'F1' : f >= 2 ? 'F2' : 'F3'; }
+function tagM(c) { const m = c.h.reduce((a, b) => a + b, 0) * c.ticket; return m >= 1600 ? 'M1' : m >= 600 ? 'M2' : 'M3'; }
+function tagsOf(c) { return { nes: nes(c), L: tagL(c), R: tagR(c), F: tagF(c), M: tagM(c), npt: npt7(c) }; }
+function baseProb(c) {
+  const s = nes(c);
+  let p;
+  if (s === 'S1' || s === 'S2' || s === 'S3') p = BASE[s];
+  else if (npt7(c)) p = BASE.npt;
+  else if (c.t < cyc(c)) p = BASE.early;
+  else p = BASE.overdue;
+  p *= (STMULT[s] || 1) * c.loyalty;
+  return Math.min(0.95, p);
+}
+/* advance one member one week; returns what happened */
+function stepCustomer(c, act, u) {
+  const s = nes(c);
+  const p0 = baseProb(c);
+  const p1 = Math.min(0.97, p0 + LIFT[s][act]);
+  const bought = u < p1;
+  const organic = u < p0;
+  const plain = Math.round(c.ticket * MARGIN_RATE);
+  let margin = 0;
+  if (bought) {
+    margin = plain;
+    if (act === 'perks' && (s === 'E0' || s === 'R')) margin = Math.round(plain * (1 + PERK_UPSELL));
+  }
+  c.h.shift(); c.h.push(bought ? 1 : 0);
+  c.joined += 1;
+  if (bought) {
+    if (s === 'S1' || s === 'S2' || s === 'S3') c.returned = true;
+    else if (s === 'R') c.returned = false;
+    c.n += 1; c.t = 3;
+  } else {
+    c.t += 7;
+  }
+  const after = nes(c);
+  if (after === 'S1' || after === 'S2' || after === 'S3') c.returned = false;
+  return { id: c.id, before: s, after: after, act: act, cost: COST[act], bought: bought, organic: organic,
+    incremental: bought && !organic, margin: margin, plain: plain };
+}
+/* rules: one campaign per label; labelOf says which label a member is filed under */
+function stepWorld(custs, rules, uRow, labelOf, w) {
+  const ev = present(custs, w).map(c => stepCustomer(c, rules[labelOf(c)] || 'none', uRow[c.id]));
+  const revenue = ev.reduce((a, e) => a + e.margin, 0);
+  const cost = ev.reduce((a, e) => a + e.cost, 0);
+  return { events: ev, margin: revenue, cost: cost, profit: revenue - cost };
+}
+function planCost(custs, rules) { return custs.reduce((a, c) => a + COST[rules[nes(c)] || 'none'], 0); }
+/* reference playbook: match the campaign to the label, spend the budget in priority order */
+const REF_PLAY = { S1: 'remind', N: 'welcome', S2: 'coupon', R: 'perks', E0: 'perks', S3: 'none' };
+const REF_ORDER = ['S1', 'N', 'S2', 'R', 'E0'];
+function refRules(custs) {
+  const rules = { N: 'none', E0: 'none', R: 'none', S1: 'none', S2: 'none', S3: 'none' };
+  let left = BUDGET;
+  REF_ORDER.forEach(s => {
+    const k = custs.filter(c => nes(c) === s).length;
+    const need = k * COST[REF_PLAY[s]];
+    if (k && need <= left) { rules[s] = REF_PLAY[s]; left -= need; }
+  });
+  return rules;
+}
+function runAuto(seed, policy) {
+  const u = makeDraws(seed), custs = freshRoster();
+  let total = 0;
+  for (let w = 0; w < WEEKS; w++) total += stepWorld(custs, policy(present(custs, w), w), u[w], nes, w).profit;
+  return { profit: total, active: custs.filter(c => ['N', 'E0', 'R'].indexOf(nes(c)) >= 0).length };
+}
+const NONE_RULES = { N: 'none', E0: 'none', R: 'none', S1: 'none', S2: 'none', S3: 'none' };
+/* ===== END ENGINE ===== */
+</script>
+
+<script>
+/* ===== TEXT ===== */
+const TAG = {
+  N:  { zh: '新客', en: 'New', ic: '🌱', k: '新', rzh: '只買過一次', ren: 'Has bought only once' },
+  E0: { zh: '常客', en: 'Regular', ic: '☕', k: '常', rzh: '距上次購買在 2 倍個人週期以內', ren: 'Last purchase within 2× the personal cycle' },
+  R:  { zh: '近期回頭客', en: 'Recently returned', ic: '🔄', k: '回', rzh: '睡著後又回來買了一次', ren: 'Dozed off, then came back and bought once' },
+  S1: { zh: '瞌睡客', en: 'Drowsy', ic: '😪', k: '瞌', rzh: '超過 2 倍個人週期沒買', ren: 'No purchase for over 2× the personal cycle' },
+  S2: { zh: '半睡客', en: 'Half-asleep', ic: '😴', k: '半', rzh: '超過 2.5 倍個人週期沒買', ren: 'No purchase for over 2.5× the personal cycle' },
+  S3: { zh: '沉睡客', en: 'Sleeping', ic: '💤', k: '沉', rzh: '超過 3 倍個人週期沒買', ren: 'No purchase for over 3× the personal cycle' },
+  L1: { zh: '早期入店', en: 'Early joiner', es: 'Early joiner' }, L2: { zh: '中期入店', en: 'Mid joiner', es: 'Mid joiner' }, L3: { zh: '後期入店', en: 'Late joiner', es: 'Late joiner' },
+  R1: { zh: '最近買家', en: 'Recent buyer', es: 'Recent' }, R2: { zh: '中期未購買家', en: 'Mid-lapsed buyer', es: 'Mid-lapsed' }, R3: { zh: '長期未購買家', en: 'Long-lapsed buyer', es: 'Long-lapsed' },
+  F1: { zh: '高頻買家', en: 'High-frequency buyer', es: 'High-freq' }, F2: { zh: '中頻買家', en: 'Mid-frequency buyer', es: 'Mid-freq' }, F3: { zh: '低頻買家', en: 'Low-frequency buyer', es: 'Low-freq' },
+  M1: { zh: '高消費買家', en: 'High spender', es: 'High spend' }, M2: { zh: '中消費買家', en: 'Mid spender', es: 'Mid spend' }, M3: { zh: '低消費買家', en: 'Low spender', es: 'Low spend' }
+};
+const PLAY = {
+  none:    { zh: '不打擾', en: 'No contact', ic: '🤫', dzh: '這週什麼都不送。', den: 'Send nothing this week.' },
+  welcome: { zh: '新客引導', en: 'Welcome guide', ic: '💌', dzh: '介紹怎麼點、怎麼集點，附一張集點卡。', den: 'How to order and collect points, plus a stamp card.' },
+  perks:   { zh: '會員禮遇', en: 'Member perks', ic: '⭐', dzh: '新品搶先喝、點數加倍，不打折。', den: 'Early tastings and double points, with no discount.' },
+  remind:  { zh: '回購提醒', en: 'Repurchase reminder', ic: '⏰', dzh: '一則「咖啡豆快喝完了嗎？」的推播。', den: 'One push message: "Running low on beans?"' },
+  coupon:  { zh: '喚醒折價券', en: 'Win-back coupon', ic: '🎟️', dzh: '一張大額折價券。', den: 'One deep-discount coupon.' }
+};
+const money = n => (n < 0 ? '−' : '') + 'NT$' + Math.abs(Math.round(n)).toLocaleString('en-US');
+const bi = (zh, en) => '<span class="zh">' + zh + '</span><span class="en" lang="en">' + en + '</span>';
+const chip = (code, extra) => '<span class="chip ' + (extra || '') + '">' + TAG[code].zh + ' <i lang="en">' + TAG[code].en + '</i></span>';
+const stChip = (s, extra) => '<span class="chip st-' + s + ' ' + (extra || '') + '">' + TAG[s].ic + ' ' + TAG[s].zh + ' <i lang="en">' + TAG[s].en + '</i></span>';
+const chipS = (code, extra) => '<span class="chip ' + (extra || '') + '">' + TAG[code].zh + ' <i lang="en">' + TAG[code].es + '</i></span>';
+const dot = s => s ? '<span class="dot st-' + s + '" title="' + TAG[s].zh + ' ' + TAG[s].en + '">' + TAG[s].k + '</span>' : '<span class="dot off">·</span>';
+const $ = s => document.querySelector(s);
+const view = $('#view');
+
+function setStep(s) {
+  document.querySelectorAll('#steps li').forEach(li => li.classList.toggle('on', li.dataset.s === s));
+  $('#hud').classList.toggle('hide', s !== 'game');
+  $('#bar').classList.add('hide');
+  window.scrollTo(0, 0);
+}
+function rulerHTML(r, withPin) {
+  const pct = Math.min(100, (r / 3.5) * 100);
+  return '<div class="ruler">' + (withPin ? '<div class="fill" style="width:' + pct + '%"></div><div class="pin" style="left:' + pct + '%"></div>' : '') + '</div>';
+}
+const RULER_KEY = '<div class="rulerkey">' +
+  '<span>常客<small lang="en">Regular · up to 2×</small></span>' +
+  '<span>瞌睡<small lang="en">Drowsy · &gt;2×</small></span>' +
+  '<span>半睡<small lang="en">Half · &gt;2.5×</small></span>' +
+  '<span>沉睡<small lang="en">Asleep · &gt;3×</small></span></div>';
+
+/* ===== 1. CONCEPT ===== */
+function renderIntro() {
+  setStep('intro');
+  const dims = [
+    ['顧客動態', 'Customer status (NES)', ST.map(s => stChip(s)).join('')],
+    ['入店資歷', 'Length of membership', ['L1', 'L2', 'L3'].map(c => chip(c)).join('')],
+    ['近期購物情境', 'Recency', ['R1', 'R2', 'R3'].map(c => chip(c)).join('')],
+    ['購物頻率', 'Frequency', ['F1', 'F2', 'F3'].map(c => chip(c)).join('')],
+    ['購物金額', 'Monetary', ['M1', 'M2', 'M3'].map(c => chip(c)).join('')],
+    ['下次購物預測', 'Next purchase time (NPT)', '<span class="chip npt wrapok">NPT 7：7 天內最有可能回購 <i lang="en">most likely to buy again within 7 days</i></span>']
+  ];
+  view.innerHTML =
+  '<section class="card"><h2>' + bi('你的任務', 'Your mission') + '</h2>' +
+    '<p>' + bi('你是連鎖咖啡品牌「日日豆」（虛構品牌）的會員行銷經理，一開始有 12 位會員（途中還會有新會員加入），每週行銷預算 NT$300。接下來八週，系統每週都會依照最新的購買行為，替每位會員重新貼標籤。你要決定：每一種標籤的人，這週該收到什麼活動。',
+      'You are the membership marketing manager of Daily Bean, a fictional coffee chain. You start with 12 members, with new ones joining along the way, and a marketing budget of NT$300 a week. For the next eight weeks, the system re-labels every member each week from their latest purchase behavior. Your job is to decide which campaign each label group receives that week.') + '</p>' +
+    '<p>' + bi('目標：八週結束時，累積淨利（毛利減行銷花費）越高越好。', 'Goal: finish the eight weeks with the highest cumulative net profit, meaning gross margin minus marketing spend.') + '</p></section>' +
+
+  '<section class="card"><h2>' + bi('什麼是動態標籤？', 'What is a dynamic label?') + '</h2>' +
+    '<p>' + bi('靜態標籤描述「這個人是誰」，例如性別、出生年，建檔後幾乎不會變。', 'A static label describes who a person is, such as gender or birth year. Once recorded, it hardly ever changes.') + '</p>' +
+    '<p>' + bi('動態標籤描述「這個人最近做了什麼」。它不是由人填寫，而是由購買紀錄自動算出來的；行為一變，下一次更新時標籤就跟著變。', 'A dynamic label describes what a person has done lately. Nobody fills it in; it is computed from purchase records, so when behavior changes, the label changes at the next update.') + '</p>' +
+    '<h3>' + bi('講義中的六大構面、19 個動態標籤', 'The six dimensions and 19 dynamic labels from the lecture') + '</h3>' +
+    '<div class="dims">' + dims.map(d => '<div class="dim"><b>' + bi(d[0], d[1]) + '</b><div class="chips">' + d[2] + '</div></div>').join('') + '</div>' +
+    '<p class="small" style="margin-top:10px">' + bi('這個遊戲裡，你依「顧客動態」這一組標籤做決定；其餘標籤也會顯示在每位會員身上，並且每週自動更新。', 'In this game you make decisions by the customer-status labels. The other labels are also shown on every member and update automatically each week.') + '</p></section>' +
+
+  '<section class="card"><h2>' + bi('顧客動態怎麼算？用每個人自己的購買週期當尺', 'How is customer status computed? Each member is measured against their own purchase cycle') + '</h2>' +
+    '<p>' + bi('把「距離上次購買的天數」除以「這個人平常多久買一次」，得到的倍數決定標籤：', 'Divide the days since the last purchase by how often this person usually buys. The resulting multiple decides the label:') + '</p>' +
+    rulerHTML(0, false) + RULER_KEY +
+    '<div class="note" style="margin-top:14px">' +
+      '<p>' + bi('<b>新客</b>：只買過一次，還沒有個人週期，先用全店平均的 16 天來算。', '<b>New</b>: has bought only once and has no personal cycle yet, so the store average of 16 days is used.') + '</p>' +
+      '<p style="margin:0">' + bi('<b>近期回頭客</b>：打瞌睡或睡著之後又回來買了一次。再買一次就回到常客。', '<b>Recently returned</b>: dozed off or fell asleep, then came back and bought once. One more purchase makes them a regular again.') + '</p></div>' +
+    '<p class="small">' + bi('標籤架構與顧客動態的定義，依講義所引用的《大數據玩行銷》；遊戲中的購買機率與金額是教學用的模擬數值。', 'The label framework and the customer-status definitions follow the book cited in the lecture (大數據玩行銷). Purchase probabilities and amounts in this game are simulated values for teaching.') + '</p>' +
+    '<div class="btnrow"><button class="primary" id="go" type="button">' + bi('開始暖身 ▶', 'Start the warm-up') + '</button></div></section>';
+  $('#go').onclick = () => renderWarm(0);
+}
+
+/* ===== 2. WARM-UP ===== */
+const Q1 = [
+  ['女性', 'Female', 's'], ['瞌睡客', 'Drowsy', 'd'], ['1990 年出生', 'Born in 1990', 's'],
+  ['高頻買家', 'High-frequency buyer', 'd'], ['註冊管道：LINE', 'Signed up via LINE', 's'],
+  ['NPT 7（7 天內最可能回購）', 'NPT 7 (most likely to buy again within 7 days)', 'd']
+];
+let warmScore = 0;
+function renderWarm(i) {
+  setStep('warm');
+  if (i === 0) { warmScore = 0; warm1(); } else if (i === 1) warm2(); else warm3();
+}
+function warm1() {
+  const pick = {};
+  view.innerHTML = '<section class="card"><h2>' + bi('暖身 1｜哪些是動態標籤？', 'Warm-up 1 | Which of these are dynamic labels?') + '</h2>' +
+    '<p>' + bi('替下面六個標籤分類。會隨著行為改變的，就是動態標籤。', 'Sort the six labels below. A label that changes with behavior is a dynamic label.') + '</p>' +
+    Q1.map((q, k) => '<div class="qitem" data-k="' + k + '"><div><b>' + bi(q[0], q[1]) + '</b></div><div class="seg">' +
+      '<button type="button" data-v="s" aria-pressed="false">' + bi('靜態', 'Static') + '</button>' +
+      '<button type="button" data-v="d" aria-pressed="false">' + bi('動態', 'Dynamic') + '</button></div></div>').join('') +
+    '<div id="fb"></div><div class="btnrow"><button class="primary" id="chk" type="button" disabled>' + bi('對答案', 'Check answers') + '</button></div></section>';
+  view.querySelectorAll('.seg button').forEach(b => b.onclick = () => {
+    const k = b.closest('.qitem').dataset.k; pick[k] = b.dataset.v;
+    b.parentNode.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+    $('#chk').disabled = Object.keys(pick).length < Q1.length;
+  });
+  $('#chk').onclick = () => {
+    let right = 0;
+    view.querySelectorAll('.qitem').forEach(el => {
+      const ok = pick[el.dataset.k] === Q1[el.dataset.k][2];
+      if (ok) right++;
+      el.classList.add(ok ? 'ok' : 'no');
+      el.querySelectorAll('button').forEach(x => x.disabled = true);
+    });
+    if (right === Q1.length) warmScore++;
+    $('#fb').innerHTML = '<div class="note ' + (right === Q1.length ? 'good' : 'warn') + '"><p><b>' + bi('答對 ' + right + ' / 6', right + ' of 6 correct') + '</b></p><p style="margin:0">' +
+      bi('女性、出生年、註冊管道描述「這個人是誰」，建檔後幾乎不動，是靜態標籤。瞌睡客、高頻買家、NPT 7 都是由購買紀錄算出來的，只要行為改變，下次更新就會不一樣，是動態標籤。',
+        'Gender, birth year and sign-up channel describe who the person is and stay put once recorded, so they are static. Drowsy, high-frequency buyer and NPT 7 are all computed from purchase records and will differ at the next update whenever behavior changes, so they are dynamic.') + '</p></div>';
+    const btn = $('#chk'); btn.disabled = false; btn.innerHTML = bi('下一題 ▶', 'Next question'); btn.onclick = () => renderWarm(1);
+  };
+}
+function choiceQ(title, body, opts, answer, explain, next, nextLabel) {
+  view.innerHTML = '<section class="card"><h2>' + title + '</h2>' + body +
+    '<div class="opts">' + opts.map((o, k) => '<button class="opt" type="button" data-k="' + k + '" aria-pressed="false">' + o + '</button>').join('') + '</div>' +
+    '<div id="fb"></div><div class="btnrow hide" id="nx"><button class="primary" type="button">' + nextLabel + '</button></div></section>';
+  view.querySelectorAll('.opt').forEach(b => b.onclick = () => {
+    const k = Number(b.dataset.k), ok = k === answer;
+    if (ok) warmScore++;
+    view.querySelectorAll('.opt').forEach((x, j) => { x.disabled = true; if (j === answer) x.classList.add('right'); });
+    if (!ok) b.classList.add('wrong');
+    b.setAttribute('aria-pressed', 'true');
+    $('#fb').innerHTML = '<div class="note ' + (ok ? 'good' : 'warn') + '"><p><b>' + (ok ? bi('答對了', 'Correct') : bi('再想一下', 'Not quite')) + '</b></p>' + explain + '</div>';
+    $('#nx').classList.remove('hide');
+    $('#nx button').onclick = next;
+  });
+}
+function warm2() {
+  choiceQ(bi('暖身 2｜同樣 32 天沒來', 'Warm-up 2 | Both silent for 32 days'),
+    '<p>' + bi('會員 X 平常每 10 天買一次，會員 Y 平常每 45 天買一次。兩個人都已經 32 天沒有消費。誰需要你優先處理？',
+      'Member X usually buys every 10 days. Member Y usually buys every 45 days. Neither has bought anything for 32 days. Who needs your attention first?') + '</p>',
+    [bi('會員 X', 'Member X'), bi('會員 Y', 'Member Y'), bi('兩人一樣急', 'Both equally'), bi('都不用處理', 'Neither')], 0,
+    '<p>' + bi('X：32 ÷ 10 = 3.2 倍週期，已經是沉睡客。', 'X: 32 ÷ 10 = 3.2 cycles, already a sleeping customer.') + '</p>' +
+    '<p>' + bi('Y：32 ÷ 45 = 0.7 倍週期，還沒到他平常回購的時間，仍然是常客。', 'Y: 32 ÷ 45 = 0.7 cycles, not yet due for the usual repurchase, still a regular.') + '</p>' +
+    '<p style="margin:0">' + bi('顧客動態標籤用的是每個人自己的購買週期，而不是同一個天數門檻。同樣的沉默，對不同的人意義不同。',
+      'Customer-status labels use each member\'s own purchase cycle, not one fixed number of days. The same silence means different things for different people.') + '</p>',
+    () => renderWarm(2), bi('下一題 ▶', 'Next question'));
+}
+function warm3() {
+  choiceQ(bi('暖身 3｜換你貼標籤', 'Warm-up 3 | You assign the label'),
+    '<p>' + bi('會員 Z 的個人購買週期是 12 天，距離上次購買已經 27 天。Z 現在該貼哪一個標籤？',
+      'Member Z has a personal purchase cycle of 12 days and last bought 27 days ago. Which label fits Z right now?') + '</p>' + rulerHTML(0, false) + RULER_KEY,
+    ['E0', 'S1', 'S2', 'S3'].map(s => TAG[s].ic + ' ' + bi(TAG[s].zh, TAG[s].en)), 1,
+    '<p>' + bi('27 ÷ 12 = 2.25 倍：超過 2 倍、還沒超過 2.5 倍，所以是瞌睡客。', '27 ÷ 12 = 2.25 cycles: over 2× but not yet over 2.5×, so Z is drowsy.') + '</p>' +
+    '<p style="margin:0">' + bi('如果再過 4 天 Z 還是沒買，倍數超過 2.5，標籤就會自動變成半睡客。標籤不會等你。',
+      'If Z still has not bought four days from now, the multiple passes 2.5 and the label automatically becomes half-asleep. Labels do not wait for you.') + '</p>',
+    () => startGame(DEFAULT_SEED), bi('進入八週經營 ▶', 'Start the 8-week run'));
+}
+
+/* ===== 3. THE 8-WEEK RUN ===== */
+let G = null;
+function startGame(seed) {
+  const you = freshRoster();
+  G = { seed: seed, u: makeDraws(seed), you: you, frz: freshRoster(), tag0: you.map(nes), hist: [you.map(c => c.join <= 0 ? nes(c) : null)],
+    prev: null, week: 0, profit: 0, frzProfit: 0, spend: 0,
+    rules: { N: 'none', E0: 'none', R: 'none', S1: 'none', S2: 'none', S3: 'none' },
+    byTag: {}, ref: runAuto(seed, refRules).profit, none: runAuto(seed, () => NONE_RULES).profit };
+  ST.forEach(s => G.byTag[s] = { sends: 0, cost: 0, inc: 0, gain: 0 });
+  renderPlan();
+}
+function hud() {
+  $('#hudWeek').textContent = Math.min(G.week + 1, WEEKS) + ' / ' + WEEKS;
+  const p = $('#hudProfit'); p.textContent = money(G.profit); p.classList.toggle('neg', G.profit < 0);
+  const left = BUDGET - planCost(present(G.you, G.week), G.rules);
+  const b = $('#hudBudget'); b.textContent = money(left); b.classList.toggle('neg', left < 0);
+}
+function custRow(c) {
+  const t = tagsOf(c), p = G.prev ? G.prev[c.id] : null, r = ratio(c);
+  const ch = k => (p && p[k] !== t[k]) ? 'chg' : '';
+  const moved = p && p.nes !== t.nes;
+  const joinedNow = G.week > 0 && c.join === G.week;
+  const isNew = c.n <= 1;
+  const trail = G.hist.map(h => dot(h[c.id])).join('');
+  return '<div class="cust"><div class="ava st-' + t.nes + '">' + c.name[0] + '</div><div>' +
+    '<div class="top"><span class="name">' + c.name + '</span>' +
+      (t.npt ? '<span class="chip npt ' + ((p && !p.npt) ? 'chg' : '') + '">NPT 7</span>' : '') +
+      (joinedNow ? '<span class="moved join">' + bi('本週新加入', 'Joined this week') + '</span>' : '') +
+      (moved ? '<span class="moved">' + bi('標籤剛變：上週是' + TAG[p.nes].zh, 'Label just changed: ' + TAG[p.nes].en + ' last week') + '</span>' : '') + '</div>' +
+    rulerHTML(r, true) +
+    '<div class="meta">' + bi('距上次購買 <b>' + c.t + '</b> 天 ÷ ' + (isNew ? '全店平均週期' : '個人週期') + ' <b>' + cyc(c) + '</b> 天 = <b>' + r.toFixed(1) + '×</b>',
+      c.t + ' days since purchase ÷ ' + cyc(c) + '-day ' + (isNew ? 'store-average ' : '') + 'cycle = ' + r.toFixed(1) + '×') + '</div>' +
+    '<div class="chips">' + chipS(t.R, ch('R')) + chipS(t.F, ch('F')) + chipS(t.M, ch('M')) + chipS(t.L, ch('L')) +
+      '<span class="chip" style="background:#fff;border-color:var(--line)">客單 ' + money(c.ticket) + ' <i lang="en">basket</i></span></div>' +
+    (G.week > 0 ? '<div class="trail"><span>軌跡 · Trail</span>' + trail + '</div>' : '') +
+    '</div></div>';
+}
+function mixHTML(now) {
+  const count = (list, s) => list.filter(x => x === s).length;
+  const cur = now.map(nes), old = G.week > 0 ? G.hist[G.week - 1].filter(x => x) : null;
+  return '<div class="mix">' + ST.map(s => {
+    const k = count(cur, s), d = old ? k - count(old, s) : 0;
+    return '<span class="chip st-' + s + '">' + TAG[s].ic + ' ' + TAG[s].zh + ' <i lang="en">' + TAG[s].en + '</i> <b>' + k + '</b>' +
+      (d ? '<span class="d">' + (d > 0 ? '▲' : '▼') + Math.abs(d) + '</span>' : '') + '</span>';
+  }).join('') + '</div>';
+}
+function renderPlan() {
+  setStep('game');
+  const first = G.week === 0, now = present(G.you, G.week);
+  let html = '<section class="card" style="margin-bottom:8px"><h2>' + bi('第 ' + (G.week + 1) + ' 週｜替每一組標籤選一個活動', 'Week ' + (G.week + 1) + ' | Pick one campaign for each label group') + '</h2>' +
+    '<p style="margin:0">' + (first
+      ? bi('每一組只能選一個活動，整組的人都會收到。活動的效果取決於收到的人當下是什麼狀態，請自己判斷哪個活動適合哪一組。每週預算 NT$300，用不完不會累積。',
+           'Each group gets exactly one campaign, sent to everyone in it. How well a campaign works depends on the state its recipients are in right now, so judge for yourself which campaign suits which group. The weekly budget is NT$300, and unused budget does not carry over.')
+      : bi('規則沿用上週的設定，但每一組裡的人可能已經換了。外框亮起的標籤是這週剛改變的。',
+           'Your rules carry over from last week, but the people in each group may have changed. Labels with a highlighted outline changed this week.')) + '</p>' +
+    '<div class="small" style="margin-top:12px;font-weight:800;color:#3b4d6b">' + (first ? bi('這週的標籤分布', 'This week\'s label mix') : bi('這週的標籤分布（▲▼ 是和上週相比的人數變化）', 'This week\'s label mix (▲▼ shows the change in headcount from last week)')) + '</div>' + mixHTML(now) + '</section>';
+  html += '<details class="guide"' + (first ? ' open' : '') + '><summary>' + bi('五種活動說明（點一下展開或收合）', 'The five campaigns (tap to expand or collapse)') + '</summary>' +
+    ACTS.map(a => '<div class="play"><div class="ic">' + PLAY[a].ic + '</div><div><b>' + bi(PLAY[a].zh, PLAY[a].en) + '</b>' +
+      '<div class="small">' + bi(PLAY[a].dzh, PLAY[a].den) + '</div></div><div class="cost">' + bi('每人 ' + money(COST[a]), 'per person') + '</div></div>').join('') + '</details>';
+  ST.forEach(s => {
+    const mem = now.filter(c => nes(c) === s);
+    if (!mem.length) {
+      html += '<section class="grp empty"><header class="st-' + s + '"><div><div class="nm">' + TAG[s].ic + ' ' + TAG[s].zh + ' <i lang="en">' + TAG[s].en + '</i></div></div>' +
+        '<div class="cnt">' + bi('這週沒有人', 'No one this week') + '</div></header></section>';
+      return;
+    }
+    html += '<section class="grp" data-s="' + s + '"><header class="st-' + s + '"><div><div class="nm">' + TAG[s].ic + ' ' + TAG[s].zh + ' <i lang="en">' + TAG[s].en + '</i></div>' +
+      '<div class="rule">' + bi(TAG[s].rzh, TAG[s].ren) + '</div></div><div class="cnt">' + bi(mem.length + ' 人', mem.length + (mem.length > 1 ? ' members' : ' member')) + '</div></header>' +
+      '<div class="body">' + mem.map(custRow).join('') + '</div>' +
+      '<div class="acts"><div class="lead">' + bi('這一組本週收到：', 'This group receives:') + '</div>' +
+      ACTS.map(a => '<button class="act" type="button" data-a="' + a + '" aria-pressed="' + (G.rules[s] === a) + '">' +
+        '<span class="a1">' + PLAY[a].ic + ' ' + PLAY[a].zh + '</span><span class="a2" lang="en">' + PLAY[a].en + '</span>' +
+        '<span class="a3">' + (COST[a] ? mem.length + ' × ' + COST[a] + ' = ' + money(mem.length * COST[a]) : 'NT$0') + '</span></button>').join('') + '</div></section>';
+  });
+  view.innerHTML = html;
+  view.querySelectorAll('.act').forEach(b => b.onclick = () => {
+    const s = b.closest('.grp').dataset.s; G.rules[s] = b.dataset.a;
+    b.parentNode.querySelectorAll('.act').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+    refreshBar();
+  });
+  $('#bar').classList.remove('hide');
+  $('#barBtn').onclick = submitWeek;
+  refreshBar();
+}
+function refreshBar() {
+  const cost = planCost(present(G.you, G.week), G.rules), over = cost > BUDGET;
+  $('#bar').classList.toggle('over', over);
+  $('#barSpend').innerHTML = over
+    ? bi('本週花費 ' + money(cost) + ' / ' + money(BUDGET) + '，超過預算', 'Spend ' + money(cost) + ' of ' + money(BUDGET) + ': over budget')
+    : bi('本週花費 ' + money(cost) + ' / ' + money(BUDGET), 'This week\'s spend: ' + money(cost) + ' of ' + money(BUDGET));
+  $('#barBtn').disabled = over;
+  hud();
+}
+function submitWeek() {
+  const w = G.week;
+  G.prev = G.you.map(c => c.join <= w ? tagsOf(c) : null);
+  const res = stepWorld(G.you, G.rules, G.u[w], nes, w);
+  const fz = stepWorld(G.frz, G.rules, G.u[w], c => G.tag0[c.id], w);
+  G.profit += res.profit; G.frzProfit += fz.profit; G.spend += res.cost;
+  res.events.forEach(e => {
+    if (e.act === 'none') return;
+    const b = G.byTag[e.before];
+    b.sends++; b.cost += e.cost;
+    if (e.incremental) { b.inc++; b.gain += e.margin; } else if (e.bought) b.gain += e.margin - e.plain;
+  });
+  G.week++;
+  G.hist.push(G.you.map(c => c.join <= G.week ? nes(c) : null));
+  renderResult(res, w + 1);
+}
+const DEPTH = { N: 0, E0: 0, R: 0, S1: 1, S2: 2, S3: 3 };
+function outcome(e) {
+  const acted = e.act !== 'none';
+  if (e.bought && e.incremental) return ['good', bi('因為活動才買 ' + money(e.margin), 'Bought because of the campaign')];
+  if (e.bought && !acted) return ['good', bi('自己回來買 ' + money(e.margin), 'Came back and bought unprompted')];
+  if (e.bought && e.act === 'coupon') return ['bad', bi('本來就會買，折價券白花了 ' + money(e.margin), 'Would have bought anyway, so the coupon was wasted')];
+  if (e.bought && e.margin > e.plain) return ['good', bi('本來就會買，禮遇讓這單多賺 ' + money(e.margin - e.plain), 'Would have bought anyway; the perks added to this basket')];
+  if (e.bought) return ['mid', bi('本來就會買，活動沒有多帶來什麼 ' + money(e.margin), 'Would have bought anyway; the campaign added nothing')];
+  if (acted) return ['bad', bi('沒有被打動，這週沒買', 'Not persuaded, no purchase this week')];
+  return ['mid', bi('這週沒有消費', 'No purchase this week')];
+}
+function renderResult(res, wk) {
+  setStep('game');
+  hud(); $('#hudWeek').textContent = wk + ' / ' + WEEKS; $('#hudBudget').textContent = '—';
+  const ev = res.events;
+  const wasted = ev.filter(e => e.bought && e.organic && e.act === 'coupon').length;
+  const woke = ev.filter(e => DEPTH[e.before] > 0 && e.bought).length;
+  const slipped = ev.filter(e => DEPTH[e.after] > DEPTH[e.before]);
+  const ignored = slipped.filter(e => e.act === 'none').length;
+  const s3spend = ev.filter(e => e.before === 'S3' && e.act !== 'none' && !e.bought).reduce((a, e) => a + e.cost, 0);
+  const moved = ev.filter(e => e.before !== e.after).length;
+  const tips = [];
+  tips.push(['', bi('這一週有 ' + moved + ' 位會員的顧客動態標籤改變了。', 'This week ' + moved + ' member' + (moved === 1 ? '' : 's') + ' changed customer-status label.')]);
+  if (woke) tips.push(['good', bi('有 ' + woke + ' 位打瞌睡或睡著的會員回來消費了。', woke + ' dozing or sleeping member' + (woke === 1 ? '' : 's') + ' came back and bought.')]);
+  if (wasted) tips.push(['bad', bi('有 ' + wasted + ' 張折價券給了本來就會買的人，等於白白少賺 ' + money(wasted * COST.coupon) + '。', wasted + ' coupon' + (wasted === 1 ? '' : 's') + ' went to people who would have bought anyway, which cost you ' + money(wasted * COST.coupon) + ' for nothing.')]);
+  if (ignored) tips.push(['warn', bi('有 ' + ignored + ' 位會員在沒有收到任何活動的情況下，滑向更深的睡眠。', ignored + ' member' + (ignored === 1 ? '' : 's') + ' slid into deeper sleep without receiving any campaign.')]);
+  const joiners = G.you.filter(c => c.join === wk);
+  if (joiners.length && wk < WEEKS) tips.push(['', bi('下週有新會員加入：' + joiners.map(c => c.name).join('、') + '。', 'A new member joins next week: ' + joiners.map(c => c.name).join(', ') + '.')]);
+  if (s3spend) tips.push(['warn', bi('花在沉睡客身上的 ' + money(s3spend) + ' 這週沒有換回任何消費。', money(s3spend) + ' spent on sleeping customers brought back no purchase this week.')]);
+  const order = ev.slice().sort((a, b) => (b.bought - a.bought) || (a.id - b.id));
+  view.innerHTML = '<section class="card"><h2>' + bi('第 ' + wk + ' 週結果', 'Week ' + wk + ' results') + '</h2>' +
+    '<div class="tiles"><div class="tile"><div class="k">' + bi('毛利', 'Gross margin') + '</div><div class="v">' + money(res.margin) + '</div></div>' +
+    '<div class="tile"><div class="k">' + bi('行銷花費', 'Marketing spend') + '</div><div class="v">' + money(res.cost) + '</div></div>' +
+    '<div class="tile"><div class="k">' + bi('本週淨利', 'Net profit') + '</div><div class="v" style="color:' + (res.profit < 0 ? 'var(--bad)' : 'var(--good)') + '">' + money(res.profit) + '</div></div></div>' +
+    tips.map(t => '<div class="note ' + t[0] + '"><p style="margin:0">' + t[1] + '</p></div>').join('') +
+    '<h3 style="margin-top:16px">' + bi('每位會員發生了什麼事', 'What happened to each member') + '</h3>' +
+    order.map(e => { const o = outcome(e); return '<div class="rrow tone-' + o[0] + '"><div class="who">' + G.you[e.id].name + '</div><div>' +
+      '<div class="move">' + stChip(e.before) + (e.before !== e.after ? '<span class="arrow">→</span>' + stChip(e.after, 'chg') : '') + '</div>' +
+      '<div class="small">' + bi('收到：' + PLAY[e.act].ic + ' ' + PLAY[e.act].zh + (e.cost ? '（' + money(e.cost) + '）' : ''), 'Received: ' + PLAY[e.act].en + (e.cost ? ' (' + money(e.cost) + ')' : '')) + '</div>' +
+      '<div class="out">' + o[1] + '</div></div></div>'; }).join('') +
+    '<div class="btnrow"><button class="primary" id="nxt" type="button">' + (wk < WEEKS ? bi('看第 ' + (wk + 1) + ' 週的新標籤 ▶', 'See the new labels for week ' + (wk + 1)) : bi('看八週檢討 ▶', 'See the 8-week debrief')) + '</button></div></section>';
+  $('#nxt').onclick = () => (wk < WEEKS ? renderPlan() : renderEnd());
+}
+
+/* ===== 4. DEBRIEF ===== */
+function renderEnd() {
+  setStep('end');
+  const n = G.hist[0].filter(x => x).length, all = G.you.length;
+  const fresh = G.hist.map(h => h.filter((s, i) => G.hist[0][i] && s === G.hist[0][i]).length);
+  const span = G.ref - G.none;
+  const score = span > 0 ? (G.profit - G.none) / span : 0;
+  const stars = score >= 0.9 ? 3 : score >= 0.55 ? 2 : score >= 0.2 ? 1 : 0;
+  const verdict = [
+    bi('這次的活動沒有比完全不行銷好多少。回頭看看每週結果：錢花在哪一種標籤上最沒有回應？', 'This run did little better than doing no marketing at all. Look back at the weekly results: which label swallowed money without responding?'),
+    bi('有抓到一部分對的人。再試一次，注意哪些組其實不需要花大錢。', 'You reached some of the right people. Try again and watch for the groups that do not need expensive campaigns.'),
+    bi('大部分預算都花在對的標籤上，只差一點就追上參考打法。', 'Most of your budget went to the right labels. You are close to the reference playbook.'),
+    bi('你把活動對準了當下的標籤，表現和參考打法一樣好，甚至更好。', 'You matched campaigns to the labels of the moment and did as well as the reference playbook, or better.')
+  ][stars];
+  const gap = G.profit - G.frzProfit;
+  const cmp = [['me', '你的成績', 'Your result', G.profit], ['', '參考打法', 'Reference playbook', G.ref], ['', '標籤凍結在第 0 週', 'Labels frozen at week 0', G.frzProfit], ['', '完全不行銷', 'No marketing', G.none]];
+  const top = Math.max(1, ...cmp.map(r => r[3]));
+  const active = G.you.filter(c => DEPTH[nes(c)] === 0).length;
+  const playbook = [
+    ['S1', 'remind', '便宜又有效，是預算的第一優先。這時候他們只是忘了，還沒離開。', 'Cheap and effective, so it gets first call on the budget. At this stage they have only forgotten, not left.'],
+    ['N', 'welcome', '新客最需要的是第二次購買；買了第二次，才開始有自己的週期。', 'What a new customer needs most is a second purchase. Only then do they start to have a cycle of their own.'],
+    ['S2', 'coupon', '提醒已經不夠力，這是值得下重本的最後時機。', 'A reminder is no longer enough. This is the last moment when a costly offer still pays.'],
+    ['R', 'perks', '剛回來的人還不穩定，用禮遇重新建立習慣，而不是讓他們習慣等折扣。', 'Someone who has just come back is fragile. Perks rebuild the habit without teaching them to wait for discounts.'],
+    ['E0', 'perks', '常客不靠折扣也會買。預算有剩時用禮遇提高客單，折價券只會讓你少賺。', 'Regulars buy without discounts. When budget is left over, perks raise the basket; a coupon only cuts your margin.'],
+    ['S3', 'none', '沉睡之後回購率很低，喚醒的花費通常高於能賺回來的錢。', 'Once asleep, repurchase is rare, and waking them usually costs more than it earns back.']
+  ];
+  view.innerHTML =
+  '<section class="card"><h2>' + bi('八週檢討', 'The 8-week debrief') + '</h2>' +
+    '<div class="stars" aria-label="' + stars + ' / 3">' + '★'.repeat(stars) + '<span style="color:#cbd5e1">' + '★'.repeat(3 - stars) + '</span></div>' +
+    '<p style="margin-top:8px">' + verdict + '</p>' +
+    '<div class="tiles"><div class="tile"><div class="k">' + bi('累積淨利', 'Cumulative net profit') + '</div><div class="v">' + money(G.profit) + '</div></div>' +
+    '<div class="tile"><div class="k">' + bi('行銷總花費', 'Total marketing spend') + '</div><div class="v">' + money(G.spend) + '</div></div>' +
+    '<div class="tile"><div class="k">' + bi('期末還醒著的會員', 'Members still awake at the end') + '</div><div class="v">' + active + ' / ' + all + '</div></div></div>' +
+    '<h3 style="margin-top:14px">' + bi('同一批會員、同樣的八週，四種做法的累積淨利', 'Same members, same eight weeks: cumulative net profit under four approaches') + '</h3>' +
+    '<div class="cmp">' + cmp.map(r => '<div class="row ' + r[0] + '"><div class="lab">' + bi(r[1], r[2]) + '</div><div class="track"><div class="val" style="width:' + Math.max(0, r[3] / top * 100) + '%"></div></div><div class="num">' + money(r[3]) + '</div></div>').join('') + '</div>' +
+    '<p class="small">' + bi('「標籤凍結在第 0 週」：每週用的是你設定的同一套規則，但名單上的標籤從第 0 週之後就沒有再更新。「參考打法」：依當週標籤對症下藥，預算不夠時先顧瞌睡客。',
+      '"Labels frozen at week 0" applies the very same rules you set each week, but to labels that were never updated after week 0. The "reference playbook" matches each campaign to the label of the week and, when the budget runs short, looks after drowsy customers first.') + '</p>' +
+    '<div class="note ' + (gap > 0 ? 'good' : 'warn') + '"><p style="margin:0">' + (gap > 0
+      ? bi('同一套規則，光是因為標籤每週更新，你就多賺了 ' + money(gap) + '。', 'With identical rules, weekly label updates alone earned you ' + money(gap) + ' more.')
+      : gap === 0
+      ? bi('新舊標籤的結果完全一樣。當每一組收到的活動都相同（或都沒有活動）時，標籤就沒有發揮任何作用。', 'Fresh and stale labels gave exactly the same result. When every group receives the same campaign, or none at all, the labels are doing no work.')
+      : bi('這一次，凍結的舊標籤並沒有比較差（差距 ' + money(-gap) + '）。這通常表示規則和標籤沒有對上：當活動送錯對象時，標籤再新也幫不上忙。', 'This time the stale, frozen labels did no worse (a gap of ' + money(-gap) + '). That usually means the rules did not fit the labels: when a campaign goes to the wrong group, fresh labels cannot help.')) + '</p></div></section>' +
+
+  '<section class="card"><h2>' + bi('標籤一直在動：每位會員的八週軌跡', 'Labels keep moving: every member\'s eight weeks') + '</h2>' +
+    '<div class="legend">' + ST.map(s => '<span class="chip st-' + s + '">' + TAG[s].k + '＝' + TAG[s].zh + ' <i lang="en">' + TAG[s].en + '</i></span>').join('') + '</div>' +
+    '<div class="tblwrap"><table class="heat"><thead><tr><th>' + bi('會員', 'Member') + '</th>' + G.hist.map((h, w) => '<th>W' + w + '</th>').join('') + '</tr></thead><tbody>' +
+    G.you.map(c => '<tr><td><b>' + c.name + '</b></td>' + G.hist.map(h => '<td>' + dot(h[c.id]) + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>' +
+    '<p class="small" style="margin-top:8px">' + bi('W0 是開局時的標籤，W1 到 W8 是每一週結束後重新算出的標籤；「·」表示當時還沒加入。', 'W0 is the label at the start; W1 to W8 are the labels recomputed after each week. A dot means the member had not joined yet.') + '</p>' +
+    '<h3 style="margin-top:18px">' + bi('開局那 ' + n + ' 位會員在第 0 週貼的標籤，到後來還有幾位是對的？', 'Of the ' + n + ' opening members, how many week-0 labels are still correct later on?') + '</h3>' +
+    '<div class="fresh">' + fresh.map((v, w) => '<div class="c"><span>' + v + '</span><div class="b" style="height:' + (v / n * 78) + '%"></div><span class="w">W' + w + '</span></div>').join('') + '</div>' +
+    '<p class="small" style="margin-top:8px">' + bi('到第 8 週，第 0 週的標籤只剩 ' + fresh[WEEKS] + ' / ' + n + ' 位仍然正確。如果名單不更新，其餘的人都還貼著過期的標籤，收到的是為「以前的他」準備的活動。',
+      'By week 8, only ' + fresh[WEEKS] + ' of ' + n + ' week-0 labels are still correct. Without updates, everyone else would still carry an outdated label and receive a campaign meant for who they used to be.') + '</p></section>' +
+
+  '<section class="card"><h2>' + bi('你的錢花在哪一種標籤上？', 'Which labels did your money go to?') + '</h2>' +
+    '<p class="small">' + bi('依會員「收到活動當下」的標籤統計。', 'Counted by the label each member had at the moment the campaign was sent.') + '</p>' +
+    ST.map(s => { const b = G.byTag[s], net = b.gain - b.cost;
+      const cell = (zh, en, v, col) => '<div><div class="k">' + bi(zh, en) + '</div><div class="v"' + (col ? ' style="color:' + col + '"' : '') + '>' + v + '</div></div>';
+      return '<div class="eff">' + stChip(s) + '<div class="stats">' +
+        cell('發送人次', 'Sends', b.sends) + cell('花費', 'Spend', money(b.cost)) + cell('因活動多出的購買', 'Extra purchases', b.inc) +
+        cell('當週直接效益', 'Same-week net effect', b.sends ? money(net) : '—', net < 0 ? 'var(--bad)' : net > 0 ? 'var(--good)' : '') + '</div></div>'; }).join('') +
+    '<p class="small" style="margin-top:8px">' + bi('當週直接效益＝活動多帶來的毛利減掉花費，只算當週；把人留住之後幾週的消費沒有算進來。', 'Same-week net effect is the extra margin a campaign brought in minus its cost, counted for that week only. It leaves out what a retained member spends in later weeks.') + '</p></section>' +
+
+  '<section class="card"><h2>' + bi('參考打法：每一種標籤該怎麼對待', 'The reference playbook: how to treat each label') + '</h2>' +
+    playbook.map(p => '<div class="pb"><div class="move">' + stChip(p[0]) + '<span class="arrow">→</span><b>' + PLAY[p[1]].ic + ' ' + PLAY[p[1]].zh + ' <span lang="en" style="font-weight:600">' + PLAY[p[1]].en + '</span></b></div><div>' + bi(p[2], p[3]) + '</div></div>').join('') + '</section>' +
+
+  '<section class="card"><h2>' + bi('帶走三件事', 'Three things to take away') + '</h2>' +
+    '<p>' + bi('<b>一、標籤是算出來的，不是填出來的。</b>同樣 32 天沒來，對 10 天買一次的人是沉睡，對 45 天買一次的人是正常。', '<b>1. Labels are computed, not filled in.</b> The same 32 days of silence means asleep for someone who buys every 10 days and perfectly normal for someone who buys every 45.') + '</p>' +
+    '<p>' + bi('<b>二、標籤會過期。</b>這一局才過八週，第 0 週的標籤就只剩 ' + fresh[WEEKS] + ' / ' + n + ' 還正確。標籤的價值來自持續更新。', '<b>2. Labels expire.</b> In this run, after only eight weeks, just ' + fresh[WEEKS] + ' of ' + n + ' week-0 labels were still correct. A label is only worth something while it keeps being updated.') + '</p>' +
+    '<p style="margin:0">' + bi('<b>三、時機比力道重要。</b>瞌睡時一則提醒就夠；等到沉睡，大額折價券也很難救回來。動態標籤的實務價值，是讓你在顧客狀態剛改變的那一刻就知道。', '<b>3. Timing beats force.</b> A drowsy customer needs only a reminder; once asleep, even a deep discount rarely brings them back. In practice, what dynamic labels give you is the moment a customer\'s state changes.') + '</p></section>' +
+
+  '<section class="card"><h2>' + bi('小組討論', 'Team discussion') + '</h2><ol class="disc">' +
+    '<li>' + bi('這八週裡，哪一種標籤的行銷花費最划算？哪一種最不划算？你們的判斷依據是什麼？', 'Over these eight weeks, which label gave the best return on marketing spend, and which the worst? What is your evidence?') + '</li>' +
+    '<li>' + bi('如果公司每一季才更新一次標籤，你們在遊戲裡的哪些決定會出錯？', 'If the company refreshed its labels only once a quarter, which of your decisions in this game would have gone wrong?') + '</li>' +
+    '<li>' + bi('動態標籤要靠持續蒐集行為資料才能運作。站在顧客的角度，哪些標籤讓人覺得貼心，哪些讓人覺得被監視？（回想 Target 預測懷孕的例子）', 'Dynamic labels only work by continuously collecting behavioral data. From the customer\'s side, which labels feel helpful and which feel like surveillance? (Recall the Target pregnancy-prediction case.)') + '</li></ol>' +
+    '<div class="btnrow"><button class="primary" id="again" type="button">' + bi('同一批會員再玩一次', 'Replay with the same members') + '</button>' +
+    '<button class="ghost" id="shuffle" type="button">' + bi('換一組隨機結果', 'Try a different random outcome') + '</button></div>' +
+    '<p class="small" style="margin-top:10px">' + bi('「同一批會員再玩一次」的隨機性完全相同：同樣的決定一定得到同樣的結果，方便全班比較做法。', '"Replay with the same members" uses identical randomness: the same decisions always give the same result, so the whole class can compare approaches.') + '</p></section>';
+  $('#again').onclick = () => startGame(DEFAULT_SEED);
+  $('#shuffle').onclick = () => startGame((Date.now() % 2147483647) || 7);
+}
+
+renderIntro();
+</script>
+</body>
+</html>
