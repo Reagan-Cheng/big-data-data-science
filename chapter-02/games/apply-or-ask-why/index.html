@@ -1,0 +1,740 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>直接用，還是先問為什麼？ | Apply It, or Ask Why?</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%23102a56%22/%3E%3Cpath%20d%3D%22M8%2024V17h4v7zm6%200V11h4v13zm6%200V6h4v18z%22%20fill%3D%22%23ffffff%22/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#f5f7fb; --panel:#fff; --ink:#172b4d; --muted:#5b6b82; --line:#dce5f0;
+  --blue:#1f5fb8; --blue2:#102a56; --soft:#eef5ff; --good:#15803d; --bad:#b91c1c; --warn:#b45309;
+  --s1:#1f5fb8; --s2:#c2570c; --neutral:#9aa8bc;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+button{font:inherit;color:inherit}
+.wrap{max-width:1040px;margin:0 auto}
+header.site{background:linear-gradient(135deg,var(--blue2),var(--blue));color:#fff;padding:22px 16px}
+header.site .crumb{font-size:13px;color:#dbeafe}
+header.site h1{margin:4px 0 0;font-size:clamp(26px,5vw,42px);line-height:1.1}
+header.site .sub{margin-top:6px;font-size:16px;opacity:.92}
+main{padding:16px 14px 56px}
+.hide{display:none!important}
+
+/* bilingual pair: Chinese line, then English line */
+.zh{display:block}
+.en{display:block;font-size:.88em;color:var(--muted);font-weight:500}
+header.site .en,.primary .en,.steps li.on .en{color:inherit;opacity:.88}
+p{margin:0 0 12px}
+h2{margin:0 0 10px;font-size:21px;line-height:1.25}
+h3{margin:0 0 8px;font-size:17px;line-height:1.3}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 8px 22px rgba(15,23,42,.05)}
+.note{background:#f8fbff;border-left:5px solid var(--blue);padding:12px 14px;border-radius:12px;margin:12px 0}
+.note.good{background:#f0fdf4;border-left-color:var(--good)}
+.note.bad{background:#fff5f5;border-left-color:var(--bad)}
+.note.warn{background:#fffaf0;border-left-color:var(--warn)}
+.note>:last-child{margin-bottom:0}
+.small{font-size:13px;color:var(--muted)}
+.primary,.ghost{border-radius:12px;font-weight:800;cursor:pointer;padding:11px 18px;text-align:center}
+.primary{border:0;background:var(--blue);color:#fff}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.ghost{border:1px solid var(--line);background:#fff}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+:focus-visible{outline:3px solid #f59f00;outline-offset:2px}
+
+.steps{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:0 0 4px;padding:0}
+.steps li{background:#e8eef9;border-radius:10px;padding:7px 8px;font-size:13px;font-weight:800;color:#3b4d6b;text-align:center;line-height:1.3}
+.steps li.on{background:var(--blue2);color:#fff}
+.steps .en{font-size:11px}
+
+/* HUD */
+.hud{position:sticky;top:0;z-index:6;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 4px 14px rgba(15,23,42,.06)}
+.hud .wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:8px 14px}
+.hud .m{min-width:0}
+.hud .k{font-size:12px;color:#3b4d6b;font-weight:800;line-height:1.2}
+.hud .k span{display:block;font-size:10.5px;font-weight:600;color:var(--muted)}
+.hud .v{font-size:19px;font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap}
+.hud .v small{font-size:11px;font-weight:600;color:var(--muted);margin-left:5px}
+.hud .v.neg{color:var(--bad)}
+.tok{letter-spacing:3px}
+
+/* concept: two ways of working */
+.ways{display:grid;gap:10px;margin:6px 0 10px}
+.way{border:1px solid var(--line);border-radius:14px;padding:11px 12px;background:#fbfdff}
+.way .nm{font-weight:900;font-size:15px;line-height:1.3;margin-bottom:7px}
+.way .nm i{font-style:normal;font-weight:600;font-size:13px;color:var(--muted);margin-left:6px}
+.chain{display:flex;gap:6px;align-items:stretch;flex-wrap:wrap}
+.chain .st{flex:1 1 120px;background:#eef2f8;border-radius:10px;padding:7px 9px;font-weight:800;font-size:14px;line-height:1.3}
+.chain .st .en{font-size:12px}
+.chain .ar{align-self:center;font-weight:900;color:var(--muted)}
+.way.big .st:last-child{background:var(--soft);box-shadow:inset 0 0 0 1.5px var(--blue)}
+ol.rules{padding-left:22px;margin:0 0 4px}
+ol.rules li{margin:0 0 10px}
+
+/* round */
+.eyebrow{font-size:12px;font-weight:900;letter-spacing:.06em;color:var(--blue);margin-bottom:4px}
+.find{font-size:16.5px}
+.find .zh{font-weight:700}
+.figure{border:1px solid var(--line);border-radius:14px;padding:12px 12px 10px;margin:12px 0;background:#fbfdff}
+.figure .cap{font-size:13px;font-weight:800;line-height:1.3;margin-bottom:8px}
+.figure .cap .en{font-size:12px}
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+.fact{border:1px solid var(--line);border-left:5px solid var(--neutral);border-radius:12px;padding:9px 11px;background:#fff}
+.fact .k{font-size:12px;font-weight:900;color:#3b4d6b;line-height:1.25;margin-bottom:4px}
+.fact .k span{font-weight:600;color:var(--muted);margin-left:5px}
+.fact .zh{font-size:14px;font-weight:700;line-height:1.4}
+.fact .en{font-size:12.5px;line-height:1.4}
+.ask-h{font-weight:900;margin:16px 0 8px}
+.choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.choice{border:2px solid var(--line);background:#fff;border-radius:14px;padding:12px 13px;cursor:pointer;text-align:left;line-height:1.4;min-width:0}
+.choice .t{display:block;font-weight:900;font-size:16px}
+.choice .t i{font-style:normal;font-weight:700;font-size:13px;color:var(--muted);margin-left:6px}
+.choice .d{display:block;margin-top:5px;font-size:14px}
+.choice .d .en{font-size:12.5px}
+.choice .c{display:block;margin-top:7px;font-size:12.5px;font-weight:800;color:#3b4d6b}
+.choice .c .en{font-size:11.5px;font-weight:600}
+.choice[aria-pressed="true"]{border-color:var(--blue);background:var(--soft);box-shadow:0 0 0 2px rgba(31,95,184,.18)}
+.choice:disabled{cursor:default;opacity:.55}
+.choice.locked{opacity:1}
+.choice.locked:not([aria-pressed="true"]){opacity:.5}
+.delta{font-size:30px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1.1}
+.delta small{font-size:14px;font-weight:700;color:var(--muted);margin-left:8px}
+.delta.pos{color:var(--good)} .delta.neg{color:var(--bad)}
+.kind{display:inline-flex;gap:6px;align-items:baseline;flex-wrap:wrap;border-radius:10px;padding:5px 11px;font-weight:900;font-size:14px;background:#eef2f8;color:#334861;line-height:1.35}
+.kind i{font-style:normal;font-weight:600;font-size:12.5px}
+.other{font-size:13.5px;border-top:1px dashed var(--line);padding-top:10px;margin-top:12px}
+details.real{border:1px solid var(--line);border-radius:12px;padding:9px 13px;margin-top:12px;background:#fbfdff;font-size:14px}
+details.real summary{cursor:pointer;font-weight:800}
+details.real summary span{font-weight:600;color:var(--muted);font-size:13px;margin-left:4px}
+details.real p{margin:8px 0 0}
+
+/* charts */
+.bars{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;align-items:end;height:138px}
+.bars .c{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;min-width:0}
+.bars .v{font-size:12px;font-weight:800;font-variant-numeric:tabular-nums}
+.bars .b{width:100%;max-width:46px;border-radius:4px 4px 0 0;background:var(--s1);min-height:2px}
+.bars .c.base .b{background:var(--neutral)}
+.bars .l{font-size:11.5px;color:var(--muted);font-weight:700;margin-top:3px;white-space:nowrap}
+.axisnote{font-size:12px;color:var(--muted);text-align:center;margin-top:4px;line-height:1.3}
+.hb{display:grid;gap:8px}
+.hb .r{display:grid;grid-template-columns:118px 1fr 74px;gap:8px;align-items:center}
+.hb .lab{font-size:13px;font-weight:800;line-height:1.25}
+.hb .lab .en{font-size:11.5px}
+.hb .track{height:22px;background:#eef2f8;border-radius:4px}
+.hb .val{display:block;height:100%;border-radius:0 4px 4px 0;background:var(--s1);min-width:2px}
+.hb .r.base .val{background:var(--neutral)}
+.hb .num{font-weight:900;font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;font-weight:700;margin-bottom:4px;line-height:1.3}
+.legend .sw{display:inline-block;width:18px;height:0;border-top:3px solid var(--s1);vertical-align:middle;margin-right:6px}
+.legend .sw.b{border-top-color:var(--s2);border-top-style:dashed}
+.legend i{font-style:normal;font-weight:500;color:var(--muted)}
+svg.plot{display:block;width:100%;height:auto;max-width:560px;margin:0 auto}
+svg text{font-family:inherit}
+
+/* interviews */
+.quote{border-left:4px solid var(--line);padding:4px 0 4px 12px;margin:10px 0;font-size:14.5px}
+.quote .zh{font-weight:700}
+
+/* map */
+.maps{display:grid;grid-template-columns:1fr;gap:12px}
+.maps.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.mapbox{border:1px solid var(--line);border-radius:14px;padding:10px;background:#fbfdff;min-width:0}
+.mapbox .cap{font-size:13.5px;font-weight:900;line-height:1.3;margin-bottom:6px}
+.mapbox .cap .en{font-size:12px}
+svg.map{display:block;width:100%;height:auto;max-width:520px;margin:0 auto;background:#f1f5fa;border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:6px 6px;text-align:left;border-bottom:1px solid var(--line);line-height:1.3;vertical-align:top}
+th{font-size:12px;color:#3b4d6b}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:800;white-space:nowrap}
+.tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.sites{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.site-btn{border:2px solid var(--line);background:#fff;border-radius:14px;padding:10px 8px;cursor:pointer;text-align:center;line-height:1.3;min-width:0}
+.site-btn b{display:block;font-size:22px;font-weight:900}
+.site-btn .zh{font-weight:800;font-size:14px}
+.site-btn .en{font-size:12px}
+.site-btn .tag{display:block;font-size:11px;font-weight:800;color:var(--warn);margin-top:3px;line-height:1.25}
+.site-btn[aria-pressed="true"]{border-color:var(--blue);background:var(--soft);box-shadow:0 0 0 2px rgba(31,95,184,.18)}
+.res{display:grid;grid-template-columns:44px 1fr;gap:10px;padding:11px 0;border-top:1px dashed var(--line)}
+.res:first-of-type{border-top:0}
+.res .badge{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:18px;background:#e8eef9;color:var(--blue2)}
+.res.mine .badge{background:var(--blue2);color:#fff}
+.res .hd{font-weight:900;line-height:1.3}
+.res .hd .amt{font-variant-numeric:tabular-nums;margin-left:8px}
+.res .hd .you{font-size:11.5px;font-weight:800;background:#fff4d6;color:#7a5200;border-radius:6px;padding:2px 6px;margin-left:6px;white-space:nowrap}
+
+/* debrief */
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0}
+.tile{border:1px solid var(--line);background:#f8fafc;border-radius:13px;padding:10px}
+.tile .k{font-size:12px;color:var(--muted);font-weight:700;line-height:1.3}
+.tile .v{font-size:21px;font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tile .v small{display:block;font-size:11.5px;font-weight:600;color:var(--muted)}
+.tile.main{background:var(--soft);border-color:#b9d2f5}
+.pos{color:var(--good)} .neg{color:var(--bad)}
+.recap .rc{display:grid;grid-template-columns:1.5fr 1fr 1fr 1.3fr;gap:12px;padding:11px 0;border-top:1px dashed var(--line);align-items:start}
+.rc .k{font-size:11.5px;font-weight:800;color:#3b4d6b;line-height:1.25;margin-bottom:3px}
+.rc .k .en{font-size:10.5px;font-weight:600}
+.rc-v{font-size:14.5px;line-height:1.35;font-variant-numeric:tabular-nums}
+.rc-v span{font-weight:900;white-space:nowrap}
+.rc-t{line-height:1.35}
+ol.disc,ol.four{padding-left:22px;margin:0}
+ol.disc li,ol.four li{margin:0 0 12px}
+.case{border-top:1px dashed var(--line);padding:11px 0}
+.case:first-of-type{border-top:0}
+.case .src{font-size:12.5px;color:var(--muted);line-height:1.45;margin-top:5px;overflow-wrap:anywhere}
+.case a,.src a{color:var(--blue);font-weight:700}
+footer{padding:18px 16px 36px;text-align:center;color:var(--muted);font-size:12px}
+footer a{color:var(--blue);font-weight:700}
+
+@media(max-width:700px){
+  .facts{grid-template-columns:1fr}
+  .choices{grid-template-columns:1fr}
+  .maps.two{grid-template-columns:1fr}
+  .card{padding:15px}
+  .steps li{padding:6px 3px;font-size:12px}
+  .hud .v{font-size:17px}
+  .tile .v{font-size:18px}
+  .hb .r{grid-template-columns:96px 1fr 66px}
+  .chain .ar{display:none}
+  .chain .st{flex-basis:100%}
+  .recap .rc{grid-template-columns:1fr 1fr;gap:8px 12px}
+  .rc-t,.rc-c:last-child{grid-column:1/-1}
+}
+@media(max-width:420px){
+  .tiles{grid-template-columns:1fr;gap:6px}
+  .tile{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 12px}
+  .tile .v{text-align:right}
+  .hud .v{font-size:15px}
+  .hud .v small{display:none}
+  .delta{font-size:26px}
+}
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <div class="crumb">大數據與資料科學｜第二章 大數據行銷 · Big Data &amp; Data Science | Chapter 2: Big Data in Marketing</div>
+    <h1>直接用，還是先問為什麼？</h1>
+    <div class="sub">Apply It, or Ask Why? A 10-minute game on correlation and causation</div>
+  </div>
+</header>
+
+<div class="hud hide" id="hud"><div class="wrap">
+  <div class="m"><div class="k">回合<span lang="en">Round</span></div><div class="v" id="hudRound">1 / 4</div></div>
+  <div class="m"><div class="k">累積利潤<span lang="en">Profit so far</span></div><div class="v" id="hudProfit">0 萬</div></div>
+  <div class="m"><div class="k">剩餘調查次數<span lang="en">Investigations left</span></div><div class="v" id="hudTok">2</div></div>
+</div></div>
+
+<main class="wrap">
+  <ol class="steps" id="steps">
+    <li data-s="intro"><span class="zh">① 任務</span><span class="en" lang="en">Brief</span></li>
+    <li data-s="round"><span class="zh">② 三個發現</span><span class="en" lang="en">Three findings</span></li>
+    <li data-s="map"><span class="zh">③ 選址</span><span class="en" lang="en">The new store</span></li>
+    <li data-s="end"><span class="zh">④ 檢討</span><span class="en" lang="en">Debrief</span></li>
+  </ol>
+  <div id="view"></div>
+</main>
+
+<footer>
+  <span class="zh">本活動僅供國立台灣科技大學「大數據與資料科學」課程教學使用｜網站建立者：成力庚</span>
+  <span class="en" lang="en">For teaching use in the Big Data &amp; Data Science course at National Taiwan University of Science and Technology | Website creator: 成力庚</span>
+  <p style="margin-top:8px"><a href="../../index.html">返回第二章 · Back to Chapter 2</a>　｜　<a href="../../../index.html">返回課程首頁 · Back to course home</a></p>
+</footer>
+
+<script>
+'use strict';
+/* ===== helpers ===== */
+const $ = s => document.querySelector(s);
+const view = $('#view');
+const bi = (zh, en) => '<span class="zh">' + zh + '</span><span class="en" lang="en">' + en + '</span>';
+const sign = n => n > 0 ? '+' : n < 0 ? '−' : '';
+/* amounts are stored in units of NT$10,000 (萬) */
+const zhAmt = n => sign(n) + 'NT$' + Math.abs(n) + ' 萬';
+const enAmt = n => sign(n) + 'NT$' + (Math.abs(n) / 100) + 'M';
+const amt = n => '<span class="' + (n > 0 ? 'pos' : n < 0 ? 'neg' : '') + '">' + zhAmt(n) + '</span> <small lang="en">' + enAmt(n) + '</small>';
+const num = n => n.toLocaleString('en-US');
+
+/* ===== content ===== */
+const TOKENS = 2;
+const ROUNDS = [
+  {
+    id: 'typhoon',
+    tzh: '颱風前的草莓夾心酥', ten: 'Strawberry wafers before the typhoon',
+    find: [`資料顯示：過去 6 次颱風警報發布後，「草莓夾心酥」的銷量都衝到平常的 7 倍左右。沒有人知道為什麼。`,
+           `The data show that after each of the past 6 typhoon warnings, sales of strawberry cream wafers jumped to about 7 times the usual level. Nobody knows why.`],
+    now: [`現在：氣象署剛發布颱風警報，預計 2 天後登陸。`,
+          `Now: a typhoon warning has just been issued. Landfall is expected in 2 days.`],
+    chart: chartTyphoon,
+    facts: [
+      [`小。賣不完可以慢慢賣，保存期限有 6 個月。`, `Small. Unsold stock keeps for 6 months and can be sold later.`],
+      [`等不起。2 天後登陸，查原因要 7 天。`, `No. Landfall is in 2 days; an investigation takes 7 days.`],
+      [`只用這一次颱風。`, `Only for this typhoon.`]
+    ],
+    apply: {
+      d: [`今天就加訂草莓夾心酥，擺到全台門市最前排。`, `Order extra strawberry wafers today and put them at the front of every store.`],
+      profit: 120,
+      out: [`颱風登陸前，加訂的貨全部賣完。你們到現在還是不知道原因，但這不影響賺錢。`,
+            `The extra stock sold out before landfall. You still do not know the reason, and it made no difference to the profit.`]
+    },
+    ask: {
+      d: [`派人到門市訪談顧客，弄清楚原因再決定要不要加訂。`, `Send people to interview shoppers, and decide on the extra order once you know the reason.`],
+      profit: 10,
+      out: [`訪談結果出來時，颱風已經走了。原因很普通：不用開火、小孩愛吃、放得久。你們知道了原因，卻錯過了時機。`,
+            `By the time the interviews were done, the typhoon had passed. The reasons were ordinary: no cooking needed, children like them, and they keep well. You learned why, and missed the moment.`]
+    },
+    kind: [`穩定的關聯`, `A stable association`],
+    why: [`不知道原因，這個關聯照樣可以用。`, `The association works whether or not you know the reason.`],
+    rule: [`代價小、等不起、只用一次：這種時候，知道關聯就夠了。`,
+           `Low cost if wrong, no time to wait, used only once: here the association alone is enough.`],
+    real: [`2004 年颶風 Frances 來襲前，Walmart 從歷史資料發現，颶風前草莓口味 Pop-Tarts 的銷量約是平常的 7 倍，於是提前把貨送到颶風路徑上的門市。`,
+           `Before Hurricane Frances in 2004, Walmart found in its past data that strawberry Pop-Tarts sold at about seven times the usual rate ahead of a hurricane, and sent extra stock to the stores in the storm's path.`],
+    src: [`Hays, C. L. (2004, November 14). What Wal-Mart knows about customers' habits. <i>The New York Times</i>. <a href="https://www.nytimes.com/2004/11/14/business/yourmoney/14wal.html" target="_blank" rel="noopener">nytimes.com</a>`]
+  },
+  {
+    id: 'ads',
+    tzh: '點廣告的人買得比較多', ten: 'People who click the ad buy more',
+    find: [`資料顯示：點過我們搜尋廣告的顧客，每月平均消費 NT$2,000；沒點過的只有 NT$500。行銷部提議把下一季的搜尋廣告預算加倍。`,
+           `The data show that customers who clicked our search ads spend NT$2,000 a month on average, against NT$500 for those who did not. Marketing proposes doubling next quarter's search-ad budget.`],
+    now: [`補充：十次點擊裡有九次，來自在搜尋框輸入「巷口超商」的人。`,
+          `One more fact: nine clicks in ten come from people who typed "Corner Mart" into the search box.`],
+    chart: chartAds,
+    facts: [
+      [`大。要多花 NT$300 萬，合約一簽就是一季，不能退。`, `Large. NT$3M more, and the contract locks you in for a full quarter with no refund.`],
+      [`等得起。合約 3 週後才簽，查原因只要 2 週。`, `Yes. The contract is signed in 3 weeks; an investigation takes 2 weeks.`],
+      [`整整一季。`, `A full quarter.`]
+    ],
+    apply: {
+      d: [`現在就簽約，把搜尋廣告預算加倍。`, `Sign now and double the search-ad budget.`],
+      profit: -200,
+      out: [`多花了 NT$300 萬廣告費，新增的毛利只有 NT$100 萬。點廣告的人本來就在找我們，沒有廣告他們也會來。`,
+            `You spent NT$3M more on ads and gained only NT$1M in gross profit. The people clicking were already looking for you; they would have come without the ad.`]
+    },
+    ask: {
+      d: [`先在 3 個縣市停掉搜尋廣告 2 週，看銷售會不會掉。`, `First switch the search ads off in 3 counties for 2 weeks and see whether sales fall.`],
+      profit: 60,
+      out: [`停掉廣告的 3 個縣市，銷售幾乎沒有掉：顧客改點下方免費的搜尋結果進來。你們沒有加碼，還砍掉一部分品牌關鍵字廣告，扣掉實驗成本後一季省下 NT$60 萬。`,
+            `In the 3 counties without ads, sales barely moved: customers clicked the free search result just below instead. You did not double the budget, and you cut part of the brand-keyword spend, saving NT$0.6M for the quarter after the cost of the test.`]
+    },
+    kind: [`假相關（自我選擇）`, `A spurious association (self-selection)`],
+    why: [`是本來就愛買的人才會去點廣告，不是廣告讓人買得更多。`, `Heavy buyers were the ones clicking; the ad did not turn them into heavy buyers.`],
+    rule: [`代價大、不能收回、等得起，而且「誰會出現在這份資料裡」很可疑：這種時候要先查。`,
+           `High cost if wrong, no way back, time to spare, and a doubtful answer to "who ends up in this data?": here you ask why first.`],
+    real: [`eBay 做過大規模實驗，發現品牌關鍵字廣告在短期內量不到任何效益；用相關算出來的搜尋廣告報酬，遠高於實驗量到的結果。`,
+           `In a large field experiment, eBay found that brand-keyword ads had no measurable short-term benefit, and that the returns on search ads estimated from correlations were far higher than those the experiment measured.`],
+    src: [`Blake, T., Nosko, C., &amp; Tadelis, S. (2015). Consumer heterogeneity and paid search effectiveness: A large-scale field experiment. <i>Econometrica, 83</i>(1), 155–174. <a href="https://www.nber.org/papers/w20171" target="_blank" rel="noopener">nber.org/papers/w20171</a>`,
+          `Gordon, B. R., Zettelmeyer, F., Bhargava, N., &amp; Chapsky, D. (2019). A comparison of approaches to advertising measurement: Evidence from big field experiments at Facebook. <i>Marketing Science, 38</i>(2), 193–225. <a href="https://doi.org/10.1287/mksc.2018.1135" target="_blank" rel="noopener">doi.org/10.1287/mksc.2018.1135</a>`]
+  },
+  {
+    id: 'search',
+    tzh: '用搜尋量自動訂貨', ten: 'Ordering stock from search volume',
+    find: [`資料顯示：過去兩個冬天，網路上「感冒」的搜尋量一升高，隔週我們的熱飲和感冒用品就跟著大賣，兩條線幾乎重疊。有人提議：未來一年讓系統依搜尋量，自動替 500 家門市訂貨。`,
+           `The data show that over the past two winters, whenever online searches for "cold and flu" rose, our hot drinks and cold-care products sold strongly the following week; the two lines almost overlap. The proposal: for the next year, let the system order stock for all 500 stores automatically, based on search volume.`],
+    now: null,
+    chart: chartSearch,
+    facts: [
+      [`中到大。訂錯的貨會過期報廢。`, `Medium to large. Wrong orders expire and are written off.`],
+      [`等得起。冬天 1 個月後才開始，查原因要 1 週。`, `Yes. Winter starts in a month; an investigation takes 1 week.`],
+      [`一整年，系統自動執行，沒有人盯著。`, `A full year, running automatically with nobody watching.`]
+    ],
+    apply: {
+      d: [`下週就上線，讓系統依搜尋量自動訂貨。`, `Go live next week and let the system order from search volume.`],
+      profit: -80,
+      out: [`前兩個月很準，賺了 NT$150 萬。接著一則流感新聞讓所有人都去搜尋「感冒」，但大家並沒有生病。系統照樣大量訂貨，過期報廢損失 NT$230 萬。`,
+            `For two months it worked and earned NT$1.5M. Then a news story about flu sent everyone searching for "cold and flu", although few were actually ill. The system kept ordering heavily, and NT$2.3M of stock expired.`]
+    },
+    ask: {
+      d: [`先弄清楚搜尋量為什麼會跟著銷量走，還有什麼情況下會不準。`, `First find out why search volume tracks sales, and when it would stop doing so.`],
+      profit: 110,
+      out: [`你們發現，這個關聯要「人生病了才去搜尋」才成立。所以上線時多加一道檢查：每週拿實際銷量對帳，差太多就停止加訂。流感新聞那一週，系統自動停手。`,
+            `You found that the association holds only while people search because they are ill. So you launched with one extra check: compare with actual sales every week and stop extra orders when the two drift apart. In the week of the flu news story, the system held back on its own.`]
+    },
+    after: chartSearchAfter,
+    kind: [`會失效的關聯`, `An association that breaks`],
+    why: [`人的行為一變，關聯就斷了，而系統自己不會發現。`, `When people's behavior changed, the association broke, and the system could not notice by itself.`],
+    rule: [`要用很久、又沒有人盯著：這種時候，至少要知道關聯在什麼條件下成立。`,
+           `Used for a long time with nobody watching: here you need at least to know the conditions under which the association holds.`],
+    real: [`Google Flu Trends 用搜尋關鍵字預測流感。2011 年 8 月到 2013 年 9 月的 108 週裡，有 100 週高估；2013 年 2 月的預測值是美國 CDC 數據的兩倍以上。`,
+           `Google Flu Trends predicted flu from search terms. It overestimated flu prevalence in 100 of the 108 weeks from August 2011 to September 2013, and in February 2013 it predicted more than double the level reported by the US CDC.`],
+    src: [`Lazer, D., Kennedy, R., King, G., &amp; Vespignani, A. (2014). The parable of Google Flu: Traps in big data analysis. <i>Science, 343</i>(6176), 1203–1205. <a href="https://doi.org/10.1126/science.1248506" target="_blank" rel="noopener">doi.org/10.1126/science.1248506</a>`]
+  }
+];
+const FACT_KEYS = [
+  ['做錯的代價', 'If you are wrong'],
+  ['等得起嗎', 'Can you wait?'],
+  ['要用多久', 'How long must it hold?']
+];
+
+const SITES = {
+  A: { zh: '轉運站', en: 'Transit hub', x: 170, y: 122, pass: 84000, stay: 3000, profit: -40,
+       out: [`轉運站每天有 84,000 人經過，但大家趕著轉車，平均只停 3 分鐘，很少人走進店裡。這裡的租金還是全城最貴的。`,
+             `84,000 people pass through the transit hub every day, but they are rushing to change lines and stay 3 minutes on average. Few walk in, and the rent is the highest in the city.`] },
+  B: { zh: '大學城', en: 'Campus', x: 62, y: 56, pass: 21000, stay: 7000, profit: 60,
+       out: [`原因找對了：學生有空檔就會進來買。但這裡的人數不多，寒暑假更是幾乎沒有人。`,
+             `The reason was right: students come in when they have a gap. But there are not many people here, and almost none during the summer and winter breaks.`] },
+  C: { zh: '醫學中心', en: 'Medical center', x: 280, y: 60, pass: 25000, stay: 15000, profit: 180,
+       out: [`候診、等領藥、陪病的人，每天有 15,000 人在這裡停留超過 10 分鐘，而且全年無休。`,
+             `People waiting to see a doctor, waiting for prescriptions, or accompanying patients: 15,000 a day stay here longer than 10 minutes, all year round.`] }
+};
+const OTHERS = {
+  n1: { zh: '北住宅區', en: 'North homes', x: 170, y: 20 },
+  n2: { zh: '西住宅區', en: 'West homes', x: 64, y: 186 },
+  n3: { zh: '商辦區', en: 'Offices', x: 282, y: 186 },
+  n4: { zh: '夜市', en: 'Night market', x: 170, y: 232 }
+};
+/* trips in thousands; the 12 flows add up to 120 */
+const FLOWS = [['n1','A',18],['n2','A',16],['n3','A',17],['n4','A',12],['B','A',10],['C','A',11],
+               ['n1','B',5],['n2','B',6],['n1','C',6],['n3','C',8],['n4','n3',5],['n2','n4',6]];
+const BEST = 120 + 60 + 110 + 180;
+
+/* ===== state ===== */
+let G;
+function reset() { G = { profit: 0, tokens: TOKENS, picks: [], ev: null, first: null, final: null }; }
+
+function setStep(s, roundLabel) {
+  document.querySelectorAll('#steps li').forEach(li => li.classList.toggle('on', li.dataset.s === s));
+  const playing = s === 'round' || s === 'map';
+  $('#hud').classList.toggle('hide', !playing);
+  if (roundLabel) $('#hudRound').textContent = roundLabel;
+  hud();
+  window.scrollTo(0, 0);
+}
+function hud() {
+  const p = $('#hudProfit');
+  p.innerHTML = (G.profit > 0 ? '+' : G.profit < 0 ? '−' : '') + Math.abs(G.profit) + ' 萬<small lang="en">' + enAmt(G.profit).replace('+', '') + '</small>';
+  p.classList.toggle('neg', G.profit < 0);
+  $('#hudTok').innerHTML = G.tokens + ' <span class="tok" aria-hidden="true">' + '●'.repeat(G.tokens) + '○'.repeat(TOKENS - G.tokens) + '</span>';
+}
+
+/* ===== charts ===== */
+function chartTyphoon() {
+  const vals = [1, 6.4, 7.2, 6.8, 7.5, 6.9, 7.1];
+  return '<div class="figure"><div class="cap">' + bi('草莓夾心酥的銷量（平常 = 1 倍）', 'Strawberry wafer sales (usual level = 1×)') + '</div>' +
+    '<div class="bars" role="img" aria-label="平常 1 倍；過去 6 次颱風警報後為 6.4 至 7.5 倍。Usual level 1×; 6.4× to 7.5× after each of the past 6 typhoon warnings.">' +
+    vals.map((v, i) => '<div class="c' + (i ? '' : ' base') + '" title="' + (i ? '颱風 Typhoon #' + i : '平常 Usual') + ': ' + v + '×"><span class="v">' + v + '×</span><span class="b" style="height:' + (v / 8 * 100) + 'px"></span><span class="l">' + (i ? '#' + i : '平常') + '</span></div>').join('') +
+    '</div><div class="axisnote">' + bi('灰色：平常。藍色：過去 6 次颱風警報後。', 'Grey: usual level. Blue: after each of the past 6 typhoon warnings.') + '</div></div>';
+}
+function chartAds() {
+  const row = (cls, zh, en, v) => '<div class="r ' + cls + '"><div class="lab">' + bi(zh, en) + '</div><div class="track"><span class="val" style="width:' + (v / 2000 * 100) + '%"></span></div><div class="num">NT$' + num(v) + '</div></div>';
+  return '<div class="figure"><div class="cap">' + bi('每月平均消費', 'Average monthly spend') + '</div><div class="hb">' +
+    row('base', '沒點過廣告', 'Did not click', 500) + row('', '點過廣告', 'Clicked an ad', 2000) + '</div></div>';
+}
+const W1S = [42, 55, 74, 96, 121, 143, 150, 136, 112, 86, 62, 46];
+const W1Q = [45, 52, 70, 101, 117, 139, 154, 131, 115, 82, 66, 44];
+const W2S = [48, 60, 85, 110, 138, 156, 148, 126, 104, 80, 58, 44];
+const W2Q = [44, 63, 81, 114, 133, 160, 144, 130, 100, 84, 55, 47];
+const W3S = [46, 58, 80, 104, 128, 146, 150, 138, 236, 262, 214, 150];
+const W3Q = [48, 55, 84, 100, 131, 142, 153, 134, 118, 104, 92, 80];
+function linePlot(groups, ymax, ticks, note) {
+  /* groups: [{zh,en,s:[...],q:[...]}], one shared y-axis (index, average = 100) */
+  const W = 340, H = 168, L = 30, R = 8, T = 10, B = 34;
+  const gw = (W - L - R - (groups.length - 1) * 14) / groups.length;
+  const y = v => T + (H - T - B) * (1 - v / ymax);
+  let out = '';
+  ticks.forEach(t => { out += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(t) + '" y2="' + y(t) + '" stroke="#dce5f0" stroke-width="1"/><text x="' + (L - 5) + '" y="' + (y(t) + 3.5) + '" text-anchor="end" font-size="10" fill="#5b6b82">' + t + '</text>'; });
+  groups.forEach((g, gi) => {
+    const x0 = L + gi * (gw + 14);
+    const x = i => x0 + gw * i / (g.s.length - 1);
+    const path = a => a.map((v, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1)).join(' ');
+    out += '<path d="' + path(g.q) + '" fill="none" stroke="#c2570c" stroke-width="2" stroke-dasharray="5 3" stroke-linejoin="round" stroke-linecap="round"/>';
+    out += '<path d="' + path(g.s) + '" fill="none" stroke="#1f5fb8" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+    out += '<text x="' + (x0 + gw / 2) + '" y="' + (H - 18) + '" text-anchor="middle" font-size="11" font-weight="700" fill="#172b4d">' + g.zh + '</text>';
+    out += '<text x="' + (x0 + gw / 2) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="9.5" fill="#5b6b82">' + g.en + '</text>';
+    if (g.mark) {
+      const i = g.mark;
+      out += '<circle cx="' + x(i) + '" cy="' + y(g.s[i]) + '" r="4" fill="#1f5fb8" stroke="#fbfdff" stroke-width="2"/><circle cx="' + x(i) + '" cy="' + y(g.q[i]) + '" r="4" fill="#c2570c" stroke="#fbfdff" stroke-width="2"/>';
+      out += '<text x="' + (x(i) - 8) + '" y="' + (y(g.s[i]) + 1) + '" text-anchor="end" font-size="10.5" font-weight="800" fill="#172b4d">' + g.s[i] + '</text>';
+      out += '<text x="' + (x(i) - 8) + '" y="' + (y(g.q[i]) + 12) + '" text-anchor="end" font-size="10.5" font-weight="800" fill="#172b4d">' + g.q[i] + '</text>';
+    }
+  });
+  return '<div class="legend"><span><span class="sw"></span>搜尋量 <i lang="en">Searches</i></span><span><span class="sw b"></span>隔週銷量 <i lang="en">Next-week sales</i></span></div>' +
+    '<svg class="plot" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + note + '">' + out + '</svg>';
+}
+function chartSearch() {
+  return '<div class="figure"><div class="cap">' + bi('「感冒」搜尋量與隔週銷量（兩個冬天的平均 = 100）', '"Cold and flu" searches and next-week sales (two-winter average = 100)') + '</div>' +
+    linePlot([{ zh: '前年冬天', en: 'Two winters ago', s: W1S, q: W1Q }, { zh: '去年冬天', en: 'Last winter', s: W2S, q: W2Q }], 180, [0, 50, 100, 150],
+      '兩個冬天裡，搜尋量與隔週銷量兩條線幾乎重疊。Over two winters the search line and the next-week sales line almost overlap.') + '</div>';
+}
+function chartSearchAfter() {
+  return '<div class="figure"><div class="cap">' + bi('今年冬天：搜尋量暴增，銷量沒有跟上', 'This winter: searches surged and sales did not follow') + '</div>' +
+    linePlot([{ zh: '今年冬天（每週）', en: 'This winter, week by week', s: W3S, q: W3Q, mark: 9 }], 280, [0, 100, 200],
+      '今年冬天第 10 週，搜尋量指數衝到 262，隔週銷量只有 104。In week 10 of this winter the search index reached 262 while next-week sales were 104.') + '</div>';
+}
+
+/* ===== map ===== */
+function mapSvg(mode) {
+  const P = Object.assign({}, SITES, OTHERS);
+  const pass = mode === 'pass';
+  let s = '';
+  FLOWS.forEach(f => {
+    const a = P[f[0]], b = P[f[1]];
+    s += '<line x1="' + a.x + '" y1="' + a.y + '" x2="' + b.x + '" y2="' + b.y + '" stroke="#1f5fb8" stroke-linecap="round" stroke-width="' + (pass ? f[2] * 0.72 : 1.5) + '" opacity="' + (pass ? 0.42 : 0.18) + '"/>';
+  });
+  Object.keys(OTHERS).forEach(k => {
+    const n = OTHERS[k];
+    const below = n.y < 100;
+    s += '<circle cx="' + n.x + '" cy="' + n.y + '" r="5" fill="#9aa8bc" stroke="#f1f5fa" stroke-width="2"/>';
+    s += '<text x="' + n.x + '" y="' + (below ? n.y - 9 : n.y + 16) + '" text-anchor="middle" font-size="10" fill="#5b6b82" stroke="#f1f5fa" stroke-width="3" paint-order="stroke">' + n.zh + ' ' + n.en + '</text>';
+  });
+  Object.keys(SITES).forEach(k => {
+    const n = SITES[k];
+    const v = pass ? n.pass : n.stay;
+    const r = pass ? 2.84 * Math.sqrt(v / 1000) : 6.2 * Math.sqrt(v / 1000);
+    const ly = n.y + Math.max(r, 11) + 13;
+    s += '<circle cx="' + n.x + '" cy="' + n.y + '" r="' + r.toFixed(1) + '" fill="#1f5fb8" fill-opacity=".9" stroke="#f1f5fa" stroke-width="2"/>';
+    s += '<text x="' + n.x + '" y="' + (n.y + 4.5) + '" text-anchor="middle" font-size="13" font-weight="900" fill="' + (r < 9 ? '#102a56' : '#fff') + '"' + (r < 9 ? ' stroke="#f1f5fa" stroke-width="3" paint-order="stroke"' : '') + '>' + k + '</text>';
+    s += '<text x="' + n.x + '" y="' + ly + '" text-anchor="middle" font-size="11.5" font-weight="800" fill="#172b4d" stroke="#f1f5fa" stroke-width="3.5" paint-order="stroke">' + n.zh + ' ' + num(v) + '</text>';
+    s += '<text x="' + n.x + '" y="' + (ly + 12) + '" text-anchor="middle" font-size="9.5" fill="#5b6b82" stroke="#f1f5fa" stroke-width="3" paint-order="stroke">' + n.en + '</text>';
+  });
+  const label = pass ? '流向圖：A 轉運站每天 84,000 人經過，B 大學城 21,000，C 醫學中心 25,000。Flow map: 84,000 people a day pass through A Transit hub, 21,000 through B Campus, 25,000 through C Medical center.'
+                     : '停留圖：停留 10 分鐘以上的人，A 轉運站 3,000，B 大學城 7,000，C 醫學中心 15,000。Dwell map: people staying 10 minutes or longer: A Transit hub 3,000, B Campus 7,000, C Medical center 15,000.';
+  return '<svg class="map" viewBox="0 0 340 262" role="img" aria-label="' + label + '">' + s + '</svg>';
+}
+function mapBox(mode) {
+  const cap = mode === 'pass'
+    ? bi('每天經過的人次', 'People passing through per day')
+    : bi('每天停留 10 分鐘以上的人數', 'People staying 10 minutes or longer per day');
+  return '<div class="mapbox"><div class="cap">' + cap + '</div>' + mapSvg(mode) + '</div>';
+}
+function mapTable(both) {
+  return '<div class="tblwrap"><table><thead><tr><th>' + bi('候選地點', 'Candidate site') + '</th><th class="num">' + bi('經過人次', 'Passing through') + '</th>' +
+    (both ? '<th class="num">' + bi('停留 10 分鐘以上', 'Staying 10+ min') + '</th>' : '') + '</tr></thead><tbody>' +
+    Object.keys(SITES).map(k => '<tr><td><b>' + k + '</b> ' + SITES[k].zh + ' <span class="small" lang="en">' + SITES[k].en + '</span></td><td class="num">' + num(SITES[k].pass) + '</td>' +
+      (both ? '<td class="num">' + num(SITES[k].stay) + '</td>' : '') + '</tr>').join('') + '</tbody></table></div>';
+}
+function evidenceMap(both) {
+  return '<h3>' + bi('大數據：全城流向圖', 'Big data: the city flow map') + '</h3>' +
+    '<p>' + bi('一個平日，全城約 12 萬筆手機移動紀錄。線越粗，走這條路的人越多；圓越大，人數越多。',
+               'One weekday, about 120,000 mobile movement records across the city. Thicker lines mean more people on that route; larger circles mean more people.') + '</p>' +
+    '<div class="maps' + (both ? ' two' : '') + '">' + mapBox('pass') + (both ? mapBox('stay') : '') + '</div>' + mapTable(both) +
+    (both ? '' : '<p class="small" style="margin-top:10px">' + bi('分析師畫的是預設報表「經過人次」。沒有人告訴他們還該看什麼。',
+                                                               'The analysts drew the default report, "people passing through." Nobody told them what else to look for.') + '</p>');
+}
+function evidenceTalk() {
+  const row = (cls, zh, en, v) => '<div class="r ' + cls + '"><div class="lab">' + bi(zh, en) + '</div><div class="track"><span class="val" style="width:' + (v / 22 * 100) + '%"></span></div><div class="num">' + v + ' / 30</div></div>';
+  return '<h3>' + bi('小樣本：30 位顧客的深度訪談', 'Small sample: in-depth interviews with 30 customers') + '</h3>' +
+    '<div class="figure"><div class="cap">' + bi('「你通常什麼時候會走進超商？」', '"When do you usually walk into a convenience store?"') + '</div><div class="hb">' +
+    row('', '有空檔、在等的時候', 'While waiting, with time to fill', 22) +
+    row('base', '順路經過的時候', 'When I happen to pass by', 5) +
+    row('base', '其他', 'Other', 3) + '</div></div>' +
+    '<div class="quote">' + bi('「下一堂課還有 20 分鐘，就進來買杯咖啡坐一下。」', '"I had 20 minutes before my next class, so I came in for a coffee and sat down."') + '</div>' +
+    '<div class="quote">' + bi('「趕時間的時候，我根本不會進來。」', '"When I am in a hurry, I never come in."') + '</div>' +
+    '<p class="small">' + bi('注意：30 位受訪者都是大學生，透過校園社團找來的。', 'Note: all 30 are university students, recruited through campus clubs.') + '</p>';
+}
+
+/* ===== 1. BRIEF ===== */
+function renderIntro() {
+  reset();
+  setStep('intro');
+  const st = (zh, en) => '<div class="st">' + bi(zh, en) + '</div>';
+  const ar = '<span class="ar" aria-hidden="true">→</span>';
+  view.innerHTML =
+  '<section class="card"><h2>' + bi('你的任務', 'Your mission') + '</h2>' +
+    '<p>' + bi('你們是連鎖超商「巷口超商」（虛構品牌）的行銷數據小組。資料系統接下來會丟出三個「發現」。每一次你們都要決定：直接套用，還是先查原因。',
+               'You are the marketing data team at Corner Mart, a fictional convenience-store chain. The data system is about to hand you three findings. Each time you must decide: apply the finding right away, or ask why first.') + '</p>' +
+    '<div class="ways">' +
+      '<div class="way"><div class="nm">小樣本時代<i lang="en">Small-sample era</i></div><div class="chain">' + st('觀察現象', 'Observe the phenomenon') + ar + st('找出原因', 'Find the cause') + ar + st('提出建議', 'Derive recommendations') + '</div></div>' +
+      '<div class="way big"><div class="nm">大數據時代<i lang="en">Big data era</i></div><div class="chain">' + st('觀察現象', 'Observe the phenomenon') + ar + st('找出關聯', 'Map the associations') + ar + st('直接使用', 'Apply directly') + '</div></div>' +
+    '</div>' +
+    '<p>' + bi('找到關聯就直接用，比較快。但什麼時候可以這樣做？', 'Applying an association directly is faster. But when is that safe?') + '</p></section>' +
+
+  '<section class="card"><h2>' + bi('規則', 'Rules') + '</h2><ol class="rules">' +
+    '<li>' + bi('<b>直接套用</b>：今天就行動。你們不知道關聯背後的原因。', '<b>Apply directly</b>: act today. You do not know what lies behind the association.') + '</li>' +
+    '<li>' + bi('<b>先查原因</b>：要花時間和人力。這一季分析師只夠查 2 次，三個發現不可能每個都查。', '<b>Ask why first</b>: this takes time and people. Your analysts can run only 2 investigations this quarter, so you cannot investigate all three findings.') + '</li>' +
+    '<li>' + bi('最後一題是替新門市選地點。四題的利潤加總，就是你們這一組的成績。', 'The last round is choosing a site for a new store. Your team\'s score is the total profit over the four rounds.') + '</li></ol>' +
+    '<div class="note">' + bi('每一題先在組內討論，再由一個人按下選擇。相同的選擇一定得到相同的結果，全班可以互相比較。',
+                             'Discuss each round as a team before one person taps the choice. The same choices always give the same result, so the class can compare.') + '</div>' +
+    '<div class="btnrow"><button class="primary" id="go" type="button">' + bi('開始第 1 題 ▶', 'Start round 1') + '</button></div></section>';
+  $('#go').onclick = () => renderRound(0);
+}
+
+/* ===== 2. THREE FINDINGS ===== */
+function renderRound(i) {
+  const r = ROUNDS[i];
+  setStep('round', (i + 1) + ' / 4');
+  const noTok = G.tokens === 0;
+  view.innerHTML =
+  '<section class="card"><div class="eyebrow">' + '發現 ' + (i + 1) + ' / 3 · FINDING ' + (i + 1) + ' OF 3</div>' +
+    '<h2>' + bi(r.tzh, r.ten) + '</h2>' +
+    '<p class="find">' + bi(r.find[0], r.find[1]) + '</p>' +
+    r.chart() +
+    (r.now ? '<div class="note warn">' + bi(r.now[0], r.now[1]) + '</div>' : '') +
+    '<div class="facts">' + r.facts.map((f, k) => '<div class="fact"><div class="k">' + FACT_KEYS[k][0] + '<span lang="en">' + FACT_KEYS[k][1] + '</span></div>' + bi(f[0], f[1]) + '</div>').join('') + '</div>' +
+    '<div class="ask-h">' + bi('你們決定怎麼做？', 'What does your team decide?') + '</div>' +
+    '<div class="choices">' +
+      '<button class="choice" type="button" data-c="apply" aria-pressed="false"><span class="t">直接套用<i lang="en">Apply directly</i></span><span class="d">' + bi(r.apply.d[0], r.apply.d[1]) + '</span></button>' +
+      '<button class="choice" type="button" data-c="ask" aria-pressed="false"' + (noTok ? ' disabled' : '') + '><span class="t">先查原因<i lang="en">Ask why first</i></span><span class="d">' + bi(r.ask.d[0], r.ask.d[1]) + '</span>' +
+        '<span class="c">' + (noTok ? bi('分析師已經沒有空了：2 次調查都用完了。', 'Your analysts have no time left: both investigations are used up.')
+                                    : bi('會用掉 1 次調查（目前剩 ' + G.tokens + ' 次）', 'Uses 1 investigation (' + G.tokens + ' left)')) + '</span></button>' +
+    '</div>' +
+    '<div class="btnrow"><button class="primary" id="confirm" type="button" disabled>' + bi('確定', 'Confirm') + '</button></div>' +
+  '</section><div id="out"></div>';
+  let pick = null;
+  view.querySelectorAll('.choice').forEach(b => b.onclick = () => {
+    pick = b.dataset.c;
+    view.querySelectorAll('.choice').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    $('#confirm').disabled = false;
+  });
+  $('#confirm').onclick = () => {
+    if (!pick) return;
+    view.querySelectorAll('.choice').forEach(x => { x.disabled = true; x.classList.add('locked'); });
+    $('#confirm').classList.add('hide');
+    reveal(i, pick);
+  };
+}
+function reveal(i, pick) {
+  const r = ROUNDS[i], mine = r[pick], other = r[pick === 'apply' ? 'ask' : 'apply'];
+  const forced = pick === 'apply' && G.tokens === 0;
+  G.picks[i] = { pick: pick, profit: mine.profit, forced: forced };
+  G.profit += mine.profit;
+  if (pick === 'ask') G.tokens--;
+  hud();
+  const good = mine.profit > other.profit;
+  $('#out').innerHTML =
+  '<section class="card" id="outcard" tabindex="-1"><div class="eyebrow">' + '結果 · RESULT' + '</div>' +
+    '<div class="delta ' + (mine.profit >= 0 ? 'pos' : 'neg') + '">' + zhAmt(mine.profit) + '<small lang="en">' + enAmt(mine.profit) + '</small></div>' +
+    '<div class="note ' + (good ? 'good' : 'bad') + '" style="margin-top:12px">' + bi(mine.out[0], mine.out[1]) + '</div>' +
+    (r.after ? r.after() : '') +
+    '<p><span class="kind">' + r.kind[0] + '<i lang="en">' + r.kind[1] + '</i></span></p>' +
+    '<p>' + bi(r.why[0], r.why[1]) + '</p>' +
+    '<p>' + bi('<b>' + r.rule[0] + '</b>', r.rule[1]) + '</p>' +
+    '<div class="other">' + bi('如果選「' + (pick === 'apply' ? '先查原因' : '直接套用') + '」：' + zhAmt(other.profit) + '。' + other.out[0],
+                               'Had you chosen "' + (pick === 'apply' ? 'Ask why first' : 'Apply directly') + '": ' + enAmt(other.profit) + '. ' + other.out[1]) + '</div>' +
+    '<details class="real"><summary>真實案例 <span lang="en">Real case</span></summary><p>' + bi(r.real[0], r.real[1]) + '</p></details>' +
+    '<div class="btnrow"><button class="primary" id="next" type="button">' +
+      (i < 2 ? bi('下一個發現 ▶', 'Next finding') : bi('前往最後一題：選址 ▶', 'On to the last round: the new store')) + '</button></div></section>';
+  $('#next').onclick = () => (i < 2 ? renderRound(i + 1) : renderMapPick());
+  const c = $('#outcard'); c.scrollIntoView({ behavior: 'smooth', block: 'start' }); c.focus({ preventScroll: true });
+}
+
+/* ===== 3. THE NEW STORE ===== */
+function renderMapPick() {
+  setStep('map', '4 / 4');
+  view.innerHTML =
+  '<section class="card"><div class="eyebrow">最後一題 · LAST ROUND</div><h2>' + bi('新門市開在哪裡？', 'Where should the new store go?') + '</h2>' +
+    '<p class="find">' + bi('公司要開一家新門市，候選地點有三個：A 轉運站、B 大學城、C 醫學中心。預算只夠先買一份資料，你們要哪一份？',
+                            'The company will open one new store. There are three candidate sites: A Transit hub, B Campus, C Medical center. Your budget covers only one piece of evidence to start with. Which do you want?') + '</p>' +
+    '<div class="choices">' +
+      '<button class="choice" type="button" data-e="map" aria-pressed="false"><span class="t">大數據<i lang="en">Big data</i></span><span class="d">' +
+        bi('全城 12 萬筆手機移動紀錄畫成的流向圖。看得到人往哪裡走，問不到為什麼。', 'A flow map drawn from 120,000 mobile movement records. It shows where people go, not why.') + '</span></button>' +
+      '<button class="choice" type="button" data-e="talk" aria-pressed="false"><span class="t">小樣本<i lang="en">Small sample</i></span><span class="d">' +
+        bi('30 位顧客的深度訪談。問得到為什麼，但只有 30 個人。', 'In-depth interviews with 30 customers. They tell you why, but there are only 30 of them.') + '</span></button>' +
+    '</div>' +
+    '<div class="btnrow"><button class="primary" id="confirm" type="button" disabled>' + bi('取得這份資料', 'Get this evidence') + '</button></div></section>';
+  let e = null;
+  view.querySelectorAll('.choice').forEach(b => b.onclick = () => {
+    e = b.dataset.e;
+    view.querySelectorAll('.choice').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    $('#confirm').disabled = false;
+  });
+  $('#confirm').onclick = () => { if (e) { G.ev = e; renderMapFirst(); } };
+}
+function siteButtons(marked) {
+  return '<div class="sites">' + Object.keys(SITES).map(k =>
+    '<button class="site-btn" type="button" data-k="' + k + '" aria-pressed="false"><b>' + k + '</b>' + bi(SITES[k].zh, SITES[k].en) +
+    (marked === k ? '<span class="tag">第一次的選擇<br><span lang="en">Your first pick</span></span>' : '') + '</button>').join('') + '</div>';
+}
+function wireSites(btnSel, done) {
+  let k = null;
+  view.querySelectorAll('.site-btn').forEach(b => b.onclick = () => {
+    k = b.dataset.k;
+    view.querySelectorAll('.site-btn').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    $(btnSel).disabled = false;
+  });
+  $(btnSel).onclick = () => { if (k) done(k); };
+}
+function renderMapFirst() {
+  setStep('map', '4 / 4');
+  view.innerHTML =
+  '<section class="card"><div class="eyebrow">第一份資料 · FIRST EVIDENCE</div>' + (G.ev === 'map' ? evidenceMap(false) : evidenceTalk()) + '</section>' +
+  '<section class="card"><h2>' + bi('只看這份資料，你們會選哪裡？', 'On this evidence alone, which site would you pick?') + '</h2>' +
+    siteButtons(null) +
+    '<div class="btnrow"><button class="primary" id="lock" type="button" disabled>' + bi('記下第一次的選擇', 'Record our first pick') + '</button></div></section>';
+  wireSites('#lock', k => { G.first = k; renderMapSecond(); });
+}
+function renderMapSecond() {
+  setStep('map', '4 / 4');
+  const lead = G.ev === 'map'
+    ? bi('訪談告訴你們，顧客是在「等」的時候才買東西。於是你們請分析師用同一批 12 萬筆紀錄，再畫一張圖：哪裡的人停留超過 10 分鐘？',
+         'The interviews say customers buy while they are waiting. So you ask the analysts to draw one more map from the same 120,000 records: where do people stay longer than 10 minutes?')
+    : bi('因為訪談說顧客是在「等」的時候才買東西，你們請分析師畫兩張圖：哪裡經過的人最多，以及哪裡的人停留超過 10 分鐘。',
+         'Because the interviews say customers buy while waiting, you ask the analysts for two maps: where most people pass through, and where people stay longer than 10 minutes.');
+  view.innerHTML =
+  '<section class="card"><div class="eyebrow">第二份資料 · SECOND EVIDENCE</div>' +
+    '<p>' + bi('公司追加了預算，另一份資料也到了。', 'The company found more budget, and the other piece of evidence has arrived.') + '</p>' +
+    (G.ev === 'map' ? evidenceTalk() + '<div class="note" style="margin-top:14px">' + lead + '</div>' + evidenceMap(true)
+                    : '<div class="note">' + lead + '</div>' + evidenceMap(true)) + '</section>' +
+  '<section class="card"><h2>' + bi('兩份資料都看過了。最後決定開在哪裡？', 'You have seen both. Where will the store go?') + '</h2>' +
+    siteButtons(G.first) +
+    '<div class="btnrow"><button class="primary" id="lock" type="button" disabled>' + bi('確定最後的地點', 'Confirm the final site') + '</button></div></section>';
+  wireSites('#lock', k => { G.final = k; G.profit += SITES[k].profit; renderMapResult(); });
+}
+function renderMapResult() {
+  setStep('map', '4 / 4');
+  const f = SITES[G.final], changed = G.first !== G.final;
+  view.innerHTML =
+  '<section class="card"><div class="eyebrow">結果 · RESULT</div>' +
+    '<h2>' + bi('新門市開在 ' + G.final + ' ' + f.zh, 'The new store opened at ' + G.final + ' ' + f.en) + '</h2>' +
+    '<div class="delta ' + (f.profit >= 0 ? 'pos' : 'neg') + '">' + zhAmt(f.profit) + '<small lang="en">' + enAmt(f.profit) + '</small></div>' +
+    '<p style="margin-top:10px">' + (changed
+      ? bi('你們第一次選 ' + G.first + '，看過第二份資料後改成 ' + G.final + '。', 'Your first pick was ' + G.first + '; after the second piece of evidence you moved to ' + G.final + '.')
+      : bi('你們兩次都選 ' + G.final + '。', 'You picked ' + G.final + ' both times.')) + '</p>' +
+    Object.keys(SITES).map(k => '<div class="res' + (k === G.final ? ' mine' : '') + '"><div class="badge">' + k + '</div><div><div class="hd">' + SITES[k].zh + ' <span class="small" lang="en">' + SITES[k].en + '</span><span class="amt ' + (SITES[k].profit >= 0 ? 'pos' : 'neg') + '">' + zhAmt(SITES[k].profit) + '</span>' +
+      (k === G.final ? '<span class="you">你們的選擇 · Your site</span>' : '') + '</div>' + bi(SITES[k].out[0], SITES[k].out[1]) + '</div></div>').join('') +
+    '<div class="note" style="margin-top:14px">' + bi('<b>流向圖知道「哪裡人多」，訪談知道「人為什麼買」。先知道原因，才知道該問資料什麼問題。</b>',
+      'The flow map knew where the crowds were; the interviews knew why people buy. Knowing the reason told you which question to ask of the data.') + '</div>' +
+    '<div class="btnrow"><button class="primary" id="next" type="button">' + bi('看總成績與檢討 ▶', 'See the total and the debrief') + '</button></div></section>';
+  $('#next').onclick = renderEnd;
+}
+
+/* ===== 4. DEBRIEF ===== */
+function renderEnd() {
+  setStep('end');
+  const sub = G.picks.reduce((a, p) => a + p.profit, 0);
+  const tile = (cls, zh, en, n, extra) => '<div class="tile ' + cls + '"><div class="k">' + bi(zh, en) + '</div><div class="v ' + (n >= 0 ? 'pos' : 'neg') + '">' + zhAmt(n) + '<small lang="en">' + enAmt(n) + (extra || '') + '</small></div></div>';
+  const lab = p => p === 'apply' ? bi('直接套用', 'Apply directly') : bi('先查原因', 'Ask why first');
+  const rows = ROUNDS.map((r, i) => {
+    const p = G.picks[i], o = r[p.pick === 'apply' ? 'ask' : 'apply'];
+    return '<div class="rc"><div class="rc-t"><b>' + (i + 1) + '. ' + r.tzh + '</b><span class="en" lang="en">' + r.ten + '</span></div>' +
+      '<div class="rc-c"><div class="k">' + bi('你們的選擇', 'Your choice') + '</div><div class="rc-v"><b>' + (p.pick === 'apply' ? '直接套用' : '先查原因') + '</b> <span class="' + (p.profit >= 0 ? 'pos' : 'neg') + '">' + zhAmt(p.profit) + '</span></div>' +
+        '<div class="small" lang="en">' + (p.pick === 'apply' ? 'Apply directly' : 'Ask why first') + (p.forced ? ' (no investigations left)' : '') + '</div>' +
+        (p.forced ? '<div class="small">調查用完了</div>' : '') + '</div>' +
+      '<div class="rc-c"><div class="k">' + bi('另一個選擇', 'The other choice') + '</div><div class="rc-v">' + (p.pick === 'apply' ? '先查原因' : '直接套用') + ' <span class="' + (o.profit >= 0 ? 'pos' : 'neg') + '">' + zhAmt(o.profit) + '</span></div>' +
+        '<div class="small" lang="en">' + (p.pick === 'apply' ? 'Ask why first' : 'Apply directly') + '</div></div>' +
+      '<div class="rc-c"><div class="k">' + bi('關聯的類型', 'Type of association') + '</div><div class="rc-v"><b>' + r.kind[0] + '</b></div><div class="small" lang="en">' + r.kind[1] + '</div></div></div>';
+  }).join('');
+  view.innerHTML =
+  '<section class="card"><h2>' + bi('你們的成績', 'Your team\'s result') + '</h2>' +
+    '<div class="tiles">' + tile('main', '總利潤', 'Total profit', G.profit) + tile('', '三個發現小計', 'Three findings', sub) + tile('', '新門市（' + G.final + '）', 'New store (' + G.final + ')', SITES[G.final].profit) + '</div>' +
+    '<p class="small">' + bi('最高可能的總利潤是 ' + zhAmt(BEST).replace('+', '') + '。每一題都直接套用、再把門市開在人最多的 A，會得到 −NT$200 萬。',
+                             'The highest possible total is ' + enAmt(BEST).replace('+', '') + '. Applying every finding directly and then opening at A, the busiest site, gives −NT$2M.') + '</p>' +
+    '<div class="recap">' + rows + '</div></section>' +
+
+  '<section class="card"><h2>' + bi('什麼時候「知道關聯就夠了」？', 'When is the association alone enough?') + '</h2>' +
+    '<p>' + bi('三個發現的統計關聯都是真的，但只有第一個可以直接用。動手之前先問四個問題：', 'All three associations were real in the data, yet only the first was safe to apply directly. Four questions to ask before you act:') + '</p>' +
+    '<ol class="four">' +
+    '<li>' + bi('<b>做錯的代價大不大？能不能收回？</b>', 'How costly is it to be wrong, and can you undo it?') + '</li>' +
+    '<li>' + bi('<b>等得起嗎？</b>', 'Can you afford to wait?') + '</li>' +
+    '<li>' + bi('<b>要用多久？人的行為變了，它還成立嗎？</b>', 'How long must it hold? Would it survive a change in behavior?') + '</li>' +
+    '<li>' + bi('<b>資料裡的這些人，是怎麼出現在資料裡的？</b>', 'How did the people in the data come to be in the data?') + '</li></ol></section>' +
+
+  '<section class="card"><h2>' + bi('小組討論', 'Team discussion') + '</h2><ol class="disc">' +
+    '<li>' + bi('三個發現裡，哪一個讓你們組內意見最分歧？最後是什麼理由讓你們做了決定？', 'Which of the three findings divided your team the most? What reason settled it in the end?') + '</li>' +
+    '<li>' + bi('投影片說大數據時代是「找出關聯，直接使用」。根據剛才的經驗，這句話在什麼條件下成立？什麼條件下很危險？',
+                'The slide says that in the big data era we "map the associations and apply directly." From what you just experienced, under what conditions does that hold, and when is it dangerous?') + '</li></ol></section>' +
+
+  '<section class="card"><h2>' + bi('三個發現背後的真實案例', 'The real cases behind the three findings') + '</h2>' +
+    ROUNDS.map((r, i) => '<div class="case"><b>' + (i + 1) + '. ' + r.kind[0] + '</b> <span class="small" lang="en">' + r.kind[1] + '</span>' +
+      '<p style="margin:5px 0 0">' + bi(r.real[0], r.real[1]) + '</p>' +
+      r.src.map(s => '<div class="src">' + s + '</div>').join('') + '</div>').join('') +
+    '<p class="small" style="margin-top:10px">' + bi('遊戲裡的品牌、金額與資料都是教學用的虛構設定；選址那一題沒有對應的真實案例。',
+      'The brand, the amounts, and the data in the game are invented for teaching. The store-location round is not based on a real case.') + '</p>' +
+    '<div class="btnrow"><button class="primary" id="again" type="button">' + bi('再玩一次', 'Play again') + '</button></div></section>';
+  $('#again').onclick = renderIntro;
+}
+
+renderIntro();
+</script>
+</body>
+</html>

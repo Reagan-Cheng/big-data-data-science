@@ -105,6 +105,30 @@
         <button class="button secondary" type="button" data-copy="3" id="copy3">複製網址</button>
       </div>
     </article>
+
+    <article class="game">
+      <div class="num">ACTIVITY 04</div>
+      <h2 id="g4Title">直接用，還是先問為什麼？</h2>
+      <p id="g4Desc">扮演連鎖超商的行銷數據小組：資料系統丟出三個「發現」，每次都要決定直接套用還是先查原因，而調查只夠做兩次；最後用流向圖與顧客訪談替新門市選地點。約 10 分鐘。</p>
+      <div class="game-meta">
+        <span class="tag" data-zh="因果與相關" data-en="Causation vs. Correlation">因果與相關</span>
+        <span class="tag" data-zh="小組決策" data-en="Team Decisions">小組決策</span>
+        <span class="tag" data-zh="中英文同時顯示" data-en="Chinese & English shown together">中英文同時顯示</span>
+      </div>
+      <p class="hint" id="g4Note">公開活動：學生可直接開啟遊戲，或掃描 QR Code 進入。同樣的選擇一定得到同樣的結果，方便全班比較做法。</p>
+      <div class="urlbox" id="url4"></div>
+      <div class="qr-code" data-qr-path="/chapter-02/games/apply-or-ask-why/">
+        <img class="qr-image" src="../assets/qr/apply-or-ask-why.png" width="192" height="192" alt="直接用，還是先問為什麼？ QR Code" data-qr-zh="直接用，還是先問為什麼？ QR Code" data-qr-en="Apply It, or Ask Why? QR Code">
+        <div>
+          <div data-qr-zh="掃描後直接進入遊戲" data-qr-en="Scan to open the game directly" class="qr-help">掃描後直接進入遊戲</div>
+          <a data-qr-zh="下載 PNG 圖片" data-qr-en="Download PNG" class="button secondary qr-download" href="../assets/qr/apply-or-ask-why.png" download="big-data-apply-or-ask-why-qr.png">下載 PNG 圖片</a>
+        </div>
+      </div>
+      <div class="actions">
+        <a class="button" href="games/apply-or-ask-why/" target="_blank" id="open4">開啟遊戲</a>
+        <button class="button secondary" type="button" data-copy="4" id="copy4">複製網址</button>
+      </div>
+    </article>
   </div>
 
   <section class="card teacher-panel">
@@ -120,11 +144,12 @@
 <footer id="footer">Chapter 2｜大數據行銷</footer>
 
 <script>
-const COUNT=3;
+const COUNT=4;
 const paths=[
  "games/traveler/",
  "games/last-coupon/",
- "games/dynamic-labels/"
+ "games/dynamic-labels/",
+ "games/apply-or-ask-why/"
 ];
 function gameUrl(i){ return new URL(paths[i-1], window.location.href).href; }
 function refreshUrls(){for(let i=1;i<=COUNT;i++)document.getElementById("url"+i).textContent=gameUrl(i)}
@@ -149,7 +174,9 @@ zh:{
  g2Note:"公開活動：學生可直接開啟遊戲，或掃描 QR Code 進入。建議每組共用一台裝置；同樣的決定一定得到同樣的結果，方便各組比較。",
  g3Title:"動態標籤實戰",g3Desc:"扮演咖啡品牌的會員行銷經理：系統每週依最新的購買行為替會員重新貼標籤，你要替每一種標籤選擇活動、經營八週，體驗標籤如何跟著行為改變。",
  g3Note:"公開活動：學生可直接開啟遊戲，或掃描 QR Code 進入。同樣的決定一定得到同樣的結果，方便全班比較做法。",
- open1:"開啟活動",open2:"開啟遊戲",open3:"開啟遊戲",copy:"複製網址",qrTitle:"QR Code 圖片下載",
+ g4Title:"直接用，還是先問為什麼？",g4Desc:"扮演連鎖超商的行銷數據小組：資料系統丟出三個「發現」，每次都要決定直接套用還是先查原因，而調查只夠做兩次；最後用流向圖與顧客訪談替新門市選地點。約 10 分鐘。",
+ g4Note:"公開活動：學生可直接開啟遊戲，或掃描 QR Code 進入。同樣的選擇一定得到同樣的結果，方便全班比較做法。",
+ open1:"開啟活動",open2:"開啟遊戲",open3:"開啟遊戲",open4:"開啟遊戲",copy:"複製網址",qrTitle:"QR Code 圖片下載",
  qrText:"每個活動的 QR Code 已自動建立，掃描後可直接進入活動。按「下載 PNG 圖片」即可保存圖片；課程首頁另提供本章的 QR Code。",
  homeBtn:"返回課程首頁",footer:"Chapter 2｜大數據行銷"
 },
@@ -162,14 +189,16 @@ en:{
  g2Note:"Public activity: students can open the game directly or scan the QR code. One device per team works best; the same decisions always give the same result, so teams can compare.",
  g3Title:"Dynamic Labels in Action",g3Desc:"Play the membership marketing manager of a coffee brand: every week the system re-labels members from their latest purchase behavior. Choose a campaign for each label, run eight weeks, and see how labels move with behavior.",
  g3Note:"Public activity: students can open the game directly or scan the QR code. The same decisions always give the same result, so the class can compare approaches.",
- open1:"Open Activity",open2:"Open Game",open3:"Open Game",copy:"Copy URL",qrTitle:"Download QR Code Images",
+ g4Title:"Apply It, or Ask Why?",g4Desc:"Play the marketing data team of a convenience-store chain: the data system hands you three findings, and each time you decide whether to apply it directly or ask why first, with only two investigations to spend. The last round picks a site for a new store from a flow map and customer interviews. About 10 minutes.",
+ g4Note:"Public activity: students can open the game directly or scan the QR code. The same choices always give the same result, so the class can compare approaches.",
+ open1:"Open Activity",open2:"Open Game",open3:"Open Game",open4:"Open Game",copy:"Copy URL",qrTitle:"Download QR Code Images",
  qrText:"Each activity has an automatically generated QR Code that opens it directly. Select Download PNG to save the image. A QR Code for this chapter is also available on the course home page.",
  homeBtn:"Back to Course Home",footer:"Chapter 2 | Big Data in Marketing"
 }};
 let current="zh";
 function setLang(l){
  current=l; document.documentElement.lang=l==="zh"?"zh-Hant":"en"; const t=lang[l];
- ["title","subtitle","langLabel","teacherNote","g1Title","g1Desc","g1Note","g2Title","g2Desc","g2Note","g3Title","g3Desc","g3Note","open1","open2","open3","qrTitle","qrText","homeBtn","footer"].forEach(k=>{
+ ["title","subtitle","langLabel","teacherNote","g1Title","g1Desc","g1Note","g2Title","g2Desc","g2Note","g3Title","g3Desc","g3Note","g4Title","g4Desc","g4Note","open1","open2","open3","open4","qrTitle","qrText","homeBtn","footer"].forEach(k=>{
    const e=document.getElementById(k); if(e)e.textContent=t[k];
  });
  for(let i=1;i<=COUNT;i++)document.getElementById("copy"+i).textContent=t.copy;

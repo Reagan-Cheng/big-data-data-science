@@ -17,6 +17,7 @@ This website is for teaching the Big Data & Data Science course at National Taiw
 - [旅人人格測驗 / Traveler Personality Quiz](https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/traveler/)
 - [最後一張優惠券 / The Last Coupon](https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/last-coupon/)
 - [動態標籤實戰 / Dynamic Labels in Action](https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/dynamic-labels/)
+- [直接用，還是先問為什麼？ / Apply It, or Ask Why?](https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/apply-or-ask-why/)
 
 首頁提供課程首頁與各章的 QR Code；各章頁面提供該章每個活動的 QR Code，皆可下載 PNG 圖片。
 The home page carries QR Codes for the course home and each chapter; each chapter page carries the QR Codes for its own activities. All can be downloaded as PNG.
@@ -28,9 +29,10 @@ The home page carries QR Codes for the course home and each chapter; each chapte
 第一章的四個互動遊戲分別位於 chapter-01/games/ 下的 titanic、predpol、decision-lab、airline-survival。
 四個遊戲 HTML 與提供的原始 ZIP 完全一致，保留原有遊戲邏輯與語言功能。
 
-第二章有三個活動：旅人人格測驗位於 chapter-02/games/traveler/，檔案與提供的原始 ZIP 完全一致（來源與許可說明見該資料夾的 README.md 與 sources/），右上角可切換中文與英文；
+第二章有四個活動：旅人人格測驗位於 chapter-02/games/traveler/，檔案與提供的原始 ZIP 完全一致（來源與許可說明見該資料夾的 README.md 與 sources/），右上角可切換中文與英文；
 最後一張優惠券位於 chapter-02/games/last-coupon/，右上角可切換中文與英文；
-動態標籤實戰位於 chapter-02/games/dynamic-labels/，中英文同時顯示。
+動態標籤實戰位於 chapter-02/games/dynamic-labels/，中英文同時顯示；
+「直接用，還是先問為什麼？」位於 chapter-02/games/apply-or-ask-why/，中英文同時顯示，對應講義 Causation vs. Correlation 一頁，約 10 分鐘。
 
 最後一張優惠券是單一 index.html，內含三段程式：ENGINE（顧客模擬模型，參數集中在開頭的 P 物件）、COPY（全部中英文文字）、APP（畫面與流程）。
 網址後加 ?seed=7 可換一批模擬會員，?lang=zh 或 ?lang=en 指定首次開啟的語言，?reset=1 清除該裝置上的進度。

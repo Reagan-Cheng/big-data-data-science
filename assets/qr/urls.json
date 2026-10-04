@@ -68,5 +68,12 @@
     "zh": "動態標籤實戰",
     "en": "Dynamic Labels in Action",
     "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/dynamic-labels/"
+  },
+  {
+    "file": "apply-or-ask-why",
+    "path": "/chapter-02/games/apply-or-ask-why/",
+    "zh": "直接用，還是先問為什麼？",
+    "en": "Apply It, or Ask Why?",
+    "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/apply-or-ask-why/"
   }
 ]
