@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>預測式巡邏：偏誤迴圈 | Predictive Policing: Bias Loop</title>
+<style>
+  :root{
+    --bg:#eef4f9; --ink:#102a43; --muted:#627d98; --blue:#2f80c8; --blue2:#1f5f96;
+    --red:#e53935; --red2:#ff6b6b; --panel:#ffffff; --line:#cbd5e1; --green:#2f9e44;
+    --amber:#f59f00; --soft:#f4f8fb;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans TC",Arial,sans-serif;background:var(--bg);color:var(--ink)}
+  .app{max-width:1180px;margin:0 auto;padding:14px}
+  header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+  h1{font-size:clamp(22px,3.8vw,40px);margin:0;line-height:1.05}
+  .sub{font-size:13px;color:var(--muted);margin-top:4px}
+  .badge{background:#fff3f3;border:1px solid #ffc9c9;border-radius:999px;padding:8px 12px;font-weight:700;color:#b42318;font-size:13px;white-space:nowrap}
+  .layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:12px}
+  .card{background:var(--panel);border:1px solid #d8e2ec;border-radius:16px;box-shadow:0 8px 24px rgba(16,42,67,.07)}
+  .mapCard{padding:10px;position:relative;overflow:hidden}
+  #map{position:relative;aspect-ratio:16/10;min-height:420px;border-radius:12px;overflow:hidden;background:
+      linear-gradient(90deg,rgba(255,255,255,.75) 2px,transparent 2px) 0 0/10% 100%,
+      linear-gradient(rgba(255,255,255,.72) 2px,transparent 2px) 0 0/100% 16.66%,
+      #dfe9f2;}
+  #map:before,#map:after{content:"";position:absolute;background:#9fd3e8;opacity:.8;z-index:0}
+  #map:before{width:15%;height:115%;left:58%;top:-8%;transform:rotate(8deg);border-left:5px solid #fff;border-right:5px solid #fff}
+  #map:after{width:110%;height:6%;left:-4%;top:55%;transform:rotate(-5deg);background:#c6d4df;border-top:3px solid #fff;border-bottom:3px solid #fff}
+  .district{position:absolute;border:2px solid rgba(255,255,255,.95);border-radius:10px;padding:7px;background:rgba(255,255,255,.34);backdrop-filter:blur(1px);z-index:1;transition:.2s}
+  .district:hover{background:rgba(255,255,255,.58)}
+  .district .topline{display:flex;justify-content:space-between;gap:4px;align-items:flex-start}
+  .district .name{font-weight:800;font-size:clamp(11px,1.4vw,14px);text-shadow:0 1px 0 #fff;line-height:1.15}
+  .district .meta{font-size:clamp(9px,1.1vw,11px);line-height:1.24;margin-top:3px;color:#334e68;text-shadow:0 1px 0 #fff}
+  .district .icons{margin-top:4px;display:flex;flex-wrap:wrap;gap:4px}
+  .pill{display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:999px;background:rgba(255,255,255,.82);font-size:10px;font-weight:700;color:#486581;border:1px solid rgba(151,167,187,.45)}
+  .dissChip{font-size:10px;font-weight:800;padding:2px 6px;border-radius:999px;background:#eef2f6;color:#6b7280;border:1px solid #d2dae3;white-space:nowrap}
+  .dissChip.lv1{background:#edf7ee;color:#2f9e44;border-color:#c6ebcb}
+  .dissChip.lv2{background:#fff4e6;color:#c77700;border-color:#ffd9a8}
+  .dissChip.lv3{background:#fff1f0;color:#c92a2a;border-color:#ffc9c9}
+  .station{position:absolute;left:45%;top:78%;z-index:4;background:#163f63;color:#fff;border-radius:12px;padding:8px 10px;font-weight:800;font-size:12px;box-shadow:0 4px 12px rgba(0,0,0,.18);border:2px solid #fff}
+  .station:after{content:"🚓";font-size:18px;margin-left:6px}
+  .hotspot{position:absolute;z-index:5;width:42px;height:42px;transform:translate(-50%,-50%);border-radius:9px;background:rgba(229,57,53,.92);border:3px solid #fff;box-shadow:0 0 0 7px rgba(229,57,53,.18),0 5px 14px rgba(0,0,0,.2);cursor:pointer;animation:pulse 1.2s infinite}
+  .hotspot.selected{outline:4px solid #ffd43b;outline-offset:3px}
+  .hotspot small{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-weight:900;color:white;font-size:13px}
+  @keyframes pulse{50%{box-shadow:0 0 0 12px rgba(229,57,53,.05),0 5px 14px rgba(0,0,0,.2)}}
+  .car{position:absolute;z-index:9;font-size:24px;transform:translate(-50%,-50%);filter:drop-shadow(0 2px 2px rgba(0,0,0,.35));transition:left 1.05s linear, top 1.05s linear;pointer-events:none}
+  .right{display:flex;flex-direction:column;gap:12px}
+  .panel{padding:14px}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .stat{background:#f4f8fb;border-radius:12px;padding:10px}
+  .stat b{display:block;font-size:20px}
+  .stat span{font-size:11px;color:var(--muted)}
+  .selectedBox{margin-top:10px;border-top:1px solid #e2e8f0;padding-top:10px;min-height:124px}
+  .selectedBox h3{font-size:14px;margin:0 0 4px}
+  .selectedBox p{font-size:12px;line-height:1.45;margin:3px 0;color:#334e68}
+  button{width:100%;border:0;border-radius:12px;padding:12px 10px;font-weight:800;cursor:pointer;font-size:14px}
+  #dispatch{background:var(--blue);color:white}
+  #dispatch:disabled{opacity:.45;cursor:not-allowed}
+  #startBtn,#restartBtn,#nextBtn,#backBtn{background:#163f63;color:white}
+  #backBtn{background:#6b7d90}
+  .note{font-size:11px;line-height:1.45;color:#526d82;background:#f8fafc;border-radius:10px;padding:10px}
+  .barWrap{margin-top:8px}
+  .bar{height:9px;background:#e6edf3;border-radius:999px;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--red);width:0%;transition:.4s}
+  .barLabel{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:3px}
+  .legend{position:absolute;left:12px;bottom:12px;z-index:8;background:rgba(255,255,255,.94);border-radius:10px;padding:7px 9px;font-size:10px;line-height:1.4;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+  .dangerBox{margin-top:10px;background:#fff5f5;border:1px solid #ffd1d1;border-radius:10px;padding:8px;font-size:11px;color:#8a1c1c}
+  .dangerBox b{display:block;margin-bottom:2px}
+  .areaList{display:flex;flex-direction:column;gap:6px;max-height:240px;overflow:auto;padding-right:2px}
+  .areaItem{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;background:var(--soft);border-radius:10px;padding:8px;font-size:11px}
+  .areaItem .miniName{font-weight:700;color:#1f3d5a}
+  .areaItem .miniMeta{color:#627d98;font-size:10px;margin-top:2px}
+  .overlay{position:fixed;inset:0;background:rgba(8,30,48,.68);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+  .modal{max-width:680px;width:100%;background:white;border-radius:18px;padding:22px;box-shadow:0 24px 80px rgba(0,0,0,.28)}
+  .modal h2{margin:0 0 8px;font-size:24px}
+  .modal p,.modal li{font-size:13px;line-height:1.55;color:#334e68}
+  .modal .warning{background:#fff4e6;border-left:5px solid #f59f00;padding:10px;border-radius:8px;color:#7c4a03}
+  .modal .danger{background:#fff5f5;border-left:5px solid #e03131;padding:10px;border-radius:8px;color:#8a1c1c}
+  .resultGrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 0}
+  .resultItem{background:#f4f8fb;border-radius:10px;padding:9px;font-size:12px}
+  .miniBars{margin-top:12px;max-height:240px;overflow:auto;padding-right:2px}
+  .row{display:grid;grid-template-columns:140px 1fr 32px;gap:7px;align-items:center;margin:7px 0;font-size:11px}
+  .track{height:10px;background:#edf2f7;border-radius:999px;overflow:hidden}
+  .fill{height:100%;background:var(--blue)}
+  .modalActions{display:flex;gap:10px;margin-top:14px}
+  .modalActions button{flex:1}
+  .foot{font-size:10px;color:#7b8794;text-align:center;margin-top:10px}
+  @media (max-width:850px){
+    .layout{grid-template-columns:1fr}
+    .right{display:grid;grid-template-columns:1fr 1fr}
+    .right .card:last-child{grid-column:1/-1}
+    #map{min-height:410px}
+  }
+  @media (max-width:560px){
+    .app{padding:8px}.right{grid-template-columns:1fr}.right .card:last-child{grid-column:auto}
+    header{align-items:flex-start}.badge{font-size:10px;padding:6px 8px}.sub{font-size:11px}
+    #map{min-height:520px;aspect-ratio:10/13}
+    .district .name{font-size:10px}.district .meta{font-size:8px}
+    .station{left:42%;top:82%;font-size:10px}
+    .hotspot{width:34px;height:34px}
+    .resultGrid{grid-template-columns:1fr}
+    .modalActions{flex-direction:column}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <h1>預測式巡邏：偏誤迴圈<br><span style="color:#2f80c8">Predictive Policing: Bias Loop</span></h1>
+      <div class="sub">點選紅區、派警車、避免兩個區域的不滿意度升到 3。 Tap red hotspots, dispatch patrols, and stop two areas from reaching dissatisfaction level 3.</div>
+    </div>
+    <div class="badge">教學模擬 / Teaching Simulation</div>
+  </header>
+
+  <div class="layout">
+    <div class="card mapCard">
+      <div id="map">
+        <div class="district" data-id="A" style="left:3%;top:5%;width:27%;height:31%">
+          <div class="topline"><div class="name">A 商業區 / Business District</div><div class="dissChip" id="chip-A">不滿 1/3</div></div>
+          <div class="meta">白人為主 / Mostly White<br>失業率低 / Low unemployment</div>
+          <div class="icons"><span class="pill">💼 商業 / Business</span><span class="pill">👩🏻‍💼 白人多 / More White</span></div>
+        </div>
+        <div class="district" data-id="B" style="left:33%;top:4%;width:25%;height:28%">
+          <div class="topline"><div class="name">B 河岸住宅 / Riverside</div><div class="dissChip" id="chip-B">不滿 1/3</div></div>
+          <div class="meta">混合族群 / Mixed population<br>中等失業 / Medium unemployment</div>
+          <div class="icons"><span class="pill">🏘️ 住宅 / Housing</span><span class="pill">👥 混合 / Mixed</span></div>
+        </div>
+        <div class="district" data-id="C" style="left:72%;top:6%;width:24%;height:33%">
+          <div class="topline"><div class="name">C 北城 / Northside</div><div class="dissChip" id="chip-C">不滿 1/3</div></div>
+          <div class="meta">黑人比例高 / Higher Black population<br>失業率高 / High unemployment</div>
+          <div class="icons"><span class="pill">👨🏿 黑人多 / More Black</span><span class="pill">📉 失業高 / High jobless</span></div>
+        </div>
+        <div class="district" data-id="D" style="left:4%;top:41%;width:30%;height:29%">
+          <div class="topline"><div class="name">D 西區 / West District</div><div class="dissChip" id="chip-D">不滿 1/3</div></div>
+          <div class="meta">黑人比例高 / Higher Black population<br>失業率高 / High unemployment</div>
+          <div class="icons"><span class="pill">👩🏿‍💼 黑人多 / More Black</span><span class="pill">📉 失業高 / High jobless</span></div>
+        </div>
+        <div class="district" data-id="E" style="left:36%;top:37%;width:25%;height:30%">
+          <div class="topline"><div class="name">E 市中心 / Downtown</div><div class="dissChip" id="chip-E">不滿 1/3</div></div>
+          <div class="meta">商住混合 / Mixed use<br>中等失業 / Medium unemployment</div>
+          <div class="icons"><span class="pill">🏙️ 商住 / Mixed use</span><span class="pill">👥 混合 / Mixed</span></div>
+        </div>
+        <div class="district" data-id="F" style="left:68%;top:44%;width:28%;height:25%">
+          <div class="topline"><div class="name">F 東區 / East District</div><div class="dissChip" id="chip-F">不滿 1/3</div></div>
+          <div class="meta">白人較多 / More White residents<br>失業率低 / Low unemployment</div>
+          <div class="icons"><span class="pill">👨🏻 白人多 / More White</span><span class="pill">📈 就業穩 / Stable jobs</span></div>
+        </div>
+        <div class="district" data-id="G" style="left:8%;top:73%;width:25%;height:21%">
+          <div class="topline"><div class="name">G 南城 / Southside</div><div class="dissChip" id="chip-G">不滿 1/3</div></div>
+          <div class="meta">黑人比例高 / Higher Black population<br>失業率高 / High unemployment</div>
+          <div class="icons"><span class="pill">👨🏿 黑人多 / More Black</span><span class="pill">📉 失業高 / High jobless</span></div>
+        </div>
+        <div class="district" data-id="H" style="left:63%;top:73%;width:30%;height:20%">
+          <div class="topline"><div class="name">H 科技園區 / Tech Park</div><div class="dissChip" id="chip-H">不滿 1/3</div></div>
+          <div class="meta">白人為主 / Mostly White<br>失業率低 / Low unemployment</div>
+          <div class="icons"><span class="pill">💻 科技 / Tech</span><span class="pill">👩🏻‍💼 白人多 / More White</span></div>
+        </div>
+        <div class="station">警察局 / Police</div>
+        <div class="legend"><span style="display:inline-block;width:9px;height:9px;background:#e53935;border-radius:2px;margin-right:5px"></span>紅色＝模型預測高風險<br>Red = model-predicted high risk</div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="card panel">
+        <div class="stats">
+          <div class="stat"><b id="time">90</b><span>秒 / seconds</span></div>
+          <div class="stat"><b id="score">0</b><span>分數 / score</span></div>
+          <div class="stat"><b id="patrols">0</b><span>巡邏 / patrols</span></div>
+          <div class="stat"><b id="hotspots">0</b><span>紅區 / hotspots</span></div>
+        </div>
+        <div class="barWrap">
+          <div style="font-size:11px;font-weight:700">偏誤集中度 / Bias concentration</div>
+          <div class="bar"><i id="biasBar"></i></div>
+          <div class="barLabel"><span>低 Low</span><span>高 High</span></div>
+        </div>
+        <div class="selectedBox" id="selectedBox">
+          <h3>先選紅色區域 / Select a red area</h3>
+          <p>點紅色方塊，再派警車。 Tap a red box, then dispatch.</p>
+        </div>
+        <button id="dispatch" disabled>🚓 派警車出發 / Dispatch Patrol</button>
+        <div class="dangerBox"><b>失敗條件 / Lose condition</b>若有任兩區的不滿意度升到 3，遊戲立即結束。 If any two areas reach dissatisfaction level 3, the game ends immediately.</div>
+      </div>
+
+      <div class="card panel">
+        <div class="note"><b>模型規則 / Model rule</b><br>這個模型會過度重視「歷史警務資料、黑人比例、失業率」。<br>The model intentionally overweights historical policing, Black population share, and unemployment.</div>
+      </div>
+
+      <div class="card panel">
+        <div style="font-size:13px;font-weight:800;margin-bottom:8px">地區不滿意度 / Area dissatisfaction</div>
+        <div class="areaList" id="areaList"></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">虛構城市與人口資料；此遊戲用於討論演算法偏誤與回饋迴圈，不代表族群與犯罪存在因果關係。 Fictional city and demographics for discussing algorithmic bias and feedback loops.</div>
+</div>
+
+<div class="overlay" id="introStep1">
+  <div class="modal">
+    <h2>遊戲說明 / How to Play</h2>
+    <ul>
+      <li>地圖上的紅色方塊代表系統預測的<strong>高風險區</strong>。<br>Red boxes are model-predicted <strong>high-risk areas</strong>.</li>
+      <li>先點選紅色方塊，再按<strong>派警車出發</strong>。<br>Tap a red hotspot, then press <strong>Dispatch Patrol</strong>.</li>
+      <li>每次巡邏都會留下更多警務紀錄，而模型會再次使用這些紀錄。<br>Each patrol creates more police records, which the model uses again.</li>
+      <li>回應太慢時，該區<strong>不滿意度</strong>會上升。<br>If you respond too slowly, that area’s <strong>dissatisfaction</strong> rises.</li>
+    </ul>
+    <div class="modalActions"><button id="nextBtn">下一頁 / Next</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="introStep2" style="display:none">
+  <div class="modal">
+    <h2>勝負條件 / Win & Lose</h2>
+    <p><b>你的目標 / Your goal：</b>在 90 秒內盡量處理更多紅區，拿高分，並控制不滿意度不要失控。</p>
+    <p><b>失敗條件 / Lose condition：</b>若有任兩個區域的不滿意度升到 <b>3</b>，遊戲立即結束。</p>
+    <div class="modalActions">
+      <button id="backBtn">上一頁 / Back</button>
+      <button id="startBtn">開始遊戲 / Start Game</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="end" style="display:none">
+  <div class="modal">
+    <h2 id="resultTitle">結果 / Results</h2>
+    <p id="resultReason" style="font-size:13px;color:#526d82;margin-top:0"></p>
+    <div class="resultGrid">
+      <div class="resultItem"><b id="rScore">0</b><br>總分 / Score</div>
+      <div class="resultItem"><b id="rPatrols">0</b><br>總巡邏 / Patrols</div>
+      <div class="resultItem"><b id="rCritical">0</b><br>滿級不滿區 / Critical areas</div>
+    </div>
+    <div style="font-size:13px;font-weight:800">巡邏分布 / Patrol distribution</div>
+    <div class="miniBars" id="bars"></div>
+    <p class="warning"><b>重要 / Important：</b>這是刻意加入偏誤的教學模擬。人口特徵不代表犯罪原因。<br>This simulation is intentionally biased for teaching. Demographics do not cause crime.</p>
+    <p><b>提示 / Tip：</b>你有沒有發現，一開始常出現的警戒區，多半集中在<strong>黑人比例較高</strong>與<strong>較貧困、失業率較高</strong>的區域？<br>Did you notice that the early warning zones often appeared in neighborhoods with a <strong>higher Black population</strong> and <strong>higher poverty or unemployment</strong>?</p>
+    <p class="danger"><b>教學重點 / Teaching point：</b>因為系統一開始就較常標記這些區域，玩家也會更常把警車派往這些地方，結果又累積更多警務紀錄。之後模型便更容易再次把預測集中在這些區域。這就是一種<strong>預測模型的偏誤</strong>，也是典型的<strong>回饋迴圈</strong>。<br>Because the system flags these areas more often at the beginning, players also send more patrols there, creating more police records. The model then concentrates future predictions in those same areas. This is a form of <strong>predictive model bias</strong> and a classic <strong>feedback loop</strong>.</p>
+    <p style="font-size:12px"><b>問題 / Question：</b>這個系統真的中立嗎？它是在預測犯罪，還是在放大既有偏誤？<br>Is this system really neutral? Is it predicting crime, or amplifying existing bias?</p>
+    <button id="restartBtn">再玩一次 / Restart</button>
+  </div>
+</div>
+
+<script>
+const districts = {
+ A:{name:'A 商業區 / Business District', short:'A 商業區', mini:'💼 商業・白人多', x:17,y:20, black:12, unemp:4, base:.22, patrols:0, records:1, initialRecords:1, diss:1},
+ B:{name:'B 河岸住宅 / Riverside', short:'B 河岸住宅', mini:'🏘️ 混合・中失業', x:45,y:18, black:35, unemp:8, base:.30, patrols:0, records:2, initialRecords:2, diss:1},
+ C:{name:'C 北城 / Northside', short:'C 北城', mini:'👨🏿 黑人多・高失業', x:84,y:22, black:72, unemp:17, base:.58, patrols:0, records:4, initialRecords:4, diss:1},
+ D:{name:'D 西區 / West District', short:'D 西區', mini:'👩🏿‍💼 黑人多・高失業', x:19,y:54, black:81, unemp:20, base:.66, patrols:0, records:5, initialRecords:5, diss:1},
+ E:{name:'E 市中心 / Downtown', short:'E 市中心', mini:'🏙️ 混合・中失業', x:49,y:53, black:42, unemp:10, base:.38, patrols:0, records:2, initialRecords:2, diss:1},
+ F:{name:'F 東區 / East District', short:'F 東區', mini:'👨🏻 白人多・低失業', x:82,y:56, black:18, unemp:5, base:.24, patrols:0, records:1, initialRecords:1, diss:1},
+ G:{name:'G 南城 / Southside', short:'G 南城', mini:'👨🏿 黑人多・高失業', x:20,y:83, black:76, unemp:19, base:.62, patrols:0, records:4, initialRecords:4, diss:1},
+ H:{name:'H 科技園區 / Tech Park', short:'H 科技園區', mini:'💻 白人多・低失業', x:80,y:82, black:10, unemp:3, base:.18, patrols:0, records:1, initialRecords:1, diss:1}
+};
+let active = [], selected=null, started=false, timer=90, score=0, totalPatrols=0, tickId=null, secId=null, finishState='time';
+const map=document.getElementById('map'), dispatch=document.getElementById('dispatch');
+const $=id=>document.getElementById(id);
+
+function risk(d){
+  return Math.min(.95, d.base + d.black/100*.20 + d.unemp/100*.45 + d.records*.015);
+}
+function weightedPick(){
+  const arr=Object.entries(districts).map(([id,d])=>[id,risk(d)]);
+  const sum=arr.reduce((s,x)=>s+x[1],0); let r=Math.random()*sum;
+  for(const [id,w] of arr){ r-=w; if(r<=0) return id; }
+  return arr[arr.length-1][0];
+}
+function dissText(level){
+  return level===1 ? '不滿 1/3' : level===2 ? '不滿 2/3' : '不滿 3/3';
+}
+function updateDistrictUI(id){
+  const chip=$("chip-"+id), d=districts[id];
+  chip.textContent=dissText(d.diss);
+  chip.className='dissChip lv'+d.diss;
+}
+function renderAreaList(){
+  $('areaList').innerHTML = Object.entries(districts).map(([id,d])=>`
+    <div class="areaItem">
+      <div>
+        <div class="miniName">${d.short}</div>
+        <div class="miniMeta">${d.mini}</div>
+      </div>
+      <div class="dissChip lv${d.diss}">${dissText(d.diss)}</div>
+    </div>
+  `).join('');
+}
+function countCritical(){
+  return Object.values(districts).filter(d=>d.diss>=3).length;
+}
+function adjustDiss(id, delta){
+  const d=districts[id];
+  d.diss=Math.max(1, Math.min(3, d.diss + delta));
+  updateDistrictUI(id);
+  renderAreaList();
+  if(countCritical()>=2 && started){
+    finish('loss');
+  }
+}
+function spawn(){
+  if(!started || active.length>=5) return;
+  let id=weightedPick(), tries=0;
+  while(active.some(h=>h.id===id)&&tries<10){ id=weightedPick(); tries++; }
+  if(active.some(h=>h.id===id)) return;
+  const d=districts[id];
+  const el=document.createElement('div');
+  el.className='hotspot';
+  el.dataset.id=id;
+  el.style.left=d.x+'%';
+  el.style.top=d.y+'%';
+  el.innerHTML='<small>'+id+'</small>';
+  el.addEventListener('click',()=>selectHotspot(id,el));
+  map.appendChild(el);
+  const item={id,el,born:Date.now(), resolved:false};
+  active.push(item);
+  $('hotspots').textContent=active.length;
+  item.timeout = setTimeout(()=>expireHotspot(item),7800);
+}
+function expireHotspot(item){
+  const idx=active.findIndex(h=>h.el===item.el);
+  if(idx<0 || item.resolved) return;
+  if(selected===item.id){selected=null;dispatch.disabled=true;showSelected(null)}
+  active.splice(idx,1);
+  item.el.remove();
+  $('hotspots').textContent=active.length;
+  score=Math.max(0,score-3);
+  $('score').textContent=score;
+  adjustDiss(item.id, +1);
+}
+function selectHotspot(id,el){
+  active.forEach(h=>h.el.classList.remove('selected'));
+  el.classList.add('selected');
+  selected=id;
+  dispatch.disabled=false;
+  showSelected(id);
+}
+function showSelected(id){
+  const box=$('selectedBox');
+  if(!id){
+    box.innerHTML='<h3>先選紅色區域 / Select a red area</h3><p>點紅色方塊，再派警車。 Tap a red box, then dispatch.</p>';
+    return;
+  }
+  const d=districts[id];
+  box.innerHTML=`<h3>${d.name}</h3><p>黑人比例 / Black population: <b>${d.black}%</b><br>失業率 / Unemployment: <b>${d.unemp}%</b><br>歷史警務紀錄 / Prior police records: <b>${d.records}</b><br>不滿意度 / Dissatisfaction: <b>${d.diss}/3</b></p>`;
+}
+function dispatchCar(){
+  if(!selected) return;
+  const idx=active.findIndex(h=>h.id===selected);
+  if(idx<0) return;
+  const target=active[idx], d=districts[selected];
+  clearTimeout(target.timeout);
+  target.resolved=true;
+  const car=document.createElement('div');
+  car.className='car';car.textContent='🚓';car.style.left='47%';car.style.top='82%';
+  map.appendChild(car);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{car.style.left=d.x+'%';car.style.top=d.y+'%'}));
+  setTimeout(()=>car.remove(),1400);
+
+  const age=(Date.now()-target.born)/1000;
+  score += Math.max(4, Math.round(12-age));
+  totalPatrols++;
+  d.patrols++;
+  d.records++;
+  if(age<=3.8 && d.diss>1) adjustDiss(selected, -1);
+
+  target.el.remove();
+  active.splice(idx,1);
+  selected=null;
+  dispatch.disabled=true;
+  showSelected(null);
+  $('score').textContent=score;
+  $('patrols').textContent=totalPatrols;
+  $('hotspots').textContent=active.length;
+  updateBias();
+  setTimeout(spawn,300);
+}
+function updateBias(){
+  const high=['C','D','G'].reduce((s,id)=>s+districts[id].patrols,0);
+  const share=totalPatrols?high/totalPatrols:0;
+  $('biasBar').style.width=Math.round(share*100)+'%';
+}
+function resetGame(){
+  clearInterval(tickId); clearInterval(secId);
+  active.forEach(h=>{clearTimeout(h.timeout); h.el.remove();}); active=[];
+  selected=null; dispatch.disabled=true; showSelected(null);
+  timer=90; score=0; totalPatrols=0; finishState='time';
+  Object.entries(districts).forEach(([id,d])=>{
+    d.patrols=0; d.records=d.initialRecords; d.diss=1; updateDistrictUI(id);
+  });
+  renderAreaList();
+  $('time').textContent=timer; $('score').textContent=0; $('patrols').textContent=0; $('hotspots').textContent=0; updateBias();
+}
+function start(){
+  $('introStep2').style.display='none';
+  resetGame();
+  started=true;
+  spawn(); setTimeout(spawn,900); setTimeout(spawn,1800);
+  tickId=setInterval(spawn,1650);
+  secId=setInterval(()=>{timer--; $('time').textContent=timer; if(timer<=0) finish('time')},1000);
+}
+function finish(type='time'){
+  if(!started && type!=='restart') return;
+  started=false; finishState=type;
+  clearInterval(tickId); clearInterval(secId);
+  active.forEach(h=>{clearTimeout(h.timeout); h.el.remove();}); active=[];
+  $('rScore').textContent=score;
+  $('rPatrols').textContent=totalPatrols;
+  $('rCritical').textContent=countCritical();
+  const max=Math.max(1,...Object.values(districts).map(d=>d.patrols));
+  $('bars').innerHTML=Object.entries(districts).map(([id,d])=>`<div class="row"><div>${d.name}</div><div class="track"><div class="fill" style="width:${d.patrols/max*100}%"></div></div><div>${d.patrols}</div></div>`).join('');
+  if(type==='loss'){
+    $('resultTitle').textContent='任務失敗 / Mission Failed';
+    $('resultReason').textContent='有兩個區域的不滿意度升到 3，代表回應過慢造成民眾不滿。 Two areas reached dissatisfaction level 3 because response was too slow.';
+  }else{
+    $('resultTitle').textContent='結果 / Results';
+    $('resultReason').textContent='時間結束。請觀察哪些區域被巡邏得最多，以及哪些區域持續被標紅。 Time is up. Notice which areas received the most patrols and repeated hotspots.';
+  }
+  $('end').style.display='flex';
+}
+
+dispatch.addEventListener('click',dispatchCar);
+$('nextBtn').addEventListener('click',()=>{$('introStep1').style.display='none'; $('introStep2').style.display='flex';});
+$('backBtn').addEventListener('click',()=>{$('introStep2').style.display='none'; $('introStep1').style.display='flex';});
+$('startBtn').addEventListener('click',start);
+$('restartBtn').addEventListener('click',()=>{$('end').style.display='none'; $('introStep1').style.display='flex';});
+renderAreaList();
+Object.keys(districts).forEach(updateDistrictUI);
+</script>
+</body>
+</html>

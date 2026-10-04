@@ -1,0 +1,44 @@
+[
+  {
+    "file": "home",
+    "path": "/",
+    "zh": "課程首頁",
+    "en": "Course Home",
+    "url": "https://reagan-cheng.github.io/big-data-data-science/"
+  },
+  {
+    "file": "chapter-01",
+    "path": "/chapter-01/",
+    "zh": "第一章｜大數據概論",
+    "en": "Chapter 1 | Introduction to Big Data",
+    "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-01/"
+  },
+  {
+    "file": "titanic",
+    "path": "/chapter-01/games/titanic/",
+    "zh": "Titanic 生存預測",
+    "en": "Titanic Survival Prediction",
+    "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-01/games/titanic/"
+  },
+  {
+    "file": "predpol",
+    "path": "/chapter-01/games/predpol/",
+    "zh": "預測式巡邏：偏誤迴圈",
+    "en": "Predictive Policing: Bias Loop",
+    "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-01/games/predpol/"
+  },
+  {
+    "file": "decision-lab",
+    "path": "/chapter-01/games/decision-lab/",
+    "zh": "大數據決策實驗室",
+    "en": "Big Data Decision Lab",
+    "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-01/games/decision-lab/"
+  },
+  {
+    "file": "airline-survival",
+    "path": "/chapter-01/games/airline-survival/",
+    "zh": "航空公司生存戰：預測維護",
+    "en": "Airline Survival: Predictive Maintenance",
+    "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-01/games/airline-survival/"
+  }
+]

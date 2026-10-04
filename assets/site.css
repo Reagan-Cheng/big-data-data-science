@@ -1,0 +1,38 @@
+
+:root{
+  --bg:#f5f7fb; --panel:#ffffff; --ink:#172b4d; --muted:#64748b;
+  --line:#dce5f0; --blue:#1f5fb8; --blue2:#102a56; --soft:#eef5ff;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI","Noto Sans TC",Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6}
+a{color:inherit}
+header{background:linear-gradient(135deg,var(--blue2),var(--blue));color:white;padding:28px 18px}
+.wrap{max-width:1120px;margin:0 auto}
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+h1{margin:0;font-size:clamp(30px,5vw,52px);line-height:1.05}
+.subtitle{margin-top:8px;opacity:.9;font-size:16px}
+.lang{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.12);padding:7px;border-radius:12px}
+.lang button{border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;border-radius:9px;padding:8px 11px;font-weight:800;cursor:pointer}
+.lang button.active{background:#fff;color:var(--blue2)}
+main{padding:28px 16px 64px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 8px 24px rgba(15,23,42,.05)}
+.hero{display:grid;grid-template-columns:1.25fr .75fr;gap:18px;align-items:stretch}
+.badge{display:inline-block;padding:5px 10px;border-radius:999px;background:#eaf2ff;color:#1e40af;font-size:12px;font-weight:850}
+.chapter-grid,.game-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:18px}
+.chapter,.game{background:#fff;border:1px solid var(--line);border-radius:17px;padding:18px;display:flex;flex-direction:column;min-width:0}
+.chapter h2,.game h2{margin:8px 0 6px}
+.chapter p,.game p{margin:0;color:var(--muted)}
+.num{font-size:13px;font-weight:900;color:var(--blue)}
+.button{display:inline-flex;align-items:center;justify-content:center;border-radius:11px;padding:10px 14px;background:var(--blue);color:#fff;text-decoration:none;font-weight:850;border:0;cursor:pointer}
+.button.secondary{background:#e8eef9;color:#17345f}
+.button.ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:16px}
+.future{opacity:.55}
+.small{font-size:13px;color:var(--muted)}
+.note{background:#f8fbff;border-left:5px solid var(--blue);padding:14px 16px;border-radius:12px}
+.urlbox{margin-top:10px;padding:10px;background:#f8fafc;border:1px solid var(--line);border-radius:10px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;word-break:break-all}
+.teacher-panel{margin-top:20px}
+.game-meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+.tag{display:inline-block;border-radius:999px;background:#eef2ff;padding:4px 8px;font-size:11px;font-weight:750;color:#3949ab}
+footer{padding:20px 16px 40px;text-align:center;color:var(--muted);font-size:12px}
+@media(max-width:800px){.hero,.chapter-grid,.game-grid{grid-template-columns:1fr}}

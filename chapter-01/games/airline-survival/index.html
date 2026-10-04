@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Airline Survival: Predictive Maintenance Game</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--ink:#172b4d;--muted:#6b778c;--line:#d9e2ef;--blue:#2563eb;--good:#15803d;--warn:#b45309;--bad:#b91c1c;--soft:#eef5ff}
+*{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+header{background:linear-gradient(135deg,#102a56,#1f5fb8);color:white;padding:20px 18px}.wrap{max-width:1180px;margin:auto}
+.top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap}h1{margin:0;font-size:clamp(26px,4vw,42px)}h2,h3{margin-top:0}
+.lang{display:flex;gap:7px;align-items:center;background:#ffffff1f;padding:7px;border-radius:12px}.lang button{border:1px solid #ffffff55;background:transparent;color:#fff;padding:8px 11px;border-radius:9px;font-weight:800}.lang button.active{background:#fff;color:#183153}
+main{padding:20px 14px 56px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;margin:15px 0;box-shadow:0 8px 22px #0f172a0d}.hide{display:none!important}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:900px){.grid2,.grid3,.grid4{grid-template-columns:1fr}.top{display:block}.lang{margin-top:12px;width:max-content}}
+.metric{border:1px solid var(--line);background:#f8fafc;border-radius:14px;padding:13px}.metric .n{font-size:26px;font-weight:900}.small{font-size:12px;color:var(--muted)}
+.rules{border-left:5px solid var(--blue);background:#f5f9ff;padding:14px 16px;border-radius:12px}.danger{border-left:5px solid var(--bad);background:#fff1f2;padding:14px 16px;border-radius:12px;color:#881337}
+.goodbox{border-left:5px solid var(--good);background:#f0fdf4;padding:14px 16px;border-radius:12px}
+button{font:inherit}.primary,.secondary,.ghost,.choice{border-radius:11px;font-weight:800;cursor:pointer}.primary{border:0;background:var(--blue);color:#fff;padding:11px 16px}.secondary{border:0;background:#e8eef9;color:#16305f;padding:11px 16px}.ghost{border:1px solid var(--line);background:#fff;color:var(--ink);padding:11px 16px}button:disabled{opacity:.5;cursor:not-allowed}
+.dashboard{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.dashboard .metric{min-width:0}@media(max-width:900px){.dashboard{grid-template-columns:1fr 1fr}}
+.plane{border:1px solid var(--line);border-radius:16px;padding:15px;background:#fff;min-width:0}.plane.risk{border-color:#f3b4b4}.plane h3{margin:0 0 3px}.route{font-weight:800}.money{font-weight:900;color:#166534}.warntext{color:#a16207;font-weight:800}.badtext{color:#b91c1c;font-weight:800}.goodtext{color:#15803d;font-weight:800}
+.choice{width:100%;border:1px solid var(--line);background:#fff;padding:11px;margin-top:8px;text-align:left}.choice:hover{border-color:#9ab9ed}.choice.selected{outline:3px solid #9abcf3;border-color:#2563eb;background:#f5f9ff}
+.sensor{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:10px}.sensor div{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:8px}.riskpill{display:inline-block;border-radius:999px;padding:5px 9px;font-weight:900}.low{background:#dcfce7;color:#166534}.mid{background:#fef3c7;color:#92400e}.high{background:#fee2e2;color:#991b1b}
+.progress{height:10px;background:#e5eaf2;border-radius:99px;overflow:hidden}.progress>div{height:100%;background:linear-gradient(90deg,#2563eb,#0ea5e9)}
+.log{border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:14px}.logrow{padding:11px 13px;border-bottom:1px solid var(--line);background:#fff}.logrow:last-child{border-bottom:0}.logrow.fail{background:#fff1f2}.logrow.ok{background:#f0fdf4}.logrow.maint{background:#eff6ff}
+.table{width:100%;border-collapse:collapse}.table th,.table td{padding:9px;border-bottom:1px solid var(--line);text-align:left}.table th{background:#f8fafc}.center{text-align:center}
+.bigscore{font-size:46px;font-weight:950}.badge{display:inline-block;background:#eaf2ff;color:#1e40af;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:850}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.flyanim{display:flex;align-items:center;gap:9px;font-weight:850;padding:10px 0}.planeicon{font-size:28px;display:inline-block;animation:move 1s ease-in-out infinite alternate}@keyframes move{from{transform:translateX(0)}to{transform:translateX(24px)}}@media(prefers-reduced-motion:reduce){.planeicon{animation:none}}
+
+.introHero{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;align-items:start}
+.introPanel{border:1px solid var(--line);background:#fbfdff;border-radius:16px;padding:18px}
+.introSectionTitle{font-size:18px;font-weight:900;margin:0 0 8px}
+.ruleList{margin:8px 0 0;padding-left:20px}
+.ruleList li{margin:7px 0}
+.modelCard{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fff}
+@media(max-width:900px){.introHero{grid-template-columns:1fr}}
+
+</style>
+</head>
+<body>
+<header><div class="wrap top"><div><h1 id="title"></h1><div id="subtitle"></div></div><div class="lang"><span id="langLabel"></span><button id="enBtn" type="button">English</button><button id="zhBtn" type="button">繁體中文</button></div></div></header>
+<main class="wrap">
+<section id="intro" class="card"></section>
+<section id="game" class="hide"></section>
+<section id="transition" class="card hide"></section>
+<section id="gameover" class="card hide"></section>
+<section id="final" class="card hide"></section>
+</main>
+<script>
+(()=>{
+const I={
+en:{
+title:"Airline Survival: Predictive Maintenance",subtitle:"Run a four-aircraft airline for 10 rounds. Survive first; optimize second.",lang:"Language",
+introTitle:"Airline Operations Challenge",introText:"You manage <b>SkyAsia Airlines</b> and four aircraft. Rolls-Royce is your engine-maintenance partner. Every round, decide which aircraft should <b>FLY</b> and which should be taken out for <b>MAINTENANCE</b>.",
+mission:"Mission",missionText:"Survive all 10 rounds and finish with as much cash as possible.",
+rules:"Financial rules",r1:"A successful flight earns the route revenue shown on that aircraft.",r2:"Preventive maintenance costs <b>$180K</b> and the aircraft earns no flight revenue that round.",r3:"A major engine failure causes <b>$1.50M</b> in losses, earns no flight revenue, and grounds that aircraft for the next round.",r4:"If cash falls below <b>$0</b> at any time, the airline is bankrupt and the game ends.",
+m1:"Model 1 — Traditional Maintenance | Rounds 1–5",m1t:"No sensor prediction. You only see flight hours, time since last maintenance, and imperfect pilot reports. You may go bankrupt before reaching Model 2.",
+m2:"Model 2 — Rolls-Royce Predictive Monitoring | Rounds 6–10",m2t:"Each aircraft gains temperature, vibration, oil-pressure data, a predicted failure risk, and a recommendation. Bankruptcy is still possible, but using the information well should make survival much easier.",
+note:"Important",noteText:"Predicted risk is highly informative, not a guarantee. A low-risk aircraft can still fail, and ignoring a high-risk warning can still be expensive.",
+start:"Start Airline",
+model:["Model 1 — Traditional Maintenance","Model 2 — Predictive Monitoring"],
+round:"Round",cash:"Cash",revenue:"Flight Revenue",maintCost:"Maintenance Cost",failureLoss:"Failure Loss",success:"Successful Flights",
+hours:"Flight hours",since:"Rounds since maintenance",pilot:"Pilot report",routeRevenue:"Route revenue",grounded:"Grounded for repair this round",
+fly:"FLY",flyDesc:"Operate this flight. No maintenance cost, but the aircraft carries failure risk.",maintain:"MAINTAIN",maintDesc:"Pay $180K, skip this flight, and restore engine condition.",
+sensor:"Rolls-Royce Sensor",temp:"Temperature",vib:"Vibration",oil:"Oil pressure",pred:"Predicted failure risk",recommend:"Recommended action",recFly:"FLY",recMaint:"MAINTAIN",
+dispatch:"Dispatch Fleet",chooseAll:"Choose FLY or MAINTAIN for every available aircraft first.",processing:"Dispatching aircraft...",nextRound:"Next Round",
+pilotReports:["No unusual report","Minor vibration mentioned","Occasional rough startup","Repeated abnormal engine noise"],
+successMsg:"completed the flight successfully",failureMsg:"suffered a major engine failure",maintMsg:"underwent preventive maintenance",repairMsg:"remained grounded for mandatory repair",
+earned:"earned",lost:"loss",paid:"cost",
+roundSummary:"Round result",netChange:"Cash change this round",
+survived:"You survived Model 1",surviveText:"Your airline is still solvent after five rounds. Rolls-Royce now activates predictive engine monitoring for your fleet.",
+activate:"Activate Model 2",m2Explain:"The operating decision is the same—FLY or MAINTAIN—but now you can see much better information about engine risk.",
+bankrupt:"COMPANY BANKRUPT",bankruptAt:"Your cash fell below $0 in",model1Fail:"You did not reach predictive monitoring. Review whether you took too much risk—or spent too much on unnecessary maintenance.",model2Fail:"Even with predictive information, poor risk decisions can still bankrupt the airline.",
+retry:"Restart Game",retryM2:"Retry Model 2",finalTitle:"You survived all 10 rounds",compare:"Model comparison",phase:"Phase",failures:"Major Failures",maintCount:"Maintenance Actions",net:"Net Cash Change",
+lesson:"What did the game show?",lessonText:"Model 1 forces you to make maintenance decisions with incomplete information. Model 2 does not remove risk, but it helps you direct maintenance toward the aircraft that need it most. The value of big data is not simply collecting more data—it is <b>reducing uncertainty and improving decisions</b>.",
+finishCash:"Final Cash",
+back:"Play Again"
+},
+zh:{
+title:"航空公司生存戰：預測維護遊戲",subtitle:"經營四架飛機、挑戰 10 回合。先求生存，再追求獲利。",lang:"語言切換",
+introTitle:"航空公司營運挑戰",introText:"你負責經營 <b>SkyAsia 航空公司</b>，公司目前有四架飛機。勞斯萊斯是你的引擎維護合作夥伴。每一回合，你必須決定每架飛機要<b>執飛</b>，還是<b>停飛維護</b>。",
+mission:"遊戲任務",missionText:"撐過全部 10 回合，並讓公司最後保有盡可能多的現金。",
+rules:"財務規則",r1:"每架成功完成航班的飛機，可獲得該飛機卡片上標示的航線收入。",r2:"預防性維護每次成本為 <b>$180K</b>，而且該架飛機當回合不能產生航班收入。",r3:"若發生重大引擎故障，將造成 <b>$1.50M</b> 損失、該班沒有收入，而且下一回合該架飛機必須停飛修復。",r4:"任何時候只要現金低於 <b>$0</b>，公司立即破產，遊戲結束。",
+m1:"Model 1——傳統維護模式｜第 1–5 回合",m1t:"沒有感測器預測。你只能看到累積飛行時數、距離上次維護多久，以及不完全可靠的機師回報。你有可能在進入 Model 2 前就破產。",
+m2:"Model 2——勞斯萊斯預測監控｜第 6–10 回合",m2t:"每架飛機會增加溫度、震動、油壓、預測故障風險與建議行動。Model 2 一樣可能破產，但如果善用資訊，生存會容易很多。",
+note:"重要提醒",noteText:"預測風險非常有參考價值，但不是保證。低風險飛機仍可能故障；忽略高風險警訊也可能付出很大代價。",
+start:"開始經營航空公司",
+model:["Model 1——傳統維護模式","Model 2——預測監控模式"],
+round:"回合",cash:"現金",revenue:"航班收入",maintCost:"維護成本",failureLoss:"故障損失",success:"成功航班",
+hours:"累積飛行時數",since:"距上次維護回合",pilot:"機師回報",routeRevenue:"航線收入",grounded:"本回合強制停飛修復",
+fly:"執飛",flyDesc:"執行本次航班。不需支付維護成本，但必須承擔故障風險。",maintain:"維護",maintDesc:"支付 $180K、本回合不飛行，並恢復引擎狀況。",
+sensor:"勞斯萊斯感測系統",temp:"溫度",vib:"震動",oil:"油壓",pred:"預測故障風險",recommend:"建議行動",recFly:"執飛",recMaint:"維護",
+dispatch:"派遣機隊",chooseAll:"請先替每一架可用飛機選擇「執飛」或「維護」。",processing:"機隊派遣中……",nextRound:"下一回合",
+pilotReports:["無異常回報","偶爾有輕微震動","偶爾啟動不順","多次出現異常引擎聲"],
+successMsg:"順利完成航班",failureMsg:"發生重大引擎故障",maintMsg:"完成預防性維護",repairMsg:"因前一回合故障，本回合強制停飛修復",
+earned:"收入",lost:"損失",paid:"成本",
+roundSummary:"本回合結果",netChange:"本回合現金變化",
+survived:"你撐過了 Model 1",surviveText:"公司在前五回合後仍然有現金。現在勞斯萊斯將為你的機隊啟用預測引擎監控系統。",
+activate:"啟用 Model 2",m2Explain:"你的決策仍然只有「執飛」或「維護」，但現在你可以看到更準確的引擎風險資訊。",
+bankrupt:"公司破產",bankruptAt:"你的現金在以下回合跌破 $0：",model1Fail:"你還沒進入預測維護階段就破產了。想想看：你是承擔了太多風險，還是做了太多不必要的維護？",model2Fail:"即使有預測資訊，如果風險判斷失誤，航空公司仍然可能破產。",
+retry:"重新開始",retryM2:"重新挑戰 Model 2",finalTitle:"你成功撐過全部 10 回合",compare:"兩種模式比較",phase:"階段",failures:"重大故障",maintCount:"維護次數",net:"現金淨變化",
+lesson:"這個遊戲想讓你看到什麼？",lessonText:"Model 1 迫使你在資訊不足下決定要不要維護；Model 2 並沒有消除風險，而是讓你把維護資源更準確地放在真正需要的飛機上。大數據的價值不只是蒐集更多資料，而是<b>降低不確定性、改善決策</b>。",
+finishCash:"最終現金",
+back:"再玩一次"
+}};
+const ROUTES=[
+{id:"A",en:"Taipei–Osaka",zh:"台北–大阪",rev:180,hours:3,wear:.9},
+{id:"B",en:"Taipei–Tokyo",zh:"台北–東京",rev:240,hours:3.5,wear:1},
+{id:"C",en:"Taipei–Singapore",zh:"台北–新加坡",rev:320,hours:4.5,wear:1.15},
+{id:"D",en:"Taipei–Los Angeles",zh:"台北–洛杉磯",rev:450,hours:12,wear:1.35}
+];
+const START_CASH=2100, MAINT=180, FAILURE=1500;
+let lang="zh", round=1, cash=START_CASH, planes=[], choices={}, logs=[], roundDone=false, running=false;
+let stats=[freshStats(),freshStats()], phase2Snapshot=null, currentRoundChange=0;
+function freshStats(){return{revenue:0,maint:0,failLoss:0,success:0,failures:0,maintCount:0,startCash:0,endCash:0}}
+function L(){return I[lang]} function money(v){return "$"+Math.round(v).toLocaleString()+"K"}
+function resetPlanes(){planes=[
+{id:"A",health:92,since:1,flightHours:1220,grounded:0},
+{id:"B",health:82,since:2,flightHours:1840,grounded:0},
+{id:"C",health:72,since:3,flightHours:2470,grounded:0},
+{id:"D",health:63,since:4,flightHours:3160,grounded:0}
+]}
+function phase(){return round<=5?0:1}
+function actualRisk(p,r){
+ let x=.015+Math.max(0,85-p.health)*.009+p.since*.012+(ROUTES.find(z=>z.id===p.id).wear-1)*.035;
+ return Math.max(.01,Math.min(.78,x))
+}
+function pilotReport(p){
+ let idx=0;
+ if(p.health<52)idx=3; else if(p.health<65)idx=2; else if(p.health<76)idx=1;
+ if(Math.random()<.22)idx=Math.max(0,idx-1);
+ return idx
+}
+function makeTelemetry(p){
+ const risk=actualRisk(p,round);
+ const noise=(Math.random()*.04)-.02;
+ const pred=Math.max(.01,Math.min(.9,risk+noise));
+ const severity=100-p.health;
+ return{
+ temp:Math.round(68+severity*.42+(Math.random()*4-2)),
+ vib:Math.round(18+severity*.55+(Math.random()*5-2.5)),
+ oil:Math.round(86-severity*.43+(Math.random()*4-2)),
+ pred
+ }}
+function recommendation(p,t){
+ const r=ROUTES.find(z=>z.id===p.id), threshold=(MAINT+r.rev)/FAILURE;
+ return t.pred>=threshold?"maint":"fly"
+}
+function init(){
+ resetPlanes(); round=1; cash=START_CASH; choices={}; logs=[]; roundDone=false; running=false;
+ stats=[freshStats(),freshStats()];stats[0].startCash=START_CASH; phase2Snapshot=null;
+ prepareRound(); show("intro"); render();
+}
+function prepareRound(){
+ choices={};logs=[];roundDone=false;currentRoundChange=0;
+ planes.forEach(p=>{
+   p.report=pilotReport(p);
+   p.telemetry=phase()===1?makeTelemetry(p):null;
+ })
+}
+function show(id){["intro","game","transition","gameover","final"].forEach(x=>document.getElementById(x).classList.toggle("hide",x!==id))}
+function renderHeader(){document.getElementById("title").textContent=L().title;document.getElementById("subtitle").textContent=L().subtitle;document.getElementById("langLabel").textContent=L().lang;document.getElementById("enBtn").classList.toggle("active",lang==="en");document.getElementById("zhBtn").classList.toggle("active",lang==="zh")}
+function renderIntro(){
+ const t=L(); document.getElementById("intro").innerHTML=`
+ <div class="introHero">
+   <div>
+     <span class="badge">${t.mission}</span>
+     <h2 style="margin:10px 0 8px">${t.introTitle}</h2>
+     <p style="font-size:17px;margin-top:0">${t.introText}</p>
+     <div class="goodbox"><div class="introSectionTitle">${t.mission}</div>${t.missionText}</div>
+     <div class="danger" style="margin-top:14px"><b>${t.note}</b><br>${t.noteText}</div>
+   </div>
+   <div class="introPanel">
+     <div class="introSectionTitle">${t.rules}</div>
+     <ul class="ruleList">
+       <li>${t.r1}</li>
+       <li>${t.r2}</li>
+       <li>${t.r3}</li>
+       <li>${t.r4}</li>
+     </ul>
+   </div>
+ </div>
+ <div class="grid2" style="margin-top:18px">
+   <div class="modelCard"><b>${t.m1}</b><p style="margin-bottom:0">${t.m1t}</p></div>
+   <div class="modelCard"><b>${t.m2}</b><p style="margin-bottom:0">${t.m2t}</p></div>
+ </div>
+ <div class="actions" style="margin-top:18px"><button class="primary" id="startBtn">${t.start}</button></div>`;
+ document.getElementById("startBtn").onclick=()=>{show("game");renderGame()}
+}
+function dashboard(){
+ const t=L(),s=stats[phase()];
+ return `<div class="dashboard">
+ ${metric(t.cash,money(cash))}${metric(t.revenue,money(s.revenue))}${metric(t.maintCost,money(s.maint))}${metric(t.failureLoss,money(s.failLoss))}${metric(t.success,s.success)}
+ </div>`
+}
+function metric(k,v){return `<div class="metric"><div class="small">${k}</div><div class="n">${v}</div></div>`}
+function riskClass(p){return p<.15?"low":p<.35?"mid":"high"}
+function renderPlane(p){
+ const t=L(),r=ROUTES.find(z=>z.id===p.id),ch=choices[p.id],disabled=roundDone||running;
+ let model2="";
+ if(phase()===1&&p.grounded===0){
+   const tel=p.telemetry,rec=recommendation(p,tel);
+   model2=`<div class="sensor">
+    <div><span class="small">🌡 ${t.temp}</span><br><b>${tel.temp}</b></div>
+    <div><span class="small">📳 ${t.vib}</span><br><b>${tel.vib}</b></div>
+    <div><span class="small">🛢 ${t.oil}</span><br><b>${tel.oil}</b></div>
+    <div><span class="small">⚠ ${t.pred}</span><br><span class="riskpill ${riskClass(tel.pred)}">${Math.round(tel.pred*100)}%</span></div>
+   </div><div style="margin-top:8px"><b>${t.recommend}:</b> <span class="${rec==="maint"?"badtext":"goodtext"}">${rec==="maint"?t.recMaint:t.recFly}</span></div>`
+ }
+ if(p.grounded>0)return `<div class="plane risk"><h3>✈ Aircraft ${p.id}</h3><div class="route">${lang==="zh"?r.zh:r.en}</div><div class="badtext" style="margin-top:12px">🔧 ${t.grounded}</div></div>`;
+ return `<div class="plane"><h3>✈ Aircraft ${p.id}</h3><div class="route">${lang==="zh"?r.zh:r.en}</div><div class="money">${t.routeRevenue}: ${money(r.rev)}</div>
+ <div class="small" style="margin-top:8px">${t.hours}: <b>${Math.round(p.flightHours)}</b><br>${t.since}: <b>${p.since}</b><br>${t.pilot}: <b>${t.pilotReports[p.report]}</b></div>
+ ${model2}
+ <button class="choice ${ch==="fly"?"selected":""}" ${disabled?"disabled":""} data-id="${p.id}" data-choice="fly"><b>✈ ${t.fly}</b><br><span class="small">${t.flyDesc}</span></button>
+ <button class="choice ${ch==="maint"?"selected":""}" ${disabled?"disabled":""} data-id="${p.id}" data-choice="maint"><b>🔧 ${t.maintain}</b><br><span class="small">${t.maintDesc}</span></button></div>`
+}
+function renderLog(){
+ const t=L(); if(!logs.length)return "";
+ return `<div class="log">${logs.map(x=>{
+  const p="Aircraft "+x.id;
+  if(x.type==="success")return `<div class="logrow ok">✅ <b>${p}</b> ${t.successMsg} — ${t.earned} <b>${money(x.amount)}</b></div>`;
+  if(x.type==="fail")return `<div class="logrow fail">⚠️ <b>${p}</b> ${t.failureMsg} — ${t.lost} <b>${money(x.amount)}</b></div>`;
+  if(x.type==="maint")return `<div class="logrow maint">🔧 <b>${p}</b> ${t.maintMsg} — ${t.paid} <b>${money(x.amount)}</b></div>`;
+  return `<div class="logrow maint">🛠 <b>${p}</b> ${t.repairMsg}</div>`}).join("")}</div>`
+}
+function renderGame(){
+ const t=L(),ph=phase(),pct=(round-1)/10*100;
+ document.getElementById("game").innerHTML=`<div class="card">${dashboard()}<div style="margin-top:12px"><b>${t.model[ph]}</b> · ${t.round} <b>${round}/10</b><div class="progress" style="margin-top:7px"><div style="width:${pct}%"></div></div></div></div>
+ <div class="grid4">${planes.map(renderPlane).join("")}</div>
+ <div id="msg" class="danger hide" style="margin-top:14px"></div>
+ ${running?`<div class="card center"><div class="flyanim" style="justify-content:center"><span class="planeicon">✈️</span>${t.processing}</div></div>`:""}
+ ${renderLog()}
+ <div class="actions">${!roundDone?`<button class="primary" id="dispatchBtn" ${running?"disabled":""}>${t.dispatch}</button>`:`<button class="secondary" id="nextBtn">${t.nextRound}</button>`}</div>`;
+ document.querySelectorAll(".choice").forEach(b=>b.onclick=()=>{choices[b.dataset.id]=b.dataset.choice;renderGame()});
+ const d=document.getElementById("dispatchBtn");if(d)d.onclick=dispatch;
+ const n=document.getElementById("nextBtn");if(n)n.onclick=advance;
+}
+function requiredChosen(){return planes.filter(p=>p.grounded===0).every(p=>choices[p.id])}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+async function dispatch(){
+ if(!requiredChosen()){const m=document.getElementById("msg");m.textContent=L().chooseAll;m.classList.remove("hide");return}
+ running=true;logs=[];renderGame();const ph=phase(),s=stats[ph];
+ for(const p of planes){
+   await sleep(430);
+   if(p.grounded>0){logs.push({id:p.id,type:"repair"});p.grounded=0;p.health=90;p.since=0;renderGame();continue}
+   const r=ROUTES.find(z=>z.id===p.id),c=choices[p.id];
+   if(c==="maint"){
+     cash-=MAINT;currentRoundChange-=MAINT;s.maint+=MAINT;s.maintCount++;p.health=96;p.since=0;
+     logs.push({id:p.id,type:"maint",amount:MAINT});renderGame();continue
+   }
+   const pr=actualRisk(p,round);
+   if(Math.random()<pr){
+     cash-=FAILURE;currentRoundChange-=FAILURE;s.failLoss+=FAILURE;s.failures++;p.grounded=1;
+     logs.push({id:p.id,type:"fail",amount:FAILURE});
+   }else{
+     cash+=r.rev;currentRoundChange+=r.rev;s.revenue+=r.rev;s.success++;
+     p.health-=Math.round((6+Math.random()*6)*r.wear);p.since++;p.flightHours+=r.hours;
+     logs.push({id:p.id,type:"success",amount:r.rev});
+   }
+   renderGame();
+ }
+ running=false;roundDone=true;s.endCash=cash;renderGame();
+ if(cash<0){await sleep(500);showBankrupt()}
+}
+function advance(){
+ if(cash<0){showBankrupt();return}
+ if(round===5){stats[0].endCash=cash;phase2Snapshot=JSON.parse(JSON.stringify({cash,planes,stats0:stats[0]}));showTransition();return}
+ if(round===10){stats[1].endCash=cash;showFinal();return}
+ round++;prepareRound();renderGame()
+}
+function showTransition(){
+ const t=L();show("transition");document.getElementById("transition").innerHTML=`<div class="center"><span class="badge">${t.survived}</span><h2 style="margin-top:12px">${t.survived}</h2><div class="bigscore">${money(cash)}</div><p>${t.surviveText}</p></div>
+ <div class="goodbox"><b>${t.m2}</b><br>${t.m2Explain}</div><div class="actions"><button class="primary" id="activateBtn">${t.activate}</button></div>`;
+ document.getElementById("activateBtn").onclick=()=>{round=6;stats[1]=freshStats();stats[1].startCash=cash;prepareRound();show("game");renderGame()}
+}
+function showBankrupt(){
+ const t=L(),ph=phase();show("gameover");document.getElementById("gameover").innerHTML=`<div class="center"><div style="font-size:56px">💥</div><h2>${t.bankrupt}</h2><div class="bigscore">${money(cash)}</div><p>${t.bankruptAt} <b>${t.round} ${round}</b></p><div class="danger">${ph===0?t.model1Fail:t.model2Fail}</div></div>
+ <div class="actions" style="justify-content:center">${ph===1&&phase2Snapshot?`<button class="secondary" id="retryM2">${t.retryM2}</button>`:""}<button class="primary" id="restart">${t.retry}</button></div>`;
+ document.getElementById("restart").onclick=()=>init();
+ const rm=document.getElementById("retryM2");if(rm)rm.onclick=()=>{cash=phase2Snapshot.cash;planes=JSON.parse(JSON.stringify(phase2Snapshot.planes));stats[0]=JSON.parse(JSON.stringify(phase2Snapshot.stats0));stats[1]=freshStats();stats[1].startCash=cash;round=6;prepareRound();show("game");renderGame()}
+}
+function phaseRow(i){
+ const t=L(),s=stats[i];return `<tr><td>${t.model[i]}</td><td>${money(s.revenue)}</td><td>${money(s.maint)}</td><td>${money(s.failLoss)}</td><td>${s.failures}</td><td>${s.maintCount}</td><td>${money(s.endCash-s.startCash)}</td></tr>`
+}
+function showFinal(){
+ const t=L();show("final");document.getElementById("final").innerHTML=`<div class="center"><span class="badge">${t.finalTitle}</span><h2 style="margin-top:12px">${t.finalTitle}</h2><div class="small">${t.finishCash}</div><div class="bigscore">${money(cash)}</div></div>
+ <h3 style="margin-top:24px">${t.compare}</h3><div style="overflow:auto"><table class="table"><thead><tr><th>${t.phase}</th><th>${t.revenue}</th><th>${t.maintCost}</th><th>${t.failureLoss}</th><th>${t.failures}</th><th>${t.maintCount}</th><th>${t.net}</th></tr></thead><tbody>${phaseRow(0)}${phaseRow(1)}</tbody></table></div>
+ <div class="goodbox" style="margin-top:18px"><b>${t.lesson}</b><br>${t.lessonText}</div><div class="actions"><button class="primary" id="again">${t.back}</button></div>`;
+ document.getElementById("again").onclick=()=>init()
+}
+function render(){
+ renderHeader();if(!document.getElementById("intro").classList.contains("hide"))renderIntro();
+ if(!document.getElementById("game").classList.contains("hide"))renderGame();
+ if(!document.getElementById("transition").classList.contains("hide"))showTransition();
+ if(!document.getElementById("gameover").classList.contains("hide"))showBankrupt();
+ if(!document.getElementById("final").classList.contains("hide"))showFinal()
+}
+document.getElementById("enBtn").onclick=()=>{lang="en";document.documentElement.lang="en";render()};
+document.getElementById("zhBtn").onclick=()=>{lang="zh";document.documentElement.lang="zh-Hant";render()};
+init();
+})();
+</script>
+</body>
+</html>

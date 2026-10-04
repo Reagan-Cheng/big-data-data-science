@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Titanic 生存率預估｜Survival Probability (Bilingual)</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji"; line-height:1.6; padding: 24px; }
+  .card { max-width: 900px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 16px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); }
+  h1 { margin-top: 0; }
+  h2 { margin-bottom: 8px; }
+  label { display:block; margin: 8px 0 4px; font-weight:600; }
+  input, select { width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:10px; }
+  .row { display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
+  .muted { color:#6b7280; font-size: 14px; }
+  .btn { display:inline-block; padding:10px 16px; border-radius:10px; border:1px solid #111827; background:#111827; color:#fff; cursor:pointer; font-weight:600; }
+  .btn:active { transform: translateY(1px); }
+  .result { font-size: 20px; font-weight:700; margin-top: 12px; }
+  .pill { display:inline-block; padding:6px 10px; border-radius:999px; border:1px solid #e5e7eb; margin-right:8px; background:#f9fafb; font-size:12px; }
+  .footer { margin-top:20px; font-size:13px; color:#6b7280; }
+  .en { color:#374151; font-size: 13px; display:block; margin-top:2px; font-weight:500; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>🚢 Titanic 生存率預估｜Survival Probability</h1>
+    <p class="muted">
+      本工具以您提供的 Titanic 訓練資料訓練一個<b>邏輯斯迴歸</b>模型；所有前處理與推論在瀏覽器端離線完成。<br/>
+      This tool trains a <b>logistic regression</b> model on your provided Titanic training data; preprocessing and inference run locally in your browser.
+      <br/>5 折交叉驗證準確率（訓練資料）：<b>0.794</b>（±0.017）。
+      <span class="en">5-fold CV accuracy (on training data): <b>0.794</b> (±0.017).</span>
+    </p>
+
+    <h2>輸入變數｜Inputs</h2>
+    <div class="row">
+      <div>
+        <label>艙等（Pclass）<span class="en">Class (1=First, 2=Second, 3=Third)</span></label>
+        <select id="pclass">
+          <option value="1">1（頭等｜First）</option>
+          <option value="2">2（二等｜Second）</option>
+          <option value="3" selected>3（三等｜Third）</option>
+        </select>
+      </div>
+      <div>
+        <label>性別（Sex）<span class="en">Sex</span></label>
+        <select id="sex">
+          <option value="female" selected>女性｜Female</option>
+          <option value="male">男性｜Male</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>年齡（Age）<span class="en">Age (years)</span></label>
+        <input id="age" type="number" min="0" step="1" placeholder="若留空，以中位數 28 代入｜If blank, use median 28" />
+      </div>
+      <div>
+        <label>票價（Fare）<span class="en">Fare</span></label>
+        <input id="fare" type="number" min="0" step="0.01" placeholder="若留空，以中位數 14.4542 代入｜If blank, use median 14.4542" />
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>同艙兄弟姊妹/配偶數（SibSp）<span class="en"># of siblings/spouses aboard</span></label>
+        <input id="sibsp" type="number" min="0" step="1" value="0" />
+      </div>
+      <div>
+        <label>同行父母/子女數（Parch）<span class="en"># of parents/children aboard</span></label>
+        <input id="parch" type="number" min="0" step="1" value="0" />
+      </div>
+    </div>
+
+    <div>
+      <label>登船港（Embarked）<span class="en">Port of Embarkation</span></label>
+      <select id="embarked">
+        <option value="C">C（瑟堡｜Cherbourg）</option>
+        <option value="Q">Q（皇后鎮｜Queenstown）</option>
+        <option value="S" selected>S（南安普敦｜Southampton）</option>
+      </select>
+    </div>
+
+    <div style="margin-top:16px;">
+      <button class="btn" onclick="predict()">計算生存率｜Compute Survival Probability</button>
+      <span class="pill">Age 中位數：28｜Median</span>
+      <span class="pill">Fare 中位數：14.4542｜Median</span>
+      <span class="pill">Embarked 眾數：S｜Mode</span>
+    </div>
+
+    <div id="out" class="result" aria-live="polite"></div>
+
+    <div class="footer">
+      特徵：Pclass, Sex, Age, SibSp, Parch, Fare, Embarked_C, Embarked_Q, Embarked_S。本頁面完全離線運作（不傳輸資料）。<br/>
+      Features: Pclass, Sex, Age, SibSp, Parch, Fare, Embarked_C, Embarked_Q, Embarked_S. This page runs fully offline; no data is transmitted.
+    </div>
+  </div>
+
+<script>
+// 模型係數（由後端訓練後嵌入）｜Model coefficients embedded below
+const MODEL = {"intercept": 4.902880986142864, "coefficients": {"Pclass": -1.0642928908970917, "Sex": -2.6182525065329116, "Age": -0.038228694117076904, "SibSp": -0.3144107938850883, "Parch": -0.08014010204114488, "Fare": 0.002166817636242296, "Embarked_C": 0.15130422919283495, "Embarked_Q": 0.09624893555792215, "Embarked_S": -0.2467858795079217}, "age_median": 28.0, "fare_median": 14.4542, "embarked_mode": "S", "cv_accuracy_mean": 0.7935157868307073, "cv_accuracy_std": 0.017209351470805104, "feature_order": ["Pclass", "Sex", "Age", "SibSp", "Parch", "Fare", "Embarked_C", "Embarked_Q", "Embarked_S"]};
+
+function sigmoid(z) { return 1.0 / (1.0 + Math.exp(-z)); }
+function valueOr(v, fallback) { return (v === null || v === undefined || v === '') ? fallback : parseFloat(v); }
+
+function predict() {
+  // 讀取輸入｜Read inputs
+  const pclass = parseInt(document.getElementById('pclass').value);
+  const sexStr = document.getElementById('sex').value;
+  const ageIn = document.getElementById('age').value;
+  const fareIn = document.getElementById('fare').value;
+  const sibsp = parseInt(document.getElementById('sibsp').value);
+  const parch = parseInt(document.getElementById('parch').value);
+  const embarked = document.getElementById('embarked').value;
+
+  // 前處理與編碼｜Preprocessing and encoding
+  const age = valueOr(ageIn, MODEL.age_median);
+  const fare = valueOr(fareIn, MODEL.fare_median);
+  const sex = (sexStr === 'male') ? 1 : 0;
+  const eC = (embarked === 'C') ? 1 : 0;
+  const eQ = (embarked === 'Q') ? 1 : 0;
+  const eS = (embarked === 'S') ? 1 : 0;
+
+  // 線性組合｜Linear combination
+  let z = MODEL.intercept;
+  z += MODEL.coefficients["Pclass"] * pclass;
+  z += MODEL.coefficients["Sex"] * sex;
+  z += MODEL.coefficients["Age"] * age;
+  z += MODEL.coefficients["SibSp"] * sibsp;
+  z += MODEL.coefficients["Parch"] * parch;
+  z += MODEL.coefficients["Fare"] * fare;
+  z += MODEL.coefficients["Embarked_C"] * eC;
+  z += MODEL.coefficients["Embarked_Q"] * eQ;
+  z += MODEL.coefficients["Embarked_S"] * eS;
+
+  const prob = sigmoid(z);
+  const pct = (prob * 100).toFixed(1);
+
+  // 輸出呈現｜Output
+  const verdictZh = (prob >= 0.5) ? "預測：較可能「生還」" : "預測：較可能「未生還」";
+  const verdictEn = (prob >= 0.5) ? "Prediction: more likely to SURVIVE" : "Prediction: more likely NOT to survive";
+
+  document.getElementById('out').innerHTML =
+    '生存率預估：<span style="font-size:28px">' + pct + '%</span>｜' + verdictZh +
+    '<br/><span class="en">Estimated survival probability: <b>' + pct + '%</b> ｜ ' + verdictEn + '</span>';
+}
+</script>
+</body>
+</html>

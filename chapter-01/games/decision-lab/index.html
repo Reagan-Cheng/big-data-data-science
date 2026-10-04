@@ -1,0 +1,1122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Big Data Decision Lab</title>
+<style>
+  :root{
+    --bg:#f6f8fb; --card:#ffffff; --ink:#15233b; --muted:#64748b;
+    --line:#dbe3ef; --accent:#2563eb; --accent2:#0f766e;
+    --good:#15803d; --bad:#b91c1c; --warn:#b45309; --soft:#eef4ff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+  header{background:linear-gradient(135deg,#102a56,#1f4fa3);color:#fff;padding:24px 20px}
+  .wrap{max-width:1120px;margin:0 auto}
+  h1{margin:0 0 6px;font-size:clamp(28px,4vw,44px)}
+  h2{margin-top:0}
+  h3{margin-bottom:8px}
+  .sub{opacity:.92}
+  .toprow{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;flex-wrap:wrap}
+  .topbar{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:18px}
+  .pill{background:rgba(255,255,255,.12);padding:8px 12px;border-radius:999px;font-size:14px}
+  .langswitch{display:flex;gap:8px;align-items:center;background:rgba(255,255,255,.12);padding:8px;border-radius:14px}
+  .langswitch button{padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff}
+  .langswitch button.active{background:#fff;color:#16305f}
+  main{padding:24px 16px 64px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;margin:18px 0;box-shadow:0 8px 22px rgba(15,23,42,.05)}
+  .stage{display:none}
+  .stage.active{display:block}
+  .progress{height:12px;background:#e7edf6;border-radius:999px;overflow:hidden;margin:18px 0}
+  .progress > div{height:100%;width:0;background:linear-gradient(90deg,#2563eb,#0ea5e9);transition:width .35s}
+  button{border:none;border-radius:12px;padding:11px 16px;font-weight:700;cursor:pointer}
+  .primary{background:var(--accent);color:#fff}
+  .secondary{background:#e8eef9;color:#16305f}
+  .ghost{background:#fff;border:1px solid var(--line)}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr}.toprow{display:block}}
+  .option{border:1px solid var(--line);border-radius:14px;padding:14px;cursor:pointer;background:#fff}
+  .option:hover{border-color:#98b7ee}
+  .option.selected{outline:3px solid #93b4ef;border-color:#2563eb;background:#f5f9ff}
+  .option.disabled{opacity:.8}
+  .question{padding:16px;border:1px solid var(--line);border-radius:14px;margin:14px 0;background:#fbfdff}
+  .feedback{margin-top:10px;padding:10px 12px;border-radius:10px;display:none}
+  .feedback.show{display:block}
+  .good{background:#ecfdf3;color:#166534;border:1px solid #bbf7d0}
+  .bad{background:#fff1f2;color:#9f1239;border:1px solid #fecdd3}
+  .info{background:#eff6ff;color:#1e3a8a;border:1px solid #bfdbfe}
+  table{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}
+  th,td{border-bottom:1px solid var(--line);padding:10px;text-align:left;vertical-align:top}
+  th{background:#f8fafc}
+  select, input{padding:8px;border:1px solid var(--line);border-radius:8px;background:white}
+  input[type="checkbox"]{margin-right:4px}
+  .metric{padding:16px;border-radius:14px;background:#f8fafc;border:1px solid var(--line)}
+  .metric .num{font-size:28px;font-weight:800}
+  .tiny{font-size:13px;color:var(--muted)}
+  .scorebox{display:flex;gap:12px;flex-wrap:wrap}
+  .scorecard{flex:1;min-width:180px;background:#f8fafc;border:1px solid var(--line);border-radius:14px;padding:14px}
+  .scorecard b{font-size:24px}
+  .accentbox{border-left:5px solid var(--accent);background:#f5f9ff;padding:14px 16px;border-radius:10px}
+  .scenario{border-left:5px solid #0f766e;background:#f0fdf9;padding:14px 16px;border-radius:10px;margin-bottom:14px}
+  .center{text-align:center}
+  .hiddenAnswer{color:#94a3b8;font-style:italic}
+  .answerCell{font-weight:700}
+  .logtable td,.logtable th{font-size:13px}
+  .label{display:block;font-weight:700;margin-bottom:6px}
+  footer{color:#64748b;text-align:center;padding:24px 0}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="toprow">
+      <div>
+        <h1 id="pageTitle">Big Data Decision Lab</h1>
+        <div class="sub" id="pageSub">From raw data to business decision — an interactive 60-minute classroom activity</div>
+      </div>
+      <div class="langswitch">
+        <span id="langLabel" style="font-weight:700">Language</span>
+        <button id="btnEN" class="active" onclick="setLanguage('en')">English</button>
+        <button id="btnZH" onclick="setLanguage('zh')">繁體中文</button>
+      </div>
+    </div>
+    <div class="topbar">
+      <div class="pill" id="pill1">Stage 1: 3V</div>
+      <div class="pill" id="pill2">Stage 2: Data Prep</div>
+      <div class="pill" id="pill3">Stage 3: Recommendation</div>
+      <div class="pill" id="pill4">Stage 4: Review Mining</div>
+      <div class="pill" id="pill5">Stage 5: Campaign Decision</div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="card">
+    <div class="grid2">
+      <div>
+        <label class="label" id="studentLabel">Group / Student Name</label>
+        <input id="studentName" placeholder="e.g., Group 3" style="width:100%;margin-top:6px"/>
+      </div>
+      <div>
+        <label class="label" id="useLabel">How to use this lab</label>
+        <div class="tiny" id="useText" style="margin-top:6px"></div>
+      </div>
+    </div>
+    <div class="progress"><div id="progressBar"></div></div>
+    <div class="scorebox">
+      <div class="scorecard"><span class="tiny" id="scoreLabel">Current score</span><br/><b id="scoreNow">0</b> / 40</div>
+      <div class="scorecard"><span class="tiny" id="stageLabel">Current stage</span><br/><b id="stageNow">1 / 5</b></div>
+    </div>
+  </div>
+
+  <section id="stage1" class="card stage active">
+    <h2 id="s1Title"></h2>
+    <p id="s1Intro"></p>
+    <div id="vQuestions"></div>
+    <button class="primary" id="s1SubmitBtn" onclick="checkV()"></button>
+    <button class="secondary" id="to2" onclick="goStage(2)" disabled></button>
+  </section>
+
+  <section id="stage2" class="card stage">
+    <h2 id="s2Title"></h2>
+    <div class="scenario" id="s2Scenario"></div>
+    <p id="s2Task"></p>
+    <div class="accentbox" id="s2Meaning"></div>
+    <table>
+      <thead><tr id="cleanHead"></tr></thead>
+      <tbody id="cleanTable"></tbody>
+    </table>
+    <div style="margin-top:16px">
+      <button class="primary" id="s2SubmitBtn" onclick="checkCleaning()"></button>
+      <button class="secondary" id="to3" onclick="goStage(3)" disabled></button>
+    </div>
+    <div id="cleanSummary" class="feedback info"></div>
+  </section>
+
+  <section id="stage3" class="card stage">
+    <h2 id="s3Title"></h2>
+    <div class="scenario" id="s3Scenario"></div>
+    <div class="grid2">
+      <div class="metric">
+        <h3 id="purchaseTitle"></h3>
+        <table class="logtable">
+          <thead><tr id="purchaseHead"></tr></thead>
+          <tbody id="purchaseBody"></tbody>
+        </table>
+      </div>
+      <div class="metric">
+        <h3 id="browseTitle"></h3>
+        <table class="logtable">
+          <thead><tr id="browseHead"></tr></thead>
+          <tbody id="browseBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="question">
+      <b id="recPrompt"></b>
+      <div id="recOptions" style="margin-top:12px"></div>
+    </div>
+    <div style="margin-top:16px">
+      <button class="primary" id="s3RunBtn" onclick="revealAlgorithm()"></button>
+    </div>
+    <div id="algoResult" class="feedback info"></div>
+    <div id="contextReveal" style="display:none;margin-top:18px">
+      <div class="accentbox" id="contextBox"></div>
+      <p><b id="contextQuestion"></b></p>
+      <div id="contextOptions" class="grid2"></div>
+      <button class="primary" style="margin-top:14px" id="s3SubmitBtn" onclick="checkContext()"></button>
+      <button class="secondary" id="to4" onclick="goStage(4)" disabled></button>
+      <div id="contextFeedback" class="feedback info"></div>
+    </div>
+  </section>
+
+  <section id="stage4" class="card stage">
+    <h2 id="s4Title"></h2>
+    <div class="scenario" id="s4Scenario"></div>
+    <p id="s4Intro"></p>
+    <div id="sentimentList"></div>
+    <button class="primary" id="s4RunBtn" onclick="checkSentiment()"></button>
+    <button class="secondary" id="to5" onclick="goStage(5)" disabled></button>
+    <div id="sentimentSummary" class="feedback info"></div>
+  </section>
+
+  <section id="stage5" class="card stage">
+    <h2 id="s5Title"></h2>
+    <div class="scenario" id="s5Scenario"></div>
+    <div class="accentbox" id="s5Reminder"></div>
+
+    <div class="question">
+      <b id="decisionPrompt"></b>
+      <div id="decisionOptions" style="margin-top:12px"></div>
+      <div id="decisionFeedback" class="feedback info"></div>
+    </div>
+
+    <div class="question">
+      <b id="modPrompt"></b>
+      <div class="tiny" id="modHint" style="margin-top:6px"></div>
+      <div id="modOptions" style="margin-top:12px"></div>
+      <div id="modFeedback" class="feedback info"></div>
+    </div>
+
+    <button class="primary" id="s5SubmitBtn" onclick="checkDecision()"></button>
+    <div id="finalAdvance" style="display:none;margin-top:16px">
+      <button class="secondary" id="toFinalBtn" onclick="enterFinalResults()"></button>
+      <div class="tiny" id="finalLockNote" style="margin-top:8px"></div>
+    </div>
+  </section>
+
+  <section id="finalStage" class="card stage">
+    <h2 id="finalTitle"></h2>
+    <div class="center">
+      <div class="tiny" id="finalScoreLabel"></div>
+      <div style="font-size:64px;font-weight:900" id="finalScore">0 / 40</div>
+      <div id="performanceText"></div>
+    </div>
+    <hr style="border:0;border-top:1px solid var(--line);margin:24px 0"/>
+    <h3 id="takeawayTitle"></h3>
+    <ol id="takeawayList"></ol>
+    <div class="accentbox" id="reflectionBox"></div>
+    <div class="feedback show info" id="finalPageLock" style="margin-top:16px"></div>
+    <div style="margin-top:16px">
+<button class="secondary" id="restartBtn" onclick="resetLab()"></button>
+    </div>
+  </section>
+
+  <div id="bottomNav" class="wrap" style="margin-top:8px;display:none">
+    <button class="ghost" id="prevStageBtn" onclick="goPreviousStage()"></button>
+    <span class="tiny" id="prevStageNote" style="margin-left:10px"></span>
+  </div>
+
+</main>
+
+<footer id="footerText"></footer>
+
+<script>
+const i18n = {
+  en: {
+    meta:{
+      pageTitle:"Big Data Decision Lab",
+      pageSub:"From raw data to business decision — an interactive 60-minute classroom activity",
+      langLabel:"Language",
+      pills:["Stage 1: 3V","Stage 2: Data Prep","Stage 3: Recommendation","Stage 4: Review Mining","Stage 5: Campaign Decision"],
+      studentLabel:"Group / Student Name",
+      studentPlaceholder:"e.g., Group 3",
+      useLabel:"How to use this lab",
+      useText:"Stage 1 is a quick concept check. Stages 2–5 follow one connected storyline: <b>you are a data analyst supporting a wearable-device marketing campaign</b>.",
+      scoreLabel:"Current score",
+      stageLabel:"Current stage",
+      footer:"Big Data Decision Lab — bilingual version",
+      prevStage:"← Previous Stage",
+      prevStageNote:"You can review completed stages. Previously submitted scores remain locked."
+    },
+    common:{
+      submit:"Submit",
+      next2:"Next: Data Preparation",
+      next3:"Next: Recommendation Task",
+      next4:"Next: Review Mining",
+      next5:"Next: Campaign Decision",
+      hidden:"Hidden until submission",
+      choose:"Choose...",
+      keep:"Keep Data",
+      delete:"Delete Data",
+      handle:"Handle with data",
+      yes:"Yes",
+      no:"No",
+      positive:"Positive",
+      neutral:"Neutral",
+      negative:"Negative",
+      pleaseChoose:"Please choose an option first."
+    },
+    stage1:{
+      title:"Stage 1 — Big Data 3V Quick Challenge",
+      intro:"For each scenario, choose the <b>single best answer</b> among Volume, Velocity, and Variety.",
+      submit:"Submit Stage 1",
+      questions:[
+        {text:"A retailer stores more than 500 million transaction records for analysis.", ans:"volume"},
+        {text:"A factory receives new sensor readings every 0.1 second and must process them continuously.", ans:"velocity"},
+        {text:"A customer-analysis system combines transaction records, text reviews, product images, and GPS locations.", ans:"variety"}
+      ],
+      optionLabels:{volume:"Volume",velocity:"Velocity",variety:"Variety"},
+      correct:"Correct.",
+      suggested:"Suggested answer: <b>{ans}</b>"
+    },
+    stage2:{
+      title:"Stage 2 — Data Preparation for the Weekend Campaign",
+      scenario:"<b>Scenario:</b> You are a junior analyst at <b>MoveFit</b>, a Taiwan-based e-commerce platform selling sports and wearable products. On Friday afternoon, the marketing team plans a <b>weekend personalized campaign</b> for wearable-device shoppers. Before any model is run, you need to clean a small batch of customer data that has just been extracted from the CRM system.",
+      task:"<b>Your task:</b> Review each record and decide how the data should be treated before the campaign model uses it.",
+      meaning:"<b>What do the three actions mean?</b><br/><b>Keep Data</b> = the record is usable as it is.<br/><b>Delete Data</b> = the record should be removed because it is clearly duplicated or unusable.<br/><b>Handle with data</b> = do not delete immediately; the record needs checking, fixing, flagging, or special treatment before analysis.",
+      head:["Record ID","Customer Type","Age","Item","Purchase (NT$)","Rating (1–5)","Correct Answer","Your Action"],
+      rows:[
+        {record:"R001",ctype:"Retail",age:"22",item:"Running shoes",purchase:"1,280",rating:"5",answer:"keep",why:"The record appears internally consistent and usable."},
+        {record:"R002",ctype:"Retail",age:"24",item:"Smart watch band",purchase:"980",rating:"4",answer:"keep",why:"Nothing in the record clearly indicates an error."},
+        {record:"R003",ctype:"Retail",age:"240",item:"Heart-rate strap",purchase:"1,100",rating:"5",answer:"handle",why:"The age is implausible and should be checked or corrected, rather than blindly used."},
+        {record:"R004",ctype:"Corporate",age:"—",item:"20 wearable starter kits",purchase:"89,000",rating:"1",answer:"handle",why:"This could be a legitimate corporate purchase, but the missing age and unusual transaction profile require special handling."},
+        {record:"R004",ctype:"Corporate",age:"—",item:"20 wearable starter kits",purchase:"89,000",rating:"1",answer:"delete",why:"This row is an exact duplicate of the previous record and should be removed."},
+        {record:"R006",ctype:"Retail",age:"31",item:"GPS running watch",purchase:"750",rating:"9",answer:"handle",why:"The rating violates the 1–5 scale and must be corrected, recoded, or excluded from rating analysis."}
+      ],
+      submit:"Submit Stage 2",
+      noAnswer:"No answer. {why}",
+      after:"{mark} {why}",
+      summary:"You are seeing why data preparation matters. Not all “strange” records should be deleted; some should be <b>handled carefully</b> because they may represent a real but special case."
+    },
+    stage3:{
+      title:"Stage 3 — Recommendation for One Focal Member",
+      scenario:"<b>Story continuation:</b> The campaign team now asks you to inspect one focal member, <b>P017</b>. The system wants to recommend a wearable-related product to this member during the weekend campaign. You will first make a human judgment, then compare it with a baseline algorithm.",
+      purchaseTitle:"Purchase history — Member P017",
+      browseTitle:"Recent browsing log — last 7 days",
+      purchaseHead:["Date","Category","Item","Amount"],
+      browseHead:["Date-Time","Action","Page / Content"],
+      purchases:[
+        ["2026-06-02","Running","Running shoes","NT$2,380"],
+        ["2026-06-02","Running","Sports socks","NT$290"],
+        ["2026-06-18","Nutrition","Protein bar bundle","NT$450"],
+        ["2026-07-03","Accessory","Running cap","NT$520"],
+        ["2026-07-25","Audio","Wireless earphones","NT$1,990"],
+        ["2026-08-11","Wearable accessory","Sports watch charging cable","NT$390"],
+        ["2026-08-29","Nutrition","Energy gel set","NT$360"]
+      ],
+      browses:[
+        ["2026-09-10 20:12","View","Smart Watch Pro product page"],
+        ["2026-09-10 20:15","Compare","Smart Watch Pro vs. Smart Watch Lite"],
+        ["2026-09-10 20:19","View","Battery-life FAQ for Smart Watch Pro"],
+        ["2026-09-11 09:20","View","GPS running watch reviews"],
+        ["2026-09-11 09:33","Add to cart","Smart Watch Pro"],
+        ["2026-09-11 09:40","Remove from cart","Smart Watch Pro"],
+        ["2026-09-11 22:05","View","Wireless earphones product page"]
+      ],
+      prompt:"Your decision: Based on the records above, which product would you recommend to Member P017?",
+      recOptions:["Smart Watch Pro","Wireless Earphones","Running Shoes","Nutrition Bundle"],
+      run:"Run Baseline Algorithm",
+      algo:`<b>How the baseline algorithm works</b><br/>
+      It estimates an <b>intent score</b> for each candidate product using:
+      <br/>• <b>60%</b> recent browsing intensity (views, comparisons, add-to-cart)
+      <br/>• <b>25%</b> category similarity to past purchases
+      <br/>• <b>15%</b> recent related purchase signal
+      <br/><br/>
+      <b>Algorithm output</b><br/>
+      Smart Watch Pro = <b>78</b><br/>
+      Wireless Earphones = 41<br/>
+      Running Shoes = 36<br/>
+      Nutrition Bundle = 19
+      <br/><br/>
+      {choice}
+      The model favors <b>Smart Watch Pro</b> because P017 repeatedly viewed watch pages, added one to cart, and previously bought a sports-watch charging cable (which the model interprets as category affinity).`,
+      yourChoice:"Your choice: <b>{val}</b>.",
+      contextBox:"<b>New information from the same member:</b><br/>In an open-ended survey response, P017 wrote: <i>“I already use a sports watch. I was comparing models because my colleague asked me for advice.”</i>",
+      contextQuestion:"Should the recommendation change after reading this text?",
+      contextOptionYes:"The text changes how we interpret the behavior log.",
+      contextOptionNo:"The repeated page views are still enough to recommend a smart watch.",
+      submit:"Submit Stage 3",
+      contextCorrect:"Correct. The text suggests the browsing behavior may not reflect P017’s own buying intent. This is a practical example of why <b>behavioral data alone can mislead the model</b>.",
+      contextWrong:"The stronger interpretation is <b>Yes</b>. The new text changes the meaning of the behavioral pattern and should affect the recommendation."
+    },
+    stage4:{
+      title:"Stage 4 — Review Mining for the Same Product Category",
+      scenario:"<b>Story continuation:</b> Because the baseline model initially favored the <b>smart watch</b> category, the product team asks one more question: <b>What are similar customers saying about this product line?</b> You now review open-text comments from recent shoppers and classify their sentiment.",
+      intro:"Classify each review as <b>Positive</b>, <b>Neutral</b>, or <b>Negative</b>. Then compare your judgment with a simple keyword-based model.",
+      reviews:[
+        {t:"The fitness tracking is accurate, but the battery drains too fast during long runs.",a:"negative"},
+        {t:"Setup was easy and the watch looks great. I use it almost every day.",a:"positive"},
+        {t:"The watch is okay overall, but I wish the strap were more comfortable.",a:"neutral"},
+        {t:"Too expensive for what it offers. I returned it after three days.",a:"negative"},
+        {t:"I like the display and step counter. The app sync could be smoother.",a:"neutral"},
+        {t:"Excellent for beginner runners. The heart-rate function works well.",a:"positive"},
+        {t:"Notifications are useful, but the screen is hard to read outdoors.",a:"negative"},
+        {t:"I expected a better battery life and more stable GPS performance.",a:"negative"}
+      ],
+      run:"Run Sentiment Model",
+      model:"Simple model: <b>{val}</b>",
+      accepted:"Human classification accepted.",
+      suggested:"Suggested human label: <b>{val}</b>.",
+      summary:"Review summary for the smart-watch line: <b>{pos} positive</b>, <b>{neu} neutral</b>, and <b>{neg} negative</b>. The open-text comments reveal recurring concerns about <b>battery life, comfort, readability, and price</b>."
+    },
+    stage5:{
+      title:"Stage 5 — Final Campaign Decision",
+      scenario:"<b>Story continuation:</b> It is now Friday evening. You have cleaned the campaign file, examined Member P017, and reviewed open-text comments for the smart-watch category. The marketing manager must decide how to execute the wearable-device marketing campaign for the <b>active runner segment</b>.",
+      reminder:"<b>Decision basis:</b> For both questions below, return to the data and analysis results from the previous stages. This page intentionally does not repeat the evidence summary.",
+      prompt:"Question 1. Based on the results shown by the data, what should you do next?",
+      options:[
+        {v:"A",txt:"Immediately send a Smart Watch Pro promotion to all active runners because P017 repeatedly viewed the product and added it to the cart."},
+        {v:"B",txt:"First clean and properly handle the CRM records, then refine the recommendation targeting by checking whether smart-watch browsing reflects the customer’s own purchase intent before sending the offer."},
+        {v:"C",txt:"Delete every record with missing or unusual values, and use only completely clean records for the campaign."},
+        {v:"D",txt:"Stop using browsing behavior and make recommendations only from customers’ past purchase records."}
+      ],
+      modPrompt:"Question 2. If the product itself is to be modified, which areas should be prioritized?",
+      modHint:"Select all items that are supported by the data from the earlier stages.",
+      modOptions:[
+        {v:"A",txt:"Improve battery life"},
+        {v:"B",txt:"Improve strap comfort"},
+        {v:"C",txt:"Improve outdoor screen readability"},
+        {v:"D",txt:"Improve GPS stability"},
+        {v:"E",txt:"Improve app synchronization"},
+        {v:"F",txt:"Add more social-media sharing features"},
+        {v:"G",txt:"Redesign the logo and packaging"}
+      ],
+      correctMods:["A","B","C","D","E"],
+      submit:"Submit Stage 5",
+      best:"Best answer: <b>B</b>. Stage 2 shows that the CRM data must be cleaned and handled carefully before analysis, while Stage 3 shows that browsing behavior does not always equal the customer’s own purchase intent. The next step is therefore to improve data quality and refine targeting before sending the offer.",
+      mid:"This option responds to part of the evidence, but it either overreacts to data-quality problems or discards useful behavioral data. The stronger decision is to clean the data and refine how browsing behavior is interpreted.",
+      bad:"This choice relies too heavily on one type of evidence and does not adequately integrate the data-quality issue from Stage 2 with the intent-interpretation issue from Stage 3.",
+      modCorrect:"Correct. The earlier reviews support improvements to <b>battery life, strap comfort, outdoor screen readability, GPS stability, and app synchronization</b>.",
+      modPartial:"Review the earlier customer comments again. The data-supported product modifications are: <b>battery life, strap comfort, outdoor screen readability, GPS stability, and app synchronization</b>. The other options are not supported by the available data.",
+      answerBoth:"Please answer both questions before submitting.",
+      toFinal:"Next: View Final Results",
+      finalLockNote:"After entering the final-results page, you cannot return to earlier stages."
+    },
+    final:{
+      title:"Lab Complete",
+      scoreLabel:"Final score",
+      takeTitle:"Five takeaways",
+      takeaways:[
+        "<b>Volume, velocity, and variety</b> describe different kinds of data challenge.",
+        "Before any model runs, data often needs <b>cleaning, checking, and special handling</b>.",
+        "A recommendation algorithm can be useful, but its assumptions should be understood.",
+        "<b>Unstructured text</b> can change how we interpret numerical or behavioral data.",
+        "Business value comes from connecting <b>data quality + analysis + context + action</b>."
+      ],
+      reflection:"<b>Final reflection:</b> In this storyline, which stage changed the decision the most — data cleaning, recommendation logic, text feedback, or campaign judgment?",
+      teacherBtn:"Teacher Guide",
+      restartBtn:"Restart Lab",
+      teacherTitle:"Teacher Guide — 60-minute facilitation plan",
+      teacherHead:["Time","Activity","Teaching point","Suggested prompt"],
+      teacherRows:[
+        ["0–8 min","3V Quick Challenge","Students distinguish volume, velocity, and variety.","“Which V creates the core difficulty here?”"],
+        ["8–22 min","Stage 2: Data Preparation","Data is not automatically usable.","“When is a strange value a problem, and when is it just a special case?”"],
+        ["22–37 min","Stage 3: Recommendation","Show how a baseline model converts behavior into a score.","“What assumption is the model making about repeated page views?”"],
+        ["37–50 min","Stage 4: Review Mining","Text data helps explain intent, risk, and friction.","“What are the most common themes the reviews reveal?”"],
+        ["50–58 min","Stage 5: Campaign Decision","Data becomes valuable only when connected to action.","“What should management do differently, not just what product to choose?”"],
+        ["58–60 min","Debrief","Reconnect the pipeline.","“Collect → Clean → Analyze → Interpret → Decide.”"]
+      ],
+      algoTitle:"How the baseline algorithm works",
+      algoText:`Intent Score = 0.60 × recent browsing intensity
+             + 0.25 × category similarity to past purchases
+             + 0.15 × recent related purchase signal
+
+In this lab, the model treats repeated views and add-to-cart actions as strong buying signals.
+It also treats purchases like a watch charging cable as evidence of category affinity.
+What it does NOT understand well is ownership context or motive.
+That limitation is exactly why the open-ended text can change the decision.`,
+      closingTitle:"Recommended closing statement",
+      closingText:`Big data is not valuable because it is big.
+It becomes valuable when the organization converts data into a better decision.`,
+      perfHigh:"Strong performance — you connected data quality, modeling logic, text context, and managerial action.",
+      perfMid:"Good performance — review how contextual text can change a recommendation or campaign decision.",
+      perfLow:"Review the full data pipeline once more: collect, clean, analyze, interpret, and decide.",
+      finalPageLock:"This is the final-results page. Earlier stages can no longer be reopened from this page."
+    }
+  },
+  zh: {
+    meta:{
+      pageTitle:"大數據決策實驗室",
+      pageSub:"從原始資料到商業決策——一個可互動的 60 分鐘課堂活動",
+      langLabel:"語言切換",
+      pills:["第一關：3V","第二關：資料準備","第三關：推薦任務","第四關：評論探勘","第五關：行銷決策"],
+      studentLabel:"組別／學生姓名",
+      studentPlaceholder:"例如：第 3 組",
+      useLabel:"使用方式",
+      useText:"第一關是概念暖身。第二到第五關是一個連續情境：<b>你是負責穿戴式裝置行銷活動的資料分析師</b>。",
+      scoreLabel:"目前分數",
+      stageLabel:"目前關卡",
+      footer:"大數據決策實驗室——雙語版",
+      prevStage:"← 返回上一階段",
+      prevStageNote:"可回顧已完成的階段；已送出的計分結果不會因返回查看而改變。"
+    },
+    common:{
+      submit:"送出",
+      next2:"下一步：資料準備",
+      next3:"下一步：推薦任務",
+      next4:"下一步：評論探勘",
+      next5:"下一步：行銷決策",
+      hidden:"送出後才顯示",
+      choose:"請選擇...",
+      keep:"保留資料",
+      delete:"刪除資料",
+      handle:"需進一步處理",
+      yes:"是",
+      no:"否",
+      positive:"正向",
+      neutral:"中立",
+      negative:"負向",
+      pleaseChoose:"請先選擇一個選項。"
+    },
+    stage1:{
+      title:"第一關——大數據 3V 快速挑戰",
+      intro:"請針對每個情境，在資料量、速度與多樣性之中選出<b>一個最適合的答案</b>。",
+      submit:"送出第一關",
+      questions:[
+        {text:"某零售商儲存超過 5 億筆交易紀錄供分析使用。", ans:"volume"},
+        {text:"某工廠每 0.1 秒就會收到新的感測器讀值，並且必須持續處理。", ans:"velocity"},
+        {text:"某顧客分析系統同時整合交易紀錄、文字評論、商品圖片與 GPS 位置。", ans:"variety"}
+      ],
+      optionLabels:{volume:"資料量",velocity:"速度",variety:"多樣性"},
+      correct:"答對了。",
+      suggested:"建議答案：<b>{ans}</b>"
+    },
+    stage2:{
+      title:"第二關——週末行銷活動的資料準備",
+      scenario:"<b>情境：</b>你是台灣運動與穿戴裝置電商平台 <b>MoveFit</b> 的初階資料分析師。週五下午，行銷團隊準備針對穿戴裝置潛在顧客推出一個<b>週末個人化行銷活動</b>。在任何模型上線之前，你需要先整理一批剛從 CRM 系統抽出的顧客資料。",
+      task:"<b>你的任務：</b>檢視每筆資料，判斷在行銷模型使用前應該如何處理。",
+      meaning:"<b>三個處理選項代表什麼？</b><br/><b>保留資料</b>＝這筆資料可直接使用。<br/><b>刪除資料</b>＝這筆資料明顯重複或不可用，應移除。<br/><b>需進一步處理</b>＝不要立刻刪除；這筆資料需要進一步檢查、修正、標記或特殊處理後才能分析。",
+      head:["紀錄編號","顧客類型","年齡","商品","消費金額（NT$）","評分（1–5 分）","正確答案","你的判斷"],
+      rows:[
+        {record:"R001",ctype:"零售",age:"22",item:"跑鞋",purchase:"1,280",rating:"5",answer:"keep",why:"這筆資料整體一致，且可直接使用。"},
+        {record:"R002",ctype:"零售",age:"24",item:"智慧手錶錶帶",purchase:"980",rating:"4",answer:"keep",why:"從資料內容看不出明顯錯誤。"},
+        {record:"R003",ctype:"零售",age:"240",item:"心率帶",purchase:"1,100",rating:"5",answer:"handle",why:"年齡明顯不合理，應檢查或修正，而不是直接拿來使用。"},
+        {record:"R004",ctype:"企業",age:"—",item:"20 組穿戴裝置入門套件",purchase:"89,000",rating:"1",answer:"handle",why:"這可能是真實的企業採購，但缺少年齡且交易型態特殊，因此需要額外處理。"},
+        {record:"R004",ctype:"企業",age:"—",item:"20 組穿戴裝置入門套件",purchase:"89,000",rating:"1",answer:"delete",why:"這一列與上一列完全重複，應刪除。"},
+        {record:"R006",ctype:"零售",age:"31",item:"GPS 跑步手錶",purchase:"750",rating:"9",answer:"handle",why:"評分超出 1–5 分的範圍，必須修正、重新編碼，或在評分分析中排除。"}
+      ],
+      submit:"送出第二關",
+      noAnswer:"未作答。{why}",
+      after:"{mark} {why}",
+      summary:"你現在可以看到資料準備的重要性。不是所有「看起來奇怪」的資料都該刪掉；有些資料其實是<b>真實但特殊</b>，因此需要更謹慎地處理。"
+    },
+    stage3:{
+      title:"第三關——針對單一會員做推薦判斷",
+      scenario:"<b>情境延續：</b>行銷團隊接著請你檢視一位重點會員 <b>P017</b>。系統想在週末活動中推薦一項穿戴裝置相關商品給這位會員。你要先以人的角度判斷，再與一個基準演算法的結果比較。",
+      purchaseTitle:"會員 P017 的購買紀錄",
+      browseTitle:"最近 7 天的瀏覽紀錄",
+      purchaseHead:["日期","類別","商品","金額"],
+      browseHead:["日期時間","行為","頁面／內容"],
+      purchases:[
+        ["2026-06-02","跑步","跑鞋","NT$2,380"],
+        ["2026-06-02","跑步","運動襪","NT$290"],
+        ["2026-06-18","營養補給","蛋白棒組合","NT$450"],
+        ["2026-07-03","配件","跑步帽","NT$520"],
+        ["2026-07-25","音訊","無線耳機","NT$1,990"],
+        ["2026-08-11","穿戴配件","運動手錶充電線","NT$390"],
+        ["2026-08-29","營養補給","能量膠組合","NT$360"]
+      ],
+      browses:[
+        ["2026-09-10 20:12","瀏覽","Smart Watch Pro 商品頁"],
+        ["2026-09-10 20:15","比較","Smart Watch Pro 與 Smart Watch Lite"],
+        ["2026-09-10 20:19","瀏覽","Smart Watch Pro 電池續航 FAQ"],
+        ["2026-09-11 09:20","瀏覽","GPS 跑步手錶評論"],
+        ["2026-09-11 09:33","加入購物車","Smart Watch Pro"],
+        ["2026-09-11 09:40","移出購物車","Smart Watch Pro"],
+        ["2026-09-11 22:05","瀏覽","無線耳機商品頁"]
+      ],
+      prompt:"你的判斷：根據以上紀錄，你會推薦什麼商品給會員 P017？",
+      recOptions:["Smart Watch Pro","無線耳機","跑鞋","營養補給組合"],
+      run:"執行基準演算法",
+      algo:`<b>基準演算法的運作方式</b><br/>
+      它會為每個候選商品估算一個<b>購買意圖分數</b>，依據如下：
+      <br/>• <b>60%</b> 最近瀏覽強度（瀏覽、比較、加入購物車）
+      <br/>• <b>25%</b> 與過去購買的類別相似度
+      <br/>• <b>15%</b> 最近相關購買訊號
+      <br/><br/>
+      <b>演算法輸出</b><br/>
+      Smart Watch Pro = <b>78</b><br/>
+      無線耳機 = 41<br/>
+      跑鞋 = 36<br/>
+      營養補給組合 = 19
+      <br/><br/>
+      {choice}
+      這個模型偏好 <b>Smart Watch Pro</b>，因為 P017 多次瀏覽手錶頁面、曾加入購物車，而且先前買過運動手錶充電線（模型會把這視為該類別的偏好訊號）。`,
+      yourChoice:"你的選擇：<b>{val}</b>。",
+      contextBox:"<b>來自同一位會員的新資訊：</b><br/>在一題開放式問答中，P017 寫道：<i>「我自己已經有運動手錶了，我是在幫同事比較不同型號。」</i>",
+      contextQuestion:"讀到這段文字後，你認為推薦結果應該改變嗎？",
+      contextOptionYes:"這段文字改變了我們對行為紀錄的解讀。",
+      contextOptionNo:"即使如此，重複瀏覽仍足以推薦智慧手錶。",
+      submit:"送出第三關",
+      contextCorrect:"答對了。這段文字代表先前的瀏覽行為不一定反映 P017 自己的購買意圖。這是一個很實務的例子，說明<b>只看行為資料可能會讓模型誤判</b>。",
+      contextWrong:"較合理的解讀是<b>要改變</b>。這段新文字改變了原本行為模式的意義，因此應影響推薦結果。"
+    },
+    stage4:{
+      title:"第四關——分析同一產品類別的文字評論",
+      scenario:"<b>情境延續：</b>因為基準模型一開始偏好<b>智慧手錶</b>類別，產品團隊進一步想知道：<b>相似顧客對這條產品線的看法是什麼？</b> 現在你要檢視近期顧客留下的開放式評論，並判斷其情緒傾向。",
+      intro:"請將每則評論分類為<b>正向</b>、<b>中立</b>或<b>負向</b>，然後再與一個簡單的關鍵字模型比較。",
+      reviews:[
+        {t:"健身追蹤很準，但長時間跑步時耗電太快。",a:"negative"},
+        {t:"設定很簡單，手錶也很好看，我幾乎每天都在用。",a:"positive"},
+        {t:"整體來說還可以，但我希望錶帶可以更舒適。",a:"neutral"},
+        {t:"以它提供的功能來說太貴了，我三天後就退貨。",a:"negative"},
+        {t:"我喜歡顯示畫面和計步功能，不過 App 同步可以再更順一點。",a:"neutral"},
+        {t:"很適合初學跑者，心率功能表現不錯。",a:"positive"},
+        {t:"通知功能實用，但在戶外時螢幕不太容易閱讀。",a:"negative"},
+        {t:"我原本期待更好的電池續航與更穩定的 GPS 表現。",a:"negative"}
+      ],
+      run:"執行情緒模型",
+      model:"簡易模型：<b>{val}</b>",
+      accepted:"人工判斷合理。",
+      suggested:"建議的人工作答標籤：<b>{val}</b>。",
+      summary:"智慧手錶產品線的評論摘要：<b>{pos} 則正向</b>、<b>{neu} 則中立</b>、<b>{neg} 則負向</b>。文字評論反映出幾個反覆出現的議題：<b>電池續航、配戴舒適度、螢幕可讀性與價格敏感度</b>。"
+    },
+    stage5:{
+      title:"第五關——最終行銷決策",
+      scenario:"<b>情境延續：</b>現在已經是週五晚上。你已完成活動資料清理、檢視會員 P017，並分析智慧手錶類別的文字評論。行銷經理必須決定，針對<b>活躍跑者族群</b>的穿戴裝置行銷活動要如何執行。",
+      reminder:"<b>作答依據：</b>以下兩題請回到前面各階段的資料與分析結果作為判斷基礎；本頁不再重複整理證據。",
+      prompt:"第 1 題：從資料顯示的結果來看，下一步要做什麼？",
+      options:[
+        {v:"A",txt:"因為 P017 多次瀏覽 Smart Watch Pro 並曾加入購物車，因此立刻對所有活躍跑者推送 Smart Watch Pro 優惠。"},
+        {v:"B",txt:"先清理並妥善處理 CRM 中的異常資料，再進一步確認智慧手錶的瀏覽行為是否真的代表顧客本人的購買意圖，之後再決定推薦對象。"},
+        {v:"C",txt:"把所有有缺失值或異常值的資料全部刪除，只使用完全沒有缺漏的資料進行行銷活動。"},
+        {v:"D",txt:"停止使用瀏覽行為資料，之後只根據顧客過去的購買紀錄進行商品推薦。"}
+      ],
+      modPrompt:"第 2 題：如果產品本身要進行修改，應優先包含哪些項目？",
+      modHint:"請複選所有可由前面各階段資料支持的項目。",
+      modOptions:[
+        {v:"A",txt:"改善電池續航"},
+        {v:"B",txt:"改善錶帶舒適度"},
+        {v:"C",txt:"提升戶外螢幕可讀性"},
+        {v:"D",txt:"提升 GPS 穩定性"},
+        {v:"E",txt:"改善 App 同步穩定性"},
+        {v:"F",txt:"增加更多社群分享功能"},
+        {v:"G",txt:"重新設計品牌標誌與包裝"}
+      ],
+      correctMods:["A","B","C","D","E"],
+      submit:"送出第五關",
+      best:"最佳答案：<b>B</b>。第二關顯示 CRM 資料在分析前必須先清理並妥善處理；第三關則顯示瀏覽行為不一定代表顧客本人的購買意圖。因此，下一步應該先改善資料品質並重新精緻化推薦對象，再決定是否推送優惠。",
+      mid:"這個選項只回應了部分資料問題，但不是過度刪除資料，就是直接放棄仍有價值的行為資料。較好的做法是先清理資料，再重新解讀瀏覽行為。",
+      bad:"這個選項過度依賴單一類型的證據，沒有同時整合第二關的資料品質問題與第三關的購買意圖判斷問題。",
+      modCorrect:"答對了。前面的顧客評論支持優先改善<b>電池續航、錶帶舒適度、戶外螢幕可讀性、GPS 穩定性與 App 同步穩定性</b>。",
+      modPartial:"請再回顧前面的顧客評論。資料支持的產品修改項目包括：<b>電池續航、錶帶舒適度、戶外螢幕可讀性、GPS 穩定性與 App 同步穩定性</b>；其他選項目前沒有資料支持。",
+      answerBoth:"請先完成兩題後再送出。",
+      toFinal:"下一步：查看最終結果",
+      finalLockNote:"進入最終結果頁後，將無法再返回前面的階段。"
+    },
+    final:{
+      title:"活動完成",
+      scoreLabel:"最終分數",
+      takeTitle:"五個重點收穫",
+      takeaways:[
+        "<b>資料量、速度與多樣性</b>代表的是不同型態的資料挑戰。",
+        "在任何模型運作之前，資料往往需要<b>清理、檢查與特殊處理</b>。",
+        "推薦演算法可以有幫助，但必須理解其背後的假設。",
+        "<b>非結構化文字</b>可能改變我們對數值或行為資料的解讀。",
+        "商業價值來自於把<b>資料品質＋分析＋情境＋行動</b>真正串起來。"
+      ],
+      reflection:"<b>最後反思：</b>在這個故事中，哪一個階段最改變最終決策——資料清理、推薦邏輯、文字回饋，還是行銷判斷？",
+      teacherBtn:"教師指引",
+      restartBtn:"重新開始",
+      teacherTitle:"教師指引——60 分鐘帶領流程",
+      teacherHead:["時間","活動","教學重點","可追問問題"],
+      teacherRows:[
+        ["0–8 分鐘","3V 快速挑戰","讓學生區分資料量、速度與多樣性。","「這裡真正的困難主要是哪一個 V？」"],
+        ["8–22 分鐘","第二關：資料準備","資料並不會自動變得可用。","「看起來奇怪的數值，什麼時候算問題？什麼時候只是特殊案例？」"],
+        ["22–37 分鐘","第三關：推薦任務","展示基準模型如何把行為資料轉成分數。","「這個模型對重複瀏覽的解讀，是基於什麼假設？」"],
+        ["37–50 分鐘","第四關：評論探勘","文字資料能補充意圖、風險與阻力。","「這些評論反映出最常見的幾個主題是什麼？」"],
+        ["50–58 分鐘","第五關：行銷決策","資料只有連到行動才有價值。","「除了選哪個產品，管理上還應該怎麼調整？」"],
+        ["58–60 分鐘","總結回收","重新連結整條資料流程。","「蒐集 → 清理 → 分析 → 詮釋 → 決策。」"]
+      ],
+      algoTitle:"基準演算法如何運作",
+      algoText:`購買意圖分數 = 0.60 × 最近瀏覽強度
+             + 0.25 × 與過去購買的類別相似度
+             + 0.15 × 最近相關購買訊號
+
+在這個活動中，模型把重複瀏覽與加入購物車視為強烈的購買訊號。
+它也把「曾購買手錶充電線」視為該產品類別的偏好證據。
+但它不容易理解的，是顧客是否已經持有該產品，以及背後的動機。
+這正是為什麼開放式文字會改變原本的決策。`,
+      closingTitle:"建議收尾語",
+      closingText:`大數據之所以有價值，不是因為它很大。
+而是因為組織能夠把資料轉化成更好的決策。`,
+      perfHigh:"表現很好——你已能把資料品質、模型邏輯、文字情境與管理行動串起來。",
+      perfMid:"表現不錯——可以再回顧一下，文字情境是如何改變推薦或行銷決策的。",
+      perfLow:"建議再回頭檢視整條資料流程：蒐集、清理、分析、詮釋與決策。",
+      finalPageLock:"這是最終結果頁。進入此頁後，無法再從頁面返回前面的階段。"
+    }
+  }
+};
+
+let currentLang = 'en';
+let currentStage = 1;
+let totalScore = 0;
+let stageScores = {1:0,2:0,3:0,4:0,5:0};
+let submitted = {};
+let state = {
+  studentName:'',
+  vSelections: ['','',''],
+  cleanSelections: Array(6).fill(''),
+  recChoice: '',
+  contextChoice: '',
+  sentSelections: Array(8).fill(''),
+  decisionChoice: '',
+  modChoices: []
+};
+
+function L(){ return i18n[currentLang]; }
+function setText(id,val){ const el=document.getElementById(id); if(el) el.textContent=val; }
+function setHTML(id,val){ const el=document.getElementById(id); if(el) el.innerHTML=val; }
+function fmt(s, vars={}){ return s.replace(/\{(\w+)\}/g,(m,k)=> vars[k] ?? m); }
+function displayLabelForKey(key){
+  const c=L().common;
+  if(key==='keep') return c.keep;
+  if(key==='delete') return c.delete;
+  if(key==='handle') return c.handle;
+  if(key==='positive') return c.positive;
+  if(key==='neutral') return c.neutral;
+  if(key==='negative') return c.negative;
+  return key;
+}
+function setLanguage(lang){
+  currentLang = lang;
+  document.documentElement.lang = lang==='zh' ? 'zh-Hant' : 'en';
+  document.getElementById('btnEN').classList.toggle('active', lang==='en');
+  document.getElementById('btnZH').classList.toggle('active', lang==='zh');
+  renderAll();
+}
+function updateScore(){
+  totalScore = Object.values(stageScores).reduce((a,b)=>a+b,0);
+  setText('scoreNow', totalScore);
+}
+function updateProgress(){
+  setText('stageNow', currentStage===6 ? (currentLang==='zh' ? '完成' : 'Complete') : `${currentStage} / 5`);
+  document.getElementById('progressBar').style.width = `${currentStage===6 ? 100 : ((currentStage-1)/5*100)}%`;
+}
+function goStage(n){
+  currentStage = n;
+  document.querySelectorAll('.stage').forEach(s=>s.classList.remove('active'));
+  const target = document.getElementById(n===6 ? 'finalStage' : `stage${n}`);
+  if(target) target.classList.add('active');
+  updateProgress();
+  updateBottomNav();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function goPreviousStage(){
+  if(currentStage>1 && currentStage<6) goStage(currentStage-1);
+}
+function enterFinalResults(){
+  if(submitted[5]){
+    updateScore();
+    renderFinal();
+    goStage(6);
+  }
+}
+function updateBottomNav(){
+  const nav=document.getElementById('bottomNav');
+  if(!nav) return;
+  nav.style.display = (currentStage>1 && currentStage<6) ? 'block' : 'none';
+  setText('prevStageBtn', L().meta.prevStage);
+  setText('prevStageNote', L().meta.prevStageNote);
+}
+function selectV(i,opt){
+  state.vSelections[i] = opt;
+}
+function selectClean(i,val){ state.cleanSelections[i]=val; }
+function selectRec(val){ state.recChoice=val; renderRecOptions(); }
+function selectContext(val){ state.contextChoice=val; renderContextOptions(); }
+function selectSent(i,val){ state.sentSelections[i]=val; }
+function selectDecision(val){ state.decisionChoice=val; renderDecisionOptions(); }
+function toggleModification(val){
+  if(state.modChoices.includes(val)){
+    state.modChoices = state.modChoices.filter(x=>x!==val);
+  }else{
+    state.modChoices.push(val);
+  }
+  renderModificationOptions();
+}
+function resetLab(){ location.reload(); }
+
+function renderMeta(){
+  const T=L().meta;
+  document.title = T.pageTitle;
+  setText('pageTitle', T.pageTitle);
+  setText('pageSub', T.pageSub);
+  setText('langLabel', T.langLabel);
+  T.pills.forEach((p,i)=>setText(`pill${i+1}`,p));
+  setText('studentLabel', T.studentLabel);
+  document.getElementById('studentName').placeholder = T.studentPlaceholder;
+  document.getElementById('studentName').value = state.studentName;
+  setText('useLabel', T.useLabel);
+  setHTML('useText', T.useText);
+  setText('scoreLabel', T.scoreLabel);
+  setText('stageLabel', T.stageLabel);
+  setText('footerText', T.footer);
+}
+
+function renderStage1(){
+  const T=L().stage1;
+  setText('s1Title', T.title);
+  setText('s1Intro', T.intro);
+  setText('s1SubmitBtn', T.submit);
+  setText('to2', L().common.next2);
+  document.getElementById('to2').disabled = !submitted[1];
+  const root=document.getElementById('vQuestions');
+  root.innerHTML='';
+  T.questions.forEach((q,i)=>{
+    const div=document.createElement('div');
+    div.className='question';
+    const opts = ['volume','velocity','variety'].map(v=>{
+      const checked = state.vSelections[i]===v ? 'checked' : '';
+      const disabled = submitted[1] ? 'disabled' : '';
+      return `<label style="margin-right:16px"><input type="radio" name="v${i}" ${checked} ${disabled} onchange="selectV(${i},'${v}')"> ${T.optionLabels[v]}</label>`;
+    }).join('');
+    let fb='';
+    if(submitted[1]){
+      const ok=state.vSelections[i]===q.ans;
+      const msg= ok ? T.correct : fmt(T.suggested,{ans:T.optionLabels[q.ans]});
+      fb=`<div class="feedback show ${ok?'good':'bad'}">${msg}</div>`;
+    }
+    div.innerHTML=`<b>${i+1}. ${q.text}</b><div style="margin-top:10px">${opts}</div>${fb}`;
+    root.appendChild(div);
+  });
+}
+
+function renderStage2(){
+  const T=L().stage2, C=L().common;
+  setText('s2Title', T.title);
+  setHTML('s2Scenario', T.scenario);
+  setHTML('s2Task', T.task);
+  setHTML('s2Meaning', T.meaning);
+  document.getElementById('cleanHead').innerHTML = T.head.map(h=>`<th>${h}</th>`).join('');
+  const tb=document.getElementById('cleanTable');
+  tb.innerHTML='';
+  T.rows.forEach((r,i)=>{
+    const chosen = state.cleanSelections[i];
+    const options = [['keep',C.keep],['delete',C.delete],['handle',C.handle]].map(([v,label])=>`<option value="${v}" ${chosen===v?'selected':''}>${label}</option>`).join('');
+    let ansDisplay = `<span class="hiddenAnswer">${C.hidden}</span>`;
+    let note = '';
+    if(submitted[2]){
+      ansDisplay = displayLabelForKey(r.answer);
+      const ok = chosen===r.answer;
+      note = chosen
+        ? `<div class="tiny" style="color:${ok?'#166534':'#9f1239'}">${fmt(T.after,{mark:ok?'✓':'✗',why:r.why})}</div>`
+        : `<div class="tiny" style="color:#9f1239">${fmt(T.noAnswer,{why:r.why})}</div>`;
+    }
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${r.record}</td><td>${r.ctype}</td><td>${r.age}</td><td>${r.item}</td><td>${r.purchase}</td><td>${r.rating}</td>
+    <td class="answerCell">${ansDisplay}</td>
+    <td><select ${submitted[2]?'disabled':''} onchange="selectClean(${i},this.value)"><option value="">${C.choose}</option>${options}</select>${note}</td>`;
+    tb.appendChild(tr);
+  });
+  setText('s2SubmitBtn', T.submit);
+  setText('to3', C.next3);
+  document.getElementById('to3').disabled = !submitted[2];
+  const box=document.getElementById('cleanSummary');
+  if(submitted[2]){ box.className='feedback show info'; box.innerHTML=T.summary; }
+  else { box.className='feedback info'; box.innerHTML=''; }
+}
+
+function renderTables(){
+  const T=L().stage3;
+  setText('purchaseTitle', T.purchaseTitle);
+  setText('browseTitle', T.browseTitle);
+  document.getElementById('purchaseHead').innerHTML = T.purchaseHead.map(x=>`<th>${x}</th>`).join('');
+  document.getElementById('browseHead').innerHTML = T.browseHead.map(x=>`<th>${x}</th>`).join('');
+  document.getElementById('purchaseBody').innerHTML = T.purchases.map(row=>`<tr>${row.map(x=>`<td>${x}</td>`).join('')}</tr>`).join('');
+  document.getElementById('browseBody').innerHTML = T.browses.map(row=>`<tr>${row.map(x=>`<td>${x}</td>`).join('')}</tr>`).join('');
+}
+function renderRecOptions(){
+  const T=L().stage3;
+  const root=document.getElementById('recOptions');
+  root.innerHTML='';
+  T.recOptions.forEach((r,i)=>{
+    const d=document.createElement('div');
+    d.className='option' + (state.recChoice===r ? ' selected':'') + (submitted['3a'] ? ' disabled':'');
+    d.onclick=()=>{ if(!submitted['3a']) selectRec(r); };
+    d.innerHTML=`<b>${String.fromCharCode(65+i)}. ${r}</b>`;
+    root.appendChild(d);
+  });
+}
+function renderContextOptions(){
+  const T=L().stage3;
+  const root=document.getElementById('contextOptions');
+  root.innerHTML='';
+  const opts=[
+    {v:'yes',title:L().common.yes,desc:T.contextOptionYes},
+    {v:'no',title:L().common.no,desc:T.contextOptionNo}
+  ];
+  opts.forEach(o=>{
+    const d=document.createElement('div');
+    d.className='option' + (state.contextChoice===o.v ? ' selected':'') + (submitted['3b'] ? ' disabled':'');
+    d.onclick=()=>{ if(!submitted['3b']) selectContext(o.v); };
+    d.innerHTML=`<b>${o.title}</b><br/><span class="tiny">${o.desc}</span>`;
+    root.appendChild(d);
+  });
+}
+function renderStage3(){
+  const T=L().stage3;
+  setText('s3Title', T.title);
+  setHTML('s3Scenario', T.scenario);
+  renderTables();
+  setText('recPrompt', T.prompt);
+  renderRecOptions();
+  setText('s3RunBtn', T.run);
+  setHTML('contextBox', T.contextBox);
+  setText('contextQuestion', T.contextQuestion);
+  renderContextOptions();
+  setText('s3SubmitBtn', T.submit);
+  setText('to4', L().common.next4);
+  document.getElementById('to4').disabled = !submitted[3];
+  const result=document.getElementById('algoResult');
+  if(submitted['3a']){
+    const choiceText = state.recChoice ? fmt(T.yourChoice,{val:state.recChoice}) : '';
+    result.className='feedback show info';
+    result.innerHTML = fmt(T.algo,{choice:choiceText});
+    document.getElementById('contextReveal').style.display='block';
+  }else{
+    result.className='feedback info';
+    result.innerHTML='';
+    document.getElementById('contextReveal').style.display='none';
+  }
+  const cf=document.getElementById('contextFeedback');
+  if(submitted['3b']){
+    const ok = state.contextChoice==='yes';
+    cf.className='feedback show ' + (ok?'good':'bad');
+    cf.innerHTML = ok ? T.contextCorrect : T.contextWrong;
+  } else {
+    cf.className='feedback info';
+    cf.innerHTML='';
+  }
+}
+
+function renderStage4(){
+  const T=L().stage4, C=L().common;
+  setText('s4Title', T.title);
+  setHTML('s4Scenario', T.scenario);
+  setHTML('s4Intro', T.intro);
+  const root=document.getElementById('sentimentList');
+  root.innerHTML='';
+  T.reviews.forEach((x,i)=>{
+    const sel=state.sentSelections[i];
+    const options=[['positive',C.positive],['neutral',C.neutral],['negative',C.negative]]
+      .map(([v,label])=>`<option value="${v}" ${sel===v?'selected':''}>${label}</option>`).join('');
+    let model='', fb='';
+    if(submitted[4]){
+      const modelVal = displayLabelForKey(simpleModel(x.t));
+      model = fmt(T.model,{val:modelVal});
+      const ok = sel===x.a;
+      fb = `<div class="feedback show ${ok?'good':'bad'}">${ok ? T.accepted : fmt(T.suggested,{val:displayLabelForKey(x.a)})}</div>`;
+    }
+    const div=document.createElement('div');
+    div.className='question';
+    div.innerHTML=`<b>${i+1}. “${x.t}”</b><div style="margin-top:10px">
+      <select ${submitted[4]?'disabled':''} onchange="selectSent(${i},this.value)">
+        <option value="">${C.choose}</option>${options}
+      </select>
+      <span class="tiny" style="margin-left:10px">${model}</span>
+      </div>${fb}`;
+    root.appendChild(div);
+  });
+  setText('s4RunBtn', T.run);
+  setText('to5', C.next5);
+  document.getElementById('to5').disabled = !submitted[4];
+  const box=document.getElementById('sentimentSummary');
+  if(submitted[4]){
+    const ans = T.reviews.map(r=>r.a);
+    const pos = ans.filter(x=>x==='positive').length;
+    const neu = ans.filter(x=>x==='neutral').length;
+    const neg = ans.filter(x=>x==='negative').length;
+    box.className='feedback show info';
+    box.innerHTML = fmt(T.summary,{pos,neu,neg});
+  }else{
+    box.className='feedback info';
+    box.innerHTML='';
+  }
+}
+
+function renderDecisionOptions(){
+  const T=L().stage5;
+  const root=document.getElementById('decisionOptions');
+  root.innerHTML='';
+  T.options.forEach(o=>{
+    const d=document.createElement('div');
+    d.className='option' + (state.decisionChoice===o.v ? ' selected':'') + (submitted[5] ? ' disabled':'');
+    d.onclick=()=>{ if(!submitted[5]) selectDecision(o.v); };
+    d.innerHTML=`<b>${o.v}.</b> ${o.txt}`;
+    root.appendChild(d);
+  });
+}
+function renderModificationOptions(){
+  const T=L().stage5;
+  const root=document.getElementById('modOptions');
+  root.innerHTML='';
+  T.modOptions.forEach(o=>{
+    const selected = state.modChoices.includes(o.v);
+    const d=document.createElement('div');
+    d.className='option' + (selected ? ' selected':'') + (submitted[5] ? ' disabled':'');
+    d.onclick=()=>{ if(!submitted[5]) toggleModification(o.v); };
+    d.innerHTML=`<b>${selected ? '☑' : '☐'} ${o.v}.</b> ${o.txt}`;
+    root.appendChild(d);
+  });
+}
+function renderStage5(){
+  const T=L().stage5;
+  setText('s5Title', T.title);
+  setHTML('s5Scenario', T.scenario);
+  setHTML('s5Reminder', T.reminder);
+  setText('decisionPrompt', T.prompt);
+  renderDecisionOptions();
+  setText('modPrompt', T.modPrompt);
+  setText('modHint', T.modHint);
+  renderModificationOptions();
+  setText('s5SubmitBtn', T.submit);
+  const advance=document.getElementById('finalAdvance');
+  setText('toFinalBtn', T.toFinal);
+  setText('finalLockNote', T.finalLockNote);
+  advance.style.display = submitted[5] ? 'block' : 'none';
+  document.getElementById('s5SubmitBtn').style.display = submitted[5] ? 'none' : 'inline-block';
+
+  const f=document.getElementById('decisionFeedback');
+  const mf=document.getElementById('modFeedback');
+
+  if(submitted[5]){
+    f.className='feedback show ' + (state.decisionChoice==='B'?'good': (state.decisionChoice==='C' || state.decisionChoice==='D')?'info':'bad');
+    f.innerHTML = state.decisionChoice==='B' ? T.best : (state.decisionChoice==='C' || state.decisionChoice==='D') ? T.mid : T.bad;
+
+    const correct=[...T.correctMods].sort();
+    const chosen=[...state.modChoices].sort();
+    const exact = JSON.stringify(correct)===JSON.stringify(chosen);
+    mf.className='feedback show ' + (exact ? 'good':'bad');
+    mf.innerHTML = exact ? T.modCorrect : T.modPartial;
+  } else {
+    f.className='feedback info';
+    f.innerHTML='';
+    mf.className='feedback info';
+    mf.innerHTML='';
+  }
+}
+
+function renderFinal(){
+  const T=L().final;
+  setText('finalTitle', T.title);
+  setText('finalScoreLabel', T.scoreLabel);
+  setText('finalScore', `${totalScore} / 40`);
+  const perf = totalScore>=32 ? T.perfHigh : totalScore>=24 ? T.perfMid : T.perfLow;
+  setText('performanceText', perf);
+  setText('takeawayTitle', T.takeTitle);
+  document.getElementById('takeawayList').innerHTML = T.takeaways.map(x=>`<li>${x}</li>`).join('');
+  setHTML('reflectionBox', T.reflection);
+  setText('finalPageLock', T.finalPageLock);
+  setText('restartBtn', T.restartBtn);
+}
+
+function renderAll(){
+  state.studentName = document.getElementById('studentName').value || state.studentName;
+  renderMeta();
+  renderStage1();
+  renderStage2();
+  renderStage3();
+  renderStage4();
+  renderStage5();
+  updateScore();
+  renderFinal();
+  updateProgress();
+  updateBottomNav();
+  goStage(currentStage);
+}
+
+function checkV(){
+  if(submitted[1]) return;
+  let s=0;
+  L().stage1.questions.forEach((q,i)=>{
+    if(state.vSelections[i]===q.ans) s+=2;
+  });
+  stageScores[1]=s; submitted[1]=true; updateScore(); renderStage1();
+}
+function checkCleaning(){
+  if(submitted[2]) return;
+  let s=0;
+  L().stage2.rows.forEach((r,i)=>{ if(state.cleanSelections[i]===r.answer) s+=2; });
+  stageScores[2]=s; submitted[2]=true; updateScore(); renderStage2();
+}
+function revealAlgorithm(){
+  if(!submitted['3a']){
+    if(state.recChoice===L().stage3.recOptions[0]) stageScores[3]+=2;
+    submitted['3a']=true;
+    updateScore();
+  }
+  renderStage3();
+}
+function checkContext(){
+  if(submitted['3b']) return;
+  if(state.contextChoice==='yes') stageScores[3]+=2;
+  submitted['3b']=true; submitted[3]=true; updateScore(); renderStage3();
+}
+function simpleModel(text){
+  const t=text.toLowerCase();
+  const pos=["easy","great","almost every day","excellent","works well","like the display","簡單","很好看","幾乎每天","適合","不錯","喜歡顯示"];
+  const neg=["drains too fast","too expensive","returned","hard to read","better battery life","more stable gps","耗電太快","太貴","退貨","不太容易閱讀","更好的電池續航","更穩定的 gps"];
+  let ps=pos.filter(w=>t.includes(w)).length, ns=neg.filter(w=>t.includes(w)).length;
+  if(ps>ns) return "positive";
+  if(ns>ps) return "negative";
+  return "neutral";
+}
+function checkSentiment(){
+  if(submitted[4]) return;
+  let s=0;
+  L().stage4.reviews.forEach((x,i)=>{ if(state.sentSelections[i]===x.a) s+=1; });
+  stageScores[4]=s; submitted[4]=true; updateScore(); renderStage4();
+}
+function checkDecision(){
+  if(submitted[5]) return;
+  const T=L().stage5;
+  if(!state.decisionChoice || state.modChoices.length===0){
+    const f=document.getElementById('decisionFeedback');
+    f.className='feedback show info';
+    f.innerHTML=T.answerBoth;
+    const mf=document.getElementById('modFeedback');
+    mf.className='feedback show info';
+    mf.innerHTML=T.answerBoth;
+    return;
+  }
+
+  let q1=0;
+  if(state.decisionChoice==='B') q1=5;
+  else if(state.decisionChoice==='C' || state.decisionChoice==='D') q1=2;
+  else q1=1;
+
+  let q2=0;
+  const correct = new Set(T.correctMods);
+  state.modChoices.forEach(v=>{
+    q2 += correct.has(v) ? 1 : -1;
+  });
+  q2 = Math.max(0, Math.min(5, q2));
+
+  stageScores[5]=q1+q2;
+  submitted[5]=true;
+  updateScore();
+  renderStage5();
+  updateBottomNav();
+}
+
+document.getElementById('studentName').addEventListener('input', e => state.studentName = e.target.value);
+
+setLanguage('en');
+</script>
+</body>
+</html>
