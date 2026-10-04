@@ -14,7 +14,7 @@ This website is for teaching the Big Data & Data Science course at National Taiw
 - [大數據決策實驗室 / Big Data Decision Lab](https://reagan-cheng.github.io/big-data-data-science/chapter-01/games/decision-lab/)
 - [航空公司生存戰：預測維護 / Airline Survival: Predictive Maintenance](https://reagan-cheng.github.io/big-data-data-science/chapter-01/games/airline-survival/)
 - [第二章｜大數據行銷 / Chapter 2 | Big Data in Marketing](https://reagan-cheng.github.io/big-data-data-science/chapter-02/)
-- [旅人人格測驗 / Traveler Personality Quiz](https://traveler-classroom-lab.herrowa.chatgpt.site/)（外部網站 / hosted externally）
+- [旅人人格測驗 / Traveler Personality Quiz](https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/traveler/)
 - [最後一張優惠券 / The Last Coupon](https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/last-coupon/)
 - [動態標籤實戰 / Dynamic Labels in Action](https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/dynamic-labels/)
 
@@ -28,7 +28,7 @@ The home page carries QR Codes for the course home and each chapter; each chapte
 第一章的四個互動遊戲分別位於 chapter-01/games/ 下的 titanic、predpol、decision-lab、airline-survival。
 四個遊戲 HTML 與提供的原始 ZIP 完全一致，保留原有遊戲邏輯與語言功能。
 
-第二章有三個活動：旅人人格測驗仍放在自己的 ChatGPT Sites 網站，第二章頁面以外部連結開啟；
+第二章有三個活動：旅人人格測驗位於 chapter-02/games/traveler/，檔案與提供的原始 ZIP 完全一致（來源與許可說明見該資料夾的 README.md 與 sources/），右上角可切換中文與英文；
 最後一張優惠券位於 chapter-02/games/last-coupon/，右上角可切換中文與英文；
 動態標籤實戰位於 chapter-02/games/dynamic-labels/，中英文同時顯示。
 
@@ -45,7 +45,6 @@ GitHub Pages 設為 Deploy from a branch，main 分支，/(root) 目錄。提交
 .nojekyll 用於直接發布靜態檔案。
 
 If the repository or hosting URL changes, update assets/qr-codes.js, the links in index.html, assets/qr/urls.json and the saved PNG files in assets/qr/ together.
-If an externally hosted activity moves, update its URL in chapter-02/index.html, assets/qr/urls.json and its PNG.
 
 原有 ChatGPT Sites 網站繼續保留：https://big-data-data-science.herrowa.chatgpt.site/
 

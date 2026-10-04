@@ -50,11 +50,10 @@
   },
   {
     "file": "traveler",
-    "path": "https://traveler-classroom-lab.herrowa.chatgpt.site/",
+    "path": "/chapter-02/games/traveler/",
     "zh": "旅人人格測驗",
     "en": "Traveler Personality Quiz",
-    "url": "https://traveler-classroom-lab.herrowa.chatgpt.site/",
-    "external": true
+    "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/traveler/"
   },
   {
     "file": "last-coupon",

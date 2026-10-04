@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="十題旅行風格體驗，找到你的旅人故事。中英雙語，作答留在本分頁。">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; form-action 'none'; object-src 'none'; base-uri 'none'">
+  <title>旅人風格體驗｜Traveler Style</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main" id="skip">跳至主要內容</a>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="旅人風格體驗 Traveler Style"><span class="brand-icon" aria-hidden="true">↗</span><span id="brand-name">旅人實驗室<small>TRAVELER LAB · CLASSROOM</small></span></a>
+    <div class="top-actions"><div class="languages" aria-label="Language"><button id="lang-zh" lang="zh-Hant" aria-pressed="true">繁中</button><button id="lang-en" lang="en" aria-pressed="false">EN</button></div><button class="text-button" id="exit">退出</button></div>
+  </header>
+  <div class="shell"><nav id="progress" aria-label="五階段進度"></nav><main id="main" tabindex="-1"></main></div>
+  <footer><span id="privacy-foot"></span><button class="text-button" id="sources-button"></button><button class="text-button" id="reset"></button></footer>
+  <p id="status" role="status" class="sr-only"></p>
+  <dialog id="modal" aria-labelledby="modal-title"><div class="languages modal-languages" aria-label="Language"><button id="modal-lang-zh" lang="zh-Hant">繁中</button><button id="modal-lang-en" lang="en">EN</button></div><div id="modal-content"></div><button id="modal-close" class="button secondary"></button></dialog>
+  <noscript>此課堂活動需要 JavaScript。請啟用後重新整理。This classroom activity needs JavaScript. Enable it and reload.</noscript>
+</body>
+</html>

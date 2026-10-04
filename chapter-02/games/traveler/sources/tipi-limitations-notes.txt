@@ -1,0 +1,7 @@
+短量表限制 / Brief-measure limitations
+
+每個向度僅兩題，提供概略自填測量；不作臨床診斷、不提供常模高低或百分位、不預測旅行行为。作者指出短量表的 alpha 與因子結構需謹慎理解。
+
+Two items per dimension provide only a broad self-report estimate. There are no clinical diagnoses, normative high/low labels, percentiles or travel predictions. The author explains why alpha and factor structure need careful interpretation for such a brief measure.
+
+https://gosling.psy.utexas.edu/scales-weve-developed/ten-item-personality-measure-tipi/a-note-on-alpha-reliability-and-factor-structure-in-the-tipi/
