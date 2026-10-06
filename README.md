@@ -33,7 +33,7 @@ The home page carries QR Codes for the course home and each chapter; each chapte
 
 第一章的四個互動遊戲分別位於 chapter-01/games/ 下的 titanic、predpol、decision-lab、airline-survival。
 titanic、decision-lab、airline-survival 的 HTML 與提供的原始 ZIP 完全一致，保留原有遊戲邏輯與語言功能。
-predpol 另外加上手機與小平板的版面（螢幕寬度 850px 以下，或手機橫放）：各區改為方塊排列，計分板固定在上方、派警車按鈕固定在下方；計分、計時與模型規則的程式沒有更動，桌機版面維持原樣。
+predpol 另外加上手機與小平板的版面（螢幕寬度 850px 以下，或手機橫放）：保留地圖（街道、河流、道路、警察局與各區的相對位置），各區文字精簡，紅區會整區變紅並顯示紅色標記；計分板固定在上方，派警車按鈕移到地圖上的警察局，所選區域的資料固定在下方；計分、計時與模型規則的程式沒有更動，桌機版面維持原樣。
 
 第二章有四個活動：旅人人格測驗位於 chapter-02/games/traveler/，檔案與提供的原始 ZIP 完全一致（來源與許可說明見該資料夾的 README.md 與 sources/），右上角可切換中文與英文；
 最後一張優惠券位於 chapter-02/games/last-coupon/，右上角可切換中文與英文；
