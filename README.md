@@ -22,6 +22,11 @@ This website is for teaching the Big Data & Data Science course at National Taiw
 首頁提供課程首頁與各章的 QR Code；各章頁面提供該章每個活動的 QR Code，皆可下載 PNG 圖片。
 The home page carries QR Codes for the course home and each chapter; each chapter page carries the QR Codes for its own activities. All can be downloaded as PNG.
 
+## 其他頁面 / Other pages
+
+- [衝突風格自評 / Conflict Style Self-Assessment](https://reagan-cheng.github.io/big-data-data-science/conflict-style/)：不屬於本課程，供另一門「團隊溝通與衝突溝通」培訓課使用，未列在首頁與各章頁面。位於 conflict-style/index.html，單一檔案、不連外部資源；20 題作答後在手機上計分並畫出雷達圖，答案不會上傳。
+  Not part of this course; used in a separate training session and not linked from the home or chapter pages. A single self-contained file at conflict-style/index.html: 20 items, scored on the phone and shown as a radar chart; answers are never uploaded.
+
 ## 網站架構 / Structure
 
 首頁為 index.html，第一章為 chapter-01/index.html，第二章為 chapter-02/index.html。

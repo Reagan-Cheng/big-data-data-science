@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>衝突風格自評</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page: #eef1f6;
+    --card: #ffffff;
+    --ink: #14213a;
+    --ink-2: #4a566b;
+    --ink-3: #7a8598;
+    --line: #d5dbe6;
+    --navy: #0f2a5c;
+    --navy-ink: #ffffff;
+    --pick: #0f2a5c;
+    --warn: #b3261e;
+    --warn-bg: #fdecea;
+    --surface-1: #ffffff;
+    --grid: #d9dee8;
+    --series-1: #2a78d6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --page: #0e1420;
+      --card: #1a2233;
+      --ink: #f2f5fa;
+      --ink-2: #c0c8d6;
+      --ink-3: #8d97a8;
+      --line: #33405a;
+      --navy: #9db8f2;
+      --navy-ink: #0e1420;
+      --pick: #9db8f2;
+      --warn: #ff9f97;
+      --warn-bg: #3a1f1d;
+      --surface-1: #1a2233;
+      --grid: #3a4763;
+      --series-1: #3987e5;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", "Heiti TC", system-ui, sans-serif;
+    font-size: 19px;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 0 16px 48px; }
+  h1 { font-size: 30px; line-height: 1.25; margin: 28px 0 6px; letter-spacing: .02em; }
+  h2 { font-size: 23px; line-height: 1.3; margin: 0 0 10px; }
+  p { margin: 0 0 12px; }
+  .lead { color: var(--ink-2); }
+  .how { background: var(--card); border-radius: 14px; padding: 16px 18px; margin: 16px 0 8px; }
+  .how ul { margin: 0; padding-left: 1.15em; }
+  .how li { margin: 4px 0; }
+
+  /* sticky stem + progress */
+  .bar {
+    position: sticky; top: 0; z-index: 5;
+    background: var(--navy); color: var(--navy-ink);
+    margin: 18px -16px 0; padding: 12px 16px 10px;
+    padding-top: calc(12px + env(safe-area-inset-top));
+  }
+  .bar .stem { font-size: 19px; font-weight: 700; line-height: 1.35; }
+  .bar .count { font-size: 16px; opacity: .85; margin-top: 4px; display: flex; align-items: center; gap: 10px; }
+  .bar .track { flex: 1; height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--navy-ink) 25%, transparent); overflow: hidden; }
+  .bar .fill { height: 100%; width: 0; background: var(--navy-ink); border-radius: 3px; transition: width .2s; }
+
+  /* items */
+  fieldset.q { border: 0; margin: 14px 0 0; padding: 18px 16px 16px; background: var(--card); border-radius: 14px; scroll-margin-top: 110px; }
+  fieldset.q.miss { outline: 3px solid var(--warn); }
+  .q legend { float: left; width: 100%; padding: 0; font-size: 22px; font-weight: 700; line-height: 1.4; margin-bottom: 14px; }
+  .q legend .no { color: var(--ink-3); font-weight: 600; margin-right: .35em; }
+  .opts { clear: both; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .opts label { position: relative; display: block; }
+  .opts input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; }
+  .opts span {
+    display: flex; align-items: center; justify-content: center;
+    height: 58px; border-radius: 12px; border: 2px solid var(--line);
+    font-size: 24px; font-weight: 700; color: var(--ink);
+    background: var(--card);
+  }
+  .opts input:checked + span { background: var(--pick); border-color: var(--pick); color: var(--navy-ink); }
+  .opts input:focus-visible + span { outline: 3px solid var(--series-1); outline-offset: 2px; }
+  .ends { display: flex; justify-content: space-between; font-size: 15px; color: var(--ink-2); margin-top: 6px; }
+
+  .send { margin-top: 22px; }
+  button.main {
+    display: block; width: 100%; min-height: 60px; border: 0; border-radius: 14px;
+    background: var(--navy); color: var(--navy-ink);
+    font: inherit; font-size: 22px; font-weight: 700;
+  }
+  button.ghost {
+    display: block; width: 100%; min-height: 54px; border-radius: 14px; margin-top: 10px;
+    background: transparent; color: var(--ink); border: 2px solid var(--line);
+    font: inherit; font-size: 19px; font-weight: 600;
+  }
+  .alert { display: none; background: var(--warn-bg); color: var(--warn); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; font-weight: 600; }
+  .alert.on { display: block; }
+
+  /* result */
+  #result { display: none; }
+  body.done #form, body.done .intro, body.done .bar { display: none; }
+  body.done #result { display: block; }
+  .panel { background: var(--card); border-radius: 14px; padding: 18px 16px; margin-top: 14px; }
+  .top2 { font-size: 21px; line-height: 1.5; }
+  .top2 b { font-weight: 800; }
+  svg.radar { display: block; width: 100%; height: auto; }
+  .radar .ring { fill: none; stroke: var(--grid); stroke-width: 1; }
+  .radar .spoke { stroke: var(--grid); stroke-width: 1; }
+  .radar .tick { fill: var(--ink-3); font-size: 11px; }
+  .radar .area { fill: var(--series-1); fill-opacity: .2; stroke: var(--series-1); stroke-width: 2; stroke-linejoin: round; }
+  .radar .dot { fill: var(--series-1); stroke: var(--surface-1); stroke-width: 2; }
+  .radar .name { fill: var(--ink); font-size: 20px; font-weight: 700; }
+  .radar .val { fill: var(--ink-2); font-size: 16px; font-weight: 600; }
+  table.scores { width: 100%; border-collapse: collapse; }
+  .scores th, .scores td { text-align: left; padding: 12px 0; border-top: 1px solid var(--line); vertical-align: top; }
+  .scores tr:first-child th, .scores tr:first-child td { border-top: 0; }
+  .scores th { font-size: 21px; font-weight: 700; width: 3.4em; }
+  .scores td.d { color: var(--ink-2); font-size: 17px; padding-right: 8px; }
+  .scores td.n { text-align: right; font-size: 24px; font-weight: 800; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .scores td.n small { font-size: 14px; font-weight: 600; color: var(--ink-3); }
+  .read ul { margin: 0; padding-left: 1.15em; }
+  .read li { margin: 6px 0; }
+  footer { color: var(--ink-3); font-size: 14px; line-height: 1.6; margin-top: 26px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="intro">
+    <h1>衝突風格自評</h1>
+    <p class="lead">共 20 題，約 5 分鐘。</p>
+    <div class="how">
+      <ul>
+        <li>請回想：您在工作上與人發生衝突時，通常會怎麼做。</li>
+        <li>每題依符合程度點選 5 到 1：5 是非常符合，1 是非常不符合。</li>
+        <li>請依實際的做法作答，而不是您認為應該怎麼做。</li>
+        <li>沒有標準答案，憑直覺作答，不必想太久。</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="bar" aria-live="polite">
+    <div class="stem">當我在工作上與人發生衝突時，我會……</div>
+    <div class="count"><span id="count">已填 0／20 題</span><span class="track"><span class="fill" id="fill"></span></span></div>
+  </div>
+
+  <form id="form" novalidate>
+    <div id="items"></div>
+    <div class="send">
+      <div class="alert" id="alert" role="alert"></div>
+      <button class="main" type="submit">看我的結果</button>
+    </div>
+  </form>
+
+  <section id="result" aria-live="polite">
+    <h1>我的衝突處理風格</h1>
+    <div class="panel top2" id="top2"></div>
+    <div class="panel">
+      <h2>五種風格的分數</h2>
+      <div id="chart"></div>
+      <p class="lead" style="font-size:15px;margin:6px 0 0">每種風格 4 到 20 分，由四題相加。</p>
+    </div>
+    <div class="panel">
+      <table class="scores" id="scores" aria-label="五種風格的分數"></table>
+    </div>
+    <div class="panel read">
+      <h2>結果怎麼看</h2>
+      <ul>
+        <li>分數愈高，代表您愈常用這種方式處理衝突。</li>
+        <li>看五個分數的相對高低，沒有及格線，也不必和別人比。</li>
+        <li>兩三種分數接近，表示您會視情況切換。</li>
+        <li>風格沒有好壞，要看用在什麼情境。</li>
+        <li>這是自評，而且會隨對象改變：對主管、對同事、對部屬，可能各不相同。</li>
+      </ul>
+    </div>
+    <button class="ghost" type="button" id="edit">回去修改答案</button>
+    <button class="ghost" type="button" id="reset">清除答案，重新填寫</button>
+  </section>
+
+  <footer>
+    量表：Dutch Test for Conflict Handling（De Dreu 等人，2001，Journal of Organizational Behavior, 22, 645–668）。題目中文為課程用翻譯。<br>
+    作答只留在這支手機上，不會上傳或儲存到任何地方。
+  </footer>
+</div>
+
+<script>
+(function () {
+  var ITEMS = [
+    '順從對方的意願', '設法找出折衷的解決方案', '極力主張自己的觀點',
+    '反覆探討問題，直到找出雙方都真正滿意的方案', '避免為了彼此的歧見而正面衝突',
+    '同意對方的看法', '強調雙方必須找出妥協的方案', '設法爭取自己的利益',
+    '同時維護自己與對方的目標和利益', '盡可能避免意見不合',
+    '盡量配合對方', '堅持雙方都要各讓一步', '為自己爭取好的結果',
+    '檢視雙方的想法，找出對彼此都最好的方案', '設法讓彼此的歧見看起來沒那麼嚴重',
+    '順應對方的目標和利益', '盡可能爭取雙方各讓一半', '想盡辦法要贏',
+    '擬出盡可能兼顧雙方利益的方案', '盡量避免與對方正面衝突'
+  ];
+  // 計分：每種風格四題相加（題號從 1 起算）
+  var STYLES = [
+    { key: 'forcing',       name: '競爭', items: [3, 8, 13, 18],  desc: '堅持己見，我贏你輸' },
+    { key: 'problem',       name: '合作', items: [4, 9, 14, 19],  desc: '一起找出雙方都能接受的做法' },
+    { key: 'compromising',  name: '妥協', items: [2, 7, 12, 17],  desc: '各退一步' },
+    { key: 'avoiding',      name: '迴避', items: [5, 10, 15, 20], desc: '暫時不處理' },
+    { key: 'yielding',      name: '遷就', items: [1, 6, 11, 16],  desc: '放下自己的立場，成全對方' }
+  ];
+  var KEY = 'dutch-answers-v1';
+  var answers = {};
+  try { answers = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { answers = {}; }
+
+  var itemsEl = document.getElementById('items');
+  ITEMS.forEach(function (text, i) {
+    var n = i + 1;
+    var fs = document.createElement('fieldset');
+    fs.className = 'q'; fs.id = 'q' + n;
+    var html = '<legend><span class="no">' + n + '.</span>' + text + '</legend><div class="opts">';
+    for (var v = 5; v >= 1; v--) {
+      html += '<label><input type="radio" name="q' + n + '" value="' + v + '"' +
+              (String(answers[n]) === String(v) ? ' checked' : '') +
+              ' aria-label="' + v + ' 分"><span>' + v + '</span></label>';
+    }
+    html += '</div><div class="ends"><span>非常符合</span><span>非常不符合</span></div>';
+    fs.innerHTML = html;
+    itemsEl.appendChild(fs);
+  });
+
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(answers)); } catch (e) {} }
+  function filled() { var c = 0; for (var n = 1; n <= 20; n++) if (answers[n]) c++; return c; }
+  function progress() {
+    var c = filled();
+    document.getElementById('count').textContent = '已填 ' + c + '／20 題';
+    document.getElementById('fill').style.width = (c / 20 * 100) + '%';
+  }
+  progress();
+
+  itemsEl.addEventListener('change', function (e) {
+    var t = e.target;
+    if (!t || t.type !== 'radio') return;
+    var n = Number(t.name.slice(1));
+    answers[n] = Number(t.value);
+    document.getElementById('q' + n).classList.remove('miss');
+    save(); progress();
+    if (filled() === 20) document.getElementById('alert').classList.remove('on');
+  });
+
+  document.getElementById('form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var missing = [];
+    for (var n = 1; n <= 20; n++) {
+      var el = document.getElementById('q' + n);
+      if (!answers[n]) { missing.push(n); el.classList.add('miss'); } else el.classList.remove('miss');
+    }
+    var alert = document.getElementById('alert');
+    if (missing.length) {
+      alert.textContent = '還有 ' + missing.length + ' 題沒填：第 ' + missing.join('、') + ' 題。';
+      alert.classList.add('on');
+      document.getElementById('q' + missing[0]).scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    alert.classList.remove('on');
+    showResult();
+  });
+
+  document.getElementById('edit').addEventListener('click', function () {
+    document.body.classList.remove('done'); window.scrollTo(0, 0);
+  });
+  document.getElementById('reset').addEventListener('click', function () {
+    answers = {}; save();
+    Array.prototype.forEach.call(document.querySelectorAll('#items input'), function (r) { r.checked = false; });
+    progress(); document.body.classList.remove('done'); window.scrollTo(0, 0);
+  });
+
+  function scoreAll() {
+    return STYLES.map(function (s) {
+      var sum = s.items.reduce(function (a, n) { return a + (answers[n] || 0); }, 0);
+      return { name: s.name, desc: s.desc, score: sum };
+    });
+  }
+
+  function radar(data) {
+    var W = 360, H = 344, cx = 180, cy = 176, R = 110, MAX = 20, N = data.length;
+    function pt(i, v) {
+      var a = -Math.PI / 2 + i * 2 * Math.PI / N, r = v / MAX * R;
+      return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+    }
+    var s = '<svg class="radar" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="五種衝突處理風格的雷達圖：' +
+            data.map(function (d) { return d.name + ' ' + d.score + ' 分'; }).join('，') + '">';
+    [4, 8, 12, 16, 20].forEach(function (v) {
+      s += '<polygon class="ring" points="' + data.map(function (_, i) { return pt(i, v).map(function (x) { return x.toFixed(1); }).join(','); }).join(' ') + '"/>';
+    });
+    data.forEach(function (_, i) { var p = pt(i, MAX); s += '<line class="spoke" x1="' + cx + '" y1="' + cy + '" x2="' + p[0].toFixed(1) + '" y2="' + p[1].toFixed(1) + '"/>'; });
+    [4, 12, 20].forEach(function (v) { var p = pt(0, v); s += '<text class="tick" x="' + (p[0] + 4) + '" y="' + (p[1] + 4) + '">' + v + '</text>'; });
+    s += '<polygon class="area" points="' + data.map(function (d, i) { return pt(i, d.score).map(function (x) { return x.toFixed(1); }).join(','); }).join(' ') + '"/>';
+    data.forEach(function (d, i) {
+      var p = pt(i, d.score);
+      s += '<circle class="dot" cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="5"><title>' + d.name + '：' + d.score + ' 分</title></circle>';
+    });
+    data.forEach(function (d, i) {
+      var a = -Math.PI / 2 + i * 2 * Math.PI / N;
+      var lx = cx + (R + 20) * Math.cos(a), ly = cy + (R + 20) * Math.sin(a);
+      var anchor = Math.abs(Math.cos(a)) < 0.2 ? 'middle' : (Math.cos(a) > 0 ? 'start' : 'end');
+      var dy = Math.sin(a) < -0.5 ? -18 : (Math.sin(a) > 0.5 ? 16 : 0);
+      s += '<text class="name" text-anchor="' + anchor + '" x="' + lx.toFixed(1) + '" y="' + (ly + dy).toFixed(1) + '">' + d.name + '</text>';
+      s += '<text class="val" text-anchor="' + anchor + '" x="' + lx.toFixed(1) + '" y="' + (ly + dy + 21).toFixed(1) + '">' + d.score + ' 分</text>';
+    });
+    return s + '</svg>';
+  }
+
+  function showResult() {
+    var data = scoreAll();
+    var hi = Math.max.apply(null, data.map(function (d) { return d.score; }));
+    var lo = Math.min.apply(null, data.map(function (d) { return d.score; }));
+    function names(v) { return data.filter(function (d) { return d.score === v; }).map(function (d) { return d.name; }).join('、'); }
+    document.getElementById('top2').innerHTML = hi === lo
+      ? '五種風格的分數相同，都是 <b>' + hi + ' 分</b>。'
+      : '最常用：<b>' + names(hi) + '</b>（' + hi + ' 分）<br>最少用：<b>' + names(lo) + '</b>（' + lo + ' 分）';
+    document.getElementById('chart').innerHTML = radar(data);
+    var sorted = data.slice().sort(function (a, b) { return b.score - a.score; });
+    document.getElementById('scores').innerHTML = sorted.map(function (d) {
+      return '<tr><th scope="row">' + d.name + '</th><td class="d">' + d.desc + '</td><td class="n">' + d.score + ' <small>分</small></td></tr>';
+    }).join('');
+    document.body.classList.add('done');
+    window.scrollTo(0, 0);
+  }
+})();
+</script>
+</body>
+</html>
