@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#102a56">
 <title>店長的一天：RFM 足測鞋店 | Store Manager for a Day</title>
-<meta name="description" content="扮演足測鞋店店長經營一天：達成業績目標、讓忠誠客戶變多，用 RFM 決定怎麼服務每位會員。Play a shoe-store manager for a day: hit the sales target and grow loyal customers using RFM.">
+<meta name="description" content="扮演足測鞋店店長經營三個月：10 位會員反覆來店，用 RFM 服務每一位，達成業績、提升忠誠度。Run a shoe store for a quarter: 10 members come and go; use RFM to hit sales and grow loyalty.">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%23102a56%22/%3E%3Cpath%20d%3D%22M8%2024V17h4v7zm6%200V11h4v13zm6%200V6h4v18z%22%20fill%3D%22%23ffffff%22/%3E%3C/svg%3E">
 <!-- ============================================================
-     店長的一天：RFM 足測鞋店 · Store Manager for a Day  (v2)
+     店長的一天：RFM 足測鞋店 · Store Manager for a Day  (v3：三個月、10 位會員)
      大數據與資料科學 第二章（講義 p.34–37：阿瘦個案與 RFM）
      單一檔案、無外部資源。寬螢幕：橫向門市＋側欄；手機與直向螢幕：
      直向門市＋底部面板。觸控裝置點地板或點客人走路，電腦也可用方向鍵。
@@ -221,12 +221,55 @@ ol.qs small{display:block;color:var(--ink3);font-size:14px}
   .goBtn{font-size:15px;padding:6px 10px;max-width:112px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- v3: three rows on top (stats, member roster), then the store ---------- */
+#game{grid-template-rows:auto auto minmax(0,1fr)}
+#game.wide .roster{grid-column:1/-1}
+#game.wide .stagewrap{grid-row:3}
+#game.wide .side{grid-row:3}
+.top .date{font-variant-numeric:tabular-nums;font-weight:800;background:rgba(255,255,255,.16);border-radius:8px;padding:2px 10px;font-size:17px;white-space:nowrap}
+.top .date small{font-weight:600;opacity:.8;font-size:13px;margin-left:6px}
+.roster{background:#fbfaf7;border-bottom:1px solid var(--line);padding:6px 8px;display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:5px}
+.mem{border:2px solid var(--line);background:#fff;border-radius:9px;padding:3px 6px 4px;text-align:left;cursor:pointer;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 4px;align-items:center;font-size:13px;line-height:1.3}
+.mem .mn{grid-column:1/-1}
+.mem .mn{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:4px;min-width:0}
+.mem .mn i{flex:0 0 auto;width:9px;height:9px;border-radius:50%}
+.mem .vis{font-size:10px;letter-spacing:1px;color:var(--ink3);white-space:nowrap}
+.mem .vis b{color:var(--blue)} .mem .vis s{color:var(--bad);text-decoration:none}
+.lbar{position:relative;display:block;height:8px;border-radius:4px;background:var(--line2);overflow:visible}
+.lbar u{display:block;height:100%;border-radius:4px;background:#8a96a8;text-decoration:none;transition:width .6s}
+.lbar u.hi{background:#e0a800} .lbar u.lo{background:#d23a3a}
+.lbar em{position:absolute;left:70%;top:-2px;bottom:-2px;width:2px;background:#1b2433;opacity:.55}
+.mem.in{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-wash)}
+.mem.act{border-color:#f2b705;background:#fffbea}
+.mem.new{opacity:.55}
+.mem.gone .mn{color:var(--ink3);text-decoration:line-through}
+.mem.loyal .mn::after{content:"★";color:#e0a800}
+.dl{display:inline-block;font-weight:900;border-radius:999px;padding:0 9px;font-size:15px;color:#fff;background:var(--good);margin-left:4px}
+.dl.neg{background:var(--bad)}
+.lchg{display:flex;align-items:center;gap:10px;font-size:17px}
+.lchg .lbar{width:140px;height:10px}
+.rmem{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:12px 0;border-top:1px solid var(--line2)}
+.rmem:first-child{border-top:0}
+.rmem .who{font-weight:800;font-size:19px}
+.rmem .row2{grid-column:1/-1;display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:16px;color:var(--ink2)}
+.rmem .row2 .mini{width:64px}
+.rmem .lbar{width:160px;height:10px;display:inline-block;vertical-align:middle}
+.visits{font-size:15px;color:var(--ink2)}
+@media (max-width:900px){ .roster{grid-template-columns:repeat(5,minmax(0,1fr))} }
+@media (max-width:640px){ .top .date small{display:none} .mem{font-size:12px;padding:2px 5px 3px} }
+
+.toast{top:auto;bottom:calc(22px + env(safe-area-inset-bottom))}
+.crm dd .lbar{margin-top:9px}
+.goal .lbar{width:120px;height:10px}
+@media (max-width:420px){ .sbox .val small{display:block;font-size:12px;line-height:1.1} .sbox .val{font-size:17px} .stats{gap:8px;padding:5px 10px} }
+@media (max-width:420px){ .mem .vis{letter-spacing:0;font-size:9px} }
 </style>
 </head>
 <body>
 <header class="top">
   <div class="name" id="appname"></div>
-  <div class="clock hide" id="clock"></div>
+  <div class="date hide" id="clock"></div>
   <div class="lang" role="group" aria-label="Language 語言">
     <button type="button" data-lang="zh">中文</button>
     <button type="button" data-lang="en">EN</button>
@@ -239,6 +282,7 @@ ol.qs small{display:block;color:var(--ink3);font-size:14px}
     <div class="sbox loyal"><span class="lab" id="lLab"></span><span class="val" id="lVal"></span></div>
     <button type="button" class="goBtn" id="goBtn"></button>
   </div>
+  <div class="roster" id="roster" aria-label="Members"></div>
   <div class="stagewrap" id="wrap"><div class="stage" id="stage"></div><div class="pausebadge hide" id="pause"></div></div>
   <aside class="side" id="side" aria-live="polite"></aside>
 </div>
@@ -254,33 +298,34 @@ const TOUCH = window.matchMedia ? window.matchMedia('(pointer:coarse)').matches 
 const T = {
   zh: {
     app: '店長的一天：RFM 足測鞋店',
-    kicker: '大數據行銷 · RFM 模擬遊戲 · 約 12 分鐘',
-    title: '店長的一天',
-    lead: '今天由你擔任足測鞋店的店長。客人會一位、兩位、三位地走進來，你要親自招呼、帶去足測、到倉庫拿鞋、試穿、結帳。系統會顯示每位會員的 RFM 資料，用它決定怎麼服務。',
+    kicker: '大數據行銷 · RFM 模擬遊戲 · 約 15 分鐘',
+    title: '店長的三個月',
+    lead: '你是足測鞋店的店長，要經營 10 月到 12 月這三個月（濃縮成幾分鐘）。店裡有 10 位會員，每次會隨機走進 1～3 位。你要親自招呼、帶去足測、到倉庫拿鞋、試穿、結帳。服務得好，他們會更忠誠、更常回來；服務不好，可能來一次就不再出現。',
     begin: '看遊戲說明', skip: '已經會玩，直接開店',
     pages: [
-      { h: '你的角色與今天的兩個目標', goals: true },
+      { h: '你的角色與三個月的兩個目標', goals: true },
       { h: '服務一位客人的流程', flow: [
         ['招呼', '走到客人旁邊，看 CRM 上的 RFM 資料，選一句最適合的開場白。'],
         ['足測（需要時）', '沒有足測資料，或資料太舊，就帶去足壓測試機重新測量。'],
         ['到倉庫拿鞋', '走進倉庫，從四個鞋盒裡拿出款式和尺寸都對的那一盒。'],
         ['試穿', '把鞋盒拿到試穿區，交給正在等的客人。'],
-        ['結帳＋安排回店', '到結帳櫃台結帳，替客人安排下一次回來的理由，CRM 會即時更新。']
-      ] },
-      { h: '客人的滿意度', sat: true },
+        ['結帳＋安排回店', '到結帳櫃台結帳。第一次來的客人，要替他安排下一次回來的理由。']
+      ], tail: '回頭客的流程比較短：招呼、拿鞋、試穿、結帳。' },
+      { h: '滿意度與忠誠度', sat: true },
       { h: 'RFM 速查', rfm: true }
     ],
-    goalSales: '目標一：業績', goalSalesB: t => `今日營業額達到 NT$${t}`, goalSalesP: '畫面上方會顯示目前營業額和目標。每賣出一雙鞋，營業額就會增加。',
-    goalLoyal: '目標二：忠誠客戶', goalLoyalB: n => `忠誠客戶比開店時的 ${n} 位更多`, goalLoyalP: '忠誠客戶＝RFM 地圖上的「冠軍顧客」和「忠誠顧客」。服務得好，客人會往右上角移動；生氣離開就會變少。',
+    goalSales: '目標一：業績', goalSalesB: t => `三個月營業額達到 NT$${t}`, goalSalesP: '畫面上方會顯示目前營業額和目標。每賣出一雙，營業額就會增加。',
+    goalLoyal: '目標二：忠誠客戶', goalLoyalB: n => `忠誠客戶比開店時的 ${n} 位更多`, goalLoyalP: '上方有 10 位會員的忠誠度條。忠誠度 70 以上（黑線右邊）就是忠誠客戶，名字旁會出現 ★。',
     goalNote: '兩個目標有時會互相拉扯：打折可以衝業績，卻不一定讓客人更忠誠。',
-    roleP: '你是店長：在店裡走動、服務客人，所有決定都由你來做。',
-    satIntro: '每位客人頭上都有一條滿意度，會隨時間和你的服務變化。',
-    satDown: '會下降', satDownL: ['讓客人等太久：只要有客人在等你，滿意度就會一直往下掉。', '服務錯誤：選錯招呼方式、拿錯鞋、用了過期的尺寸資料。'],
-    satUp: '會上升', satUpL: ['招呼方式選對、一次就拿對鞋、回店安排得好。'],
-    satZero: '歸零時', satZeroL: ['客人會生氣離開，不買也不再回來，忠誠度下降：如果他原本是忠誠客戶，忠誠客戶人數就會減少。'],
-    satMore: ['一開始客人一位一位來，後來會 2～3 位同時進店。要先服務誰，由你決定。', '選錯時，畫面會告訴你正確做法和原因。', '對話框打開時時間會暫停，可以慢慢讀。'],
+    roleP: '你是店長：在店裡走動、服務客人，所有決定都由你來做。日期會一直往前走，三個月結束就打烊結算。',
+    satIntro: '客人頭上的是這次來店的滿意度；畫面上方的是每位會員長期的忠誠度。',
+    satDown: '滿意度會下降', satDownL: ['讓客人等太久：只要有客人在等你，滿意度就會一直往下掉。', '服務錯誤：選錯招呼方式、拿錯鞋、用了過期的尺寸資料。'],
+    satUp: '滿意度會上升', satUpL: ['招呼方式選對、一次就拿對鞋、回店安排得好。'],
+    satZero: '滿意度歸零', satZeroL: ['客人生氣離開、不消費，忠誠度大跌（−35）。'],
+    loyH: '忠誠度怎麼變', loyL: ['客人離開時，依這次的滿意度加減忠誠度：越滿意加越多。', '忠誠度越高，下次越快回來；安排了最適合的回店理由，也會更快回來。', '忠誠度低於 30，這位會員就不會再來了。每位會員三個月內最多來 3 次。'],
+    satMore: ['每次隨機走進 1～3 位客人，要先服務誰，由你決定。', '選錯時，畫面會告訴你正確做法和原因。', '對話框打開時時間會暫停，可以慢慢讀。'],
     rfmL: [['R', '最近一次互動', '購買或到店都算，越近越好'], ['F', '互動頻率', '一年來店幾次'], ['M', '消費金額', '一年花了多少']],
-    rfmMap: '依 R 與 F＋M 的分數，每位顧客落在地圖的一格（講義 p.37）。黃框是忠誠客戶。',
+    rfmMap: '依 R 與 F＋M 的分數，每位顧客落在地圖的一格（講義 p.37）。三個月裡，R、F、M 會隨每次來店更新。',
     axR: 'R 越近 →', axFM: 'F＋M 越高 ↑',
     ctrlH: '操作方式',
     ctrlTouch: [['走路', '點一下地板。'], ['服務客人', '直接點那位客人，或點倉庫、櫃台，走到旁邊就會自動開始。'], ['不知道先做什麼', '按上方的「帶我去最急的」。'], ['頭上的黃色標籤', '代表這位客人正在等你。']],
@@ -289,21 +334,24 @@ const T = {
     note: '情境改編自課堂個案（講義 p.34–37）。顧客與數字皆為教學模擬，不是阿瘦的實際資料。',
     me: '店長',
     st: { scan: '足壓測試機', bench: '試穿區', stock: '倉庫', pos: '結帳櫃台', door: '入口', wall: '新品牆' },
-    sales: '營業額／目標', target: t => ` / ${t}`, loyal: '忠誠客戶', loyalOpen: n => `開店 ${n}`,
+    date: d => `${d.m} 月 ${d.d} 日`, dayOf: (n, N) => `第 ${n}/${N} 天`,
+    sales: '營業額／目標', target: t => ` / ${t}`, loyal: '忠誠客戶 ★', loyalOpen: n => `開店 ${n}`,
     go: '帶我去最急的', paused: '時間暫停',
     chip: { enter: '進店', greet: '招呼！', scan: '足測！', scanq: '排隊足測', bench: '等鞋', benchgo: '交鞋！', benchwalk: '去試穿區', pay: '結帳！', payq: '排隊結帳', payWalk: '去結帳', angry: '生氣離開', happy: '謝謝！' },
     status: {
       enter: '剛進店', greet: '在等你招呼', scan: '在足測機旁等你', scanq: '排隊等足測', bench: (s, z) => `等鞋：${s} ${z}`, benchHave: '鞋在你手上，拿過去', pay: '在櫃台等結帳', payq: '排隊等結帳', walk: '走過去中'
     },
     idleH: '店內客人', idleHint: TOUCH ? '點客人或倉庫、櫃台，走過去就會開始服務。' : '點客人或倉庫、櫃台；也可以用方向鍵走過去按 E。',
-    idleEmpty: '目前沒有客人。下一批快到了⋯⋯',
-    arrive: n => `${n} 進店了`, wave: n => `一次來了 ${n} 位客人！`,
+    idleEmpty: '目前沒有客人。下一位快到了⋯⋯',
+    arrive: n => `${n} 進店了`, batch: n => `一次來了 ${n} 位客人！`,
     angryWait: n => `${n} 等太久，生氣離開了`, angryErr: n => `${n} 不滿意，離開了`,
+    loyToast: (n, d) => `${n} 忠誠度 ${d > 0 ? '+' : ''}${d}`, loyD: d => `忠誠度 ${d}`, goneToast: n => `${n} 不會再來了`,
     needShoes: (n, s, z) => `${n} 在等 ${s} ${z}：先去倉庫拿`,
     handsFull: n => `你手上拿著 ${n} 的鞋，先拿過去`,
-    crmH: 'CRM 會員資料', segNow: '目前分群',
-    rDays: d => `${d} 天前`, fTimes: n => `一年 ${n} 次`, mAmt: m => `一年 NT$${m}`, sizeL: '尺寸',
-    sizeKnown: (s, age) => age ? `${s}（${age} 天前足測）` : `${s}（剛剛足測）`,
+    notIn: n => `${n} 現在不在店裡`,
+    crmH: 'CRM 會員資料', visitN: n => `第 ${n} 次來`,
+    rDays: d => `${d} 天前`, fTimes: n => `一年 ${n} 次`, mAmt: m => `一年 NT$${m}`, sizeL: '尺寸', loyLab: '忠誠度',
+    sizeKnown: (s, age) => age ? `${s}（${age} 天前足測）` : `${s}（今天足測）`,
     sizeNone: '沒有足測資料',
     memoH: '紀錄',
     howGreet: '你要怎麼招呼？',
@@ -317,97 +365,121 @@ const T = {
     needLine: (n, shoe, size) => `${n} 要：<b>${shoe}</b>・尺寸 <b>${size}</b>`,
     sizeUnknown: '尺寸未知',
     cancel: '先不拿', took: n => `拿好了，交給 ${n}`,
-    tryOk: '剛剛好！一次就拿對。', tryOk2: '這雙剛剛好！',
+    tryOkT: (n, d) => `${n}：剛剛好！${d ? `滿意度 +${d}` : ''}`,
     tryBad: '不合腳，客人皺起眉頭。',
     fixBox: (s, z) => `拿 ${s}・尺寸 ${z}。`,
     whyBox: '鞋盒要同時對上款式和尺寸。款式寫在客人的需求裡，尺寸寫在 CRM 的足測資料裡。',
     fixStale: '先帶客人去足壓測試機重新足測，再拿鞋。',
     whyStale: d => `尺寸資料是 ${d} 天前的。R 拉得越長，資料也越舊，腳型可能已經改變。`,
-    refetch: '回倉庫重拿', rescan: '帶去重新足測', toPay: '請客人到櫃台結帳',
+    refetch: '回倉庫重拿', rescan: '帶去重新足測',
+    paidT: (n, p) => `${n} 結帳 NT$${p}`,
     payH: n => `幫 ${n} 結帳`,
     price: (shoe, p) => `${shoe}　NT$${p}`, discountNote: p => `（打 ${p} 折）`,
     followH: '再安排一個回來的理由：',
     follow: { insole3m: '三個月後提醒調整鞋墊', call: '兩週後客服關懷電話', rescan6m: '預約半年後回店複測', coupon: '送一張下次折價券' },
-    fixFollow: '更好的安排', followOk: '可以，但還有更適合這位客人的安排。', followCoupon: '折扣讓人等下一張券，而不是期待下一次體驗。',
+    followOk: '可以，但還有更適合這位客人的安排。', followCoupon: '折扣讓人等下一張券，而不是期待下一次體驗。',
     crmUpd: m => `CRM 已更新：R 變成 0 天・F +1・M +NT$${m}`,
     segMove: (a, b) => a === b ? `仍是「${b}」` : `「${a}」→「${b}」`,
-    closeH: '打烊了', closeP: '今天的客人都服務完了。', toReport: '看今日結算',
+    closeH: '三個月結束，打烊了', closeP: '來看看這一季的成績。', toReport: '看結算',
     seg: { champ: '冠軍顧客', loyal: '忠誠顧客', keep: '不能失去', promise: '有潛力', attn: '需要關注', sleep: '沉睡顧客', fresh: '新顧客', warm: '待加溫', lost: '已流失' },
     shoe: { walk: '輕量健走鞋', arch: '足弓支撐鞋', dress: '真皮紳士鞋', commute: '通勤女鞋', insole: '客製足墊' },
+    ret: {
+      say: '我又來了！',
+      memo: (n, d, s) => `這三個月第 ${n} 次來；上次是 ${d} 天前，買了${s}。`,
+      memoAngry: (n, d) => `這三個月第 ${n} 次來；上次 ${d} 天前來時不太愉快。`,
+      opts: { recall: (n, s) => `${n}！上次的${s}穿得還好嗎？`, generic: '歡迎光臨，請隨意看看。', push: '今天全館打折，要不要多買一雙？' },
+      fb: { recall: '回頭客最在意被記得。CRM 記著他上次買了什麼，就拿來用。', generic: 'CRM 明明有紀錄，回頭客卻被當成陌生人。', push: '用折扣推銷，讓好的體驗變成討價還價。' }
+    },
     cust: {
       lin: { name: '林小姐', say: '嗨，我來看看有沒有新款。', memo: '上次買通勤女鞋；三個月前加購客製足墊。',
         opts: { crm: '林小姐！您的鞋墊用三個月了，順便幫您調整？新款通勤鞋有 23.5。', generic: '歡迎光臨，請隨意看看。', discount: '今天全館八折喔！' },
         fb: { crm: '她很開心你記得她。冠軍顧客要的是被認得，不是折扣。', generic: '她自己逛了一圈。CRM 明明知道她的尺寸和喜好，卻沒用上。', discount: '她本來就會買，打折只是少賺。' },
         followWhy: '她三個月前買了足墊，正好該調整了，這就是回來的理由。' },
-      wang: { name: '王同學', say: '上次來測說我扁平足⋯⋯', memo: '20 天前只來做足測，沒有買。',
-        opts: { report: '你的足測報告在這：扁平足、26.5。試試足弓支撐鞋？', member: '要不要先辦會員？', sale: '這雙正在特價，很多人買。' },
-        fb: { report: '上次的足測資料派上用場，他覺得被專業照顧。', member: '他上次足測時就加入會員了。先看資料再開口。', sale: '熱賣款不一定適合扁平足，他的足測資料就在系統裡。' },
-        followWhy: '第一次買鞋，兩週後客服關心穿起來如何（旅程第 3 步），讓新顧客願意再來。' },
-      chen: { name: '陳先生', say: '最近鞋子穿起來會痛。', memo: '真皮紳士鞋常客；上次足測 200 天前。',
-        opts: { stale: '還是 26 號紳士鞋對吧？我直接去拿。', rescan: '陳先生好久不見！上次足測是半年多前，先幫您重測一次？', sale: '特價區在那邊，您慢慢看。' },
-        fb: { rescan: '200 天沒來，資料也舊了。重新足測才找得到他現在的尺寸。', stale: 'R 很差，代表資料也舊了，腳型可能已經變了。', sale: '「不能失去」的顧客被晾在一旁，他很失望。' },
-        followWhy: '讓他回到半年一次的複測節奏，R 不再拖長，也不會再穿錯尺寸。' },
-      chang: { name: '張太太', say: '我隨便看看。', memo: '四個月沒來；以前常買健走鞋。',
-        opts: { bogo: '這雙買一送一！', leave: '（不打擾她）', scan: '最近走路腳會累嗎？可以免費做個足測，三分鐘。' },
-        fb: { scan: '用體驗代替推銷，她留下了新的足測資料。', bogo: '她有點心動，但沒有足測，尺寸是四個月前的。', leave: '「需要關注」的顧客，沒人關注，就走了。' },
-        followWhy: '「需要關注」的顧客，主動關心最有效；兩週後的電話讓她知道店裡記得她。' },
+      ho: { name: '何太太', say: '下班順路過來看看。', memo: '每個月都來，常買通勤女鞋；VIP 會員。',
+        opts: { generic: '歡迎光臨，請隨意看看。', reserve: '何太太！新款通勤鞋上週到貨，已經先幫您留了 24.0。', discount: '今天全館八折喔！' },
+        fb: { reserve: '冠軍顧客最在意被優先對待。CRM 讓你知道她的尺寸和習慣，提前留貨。', generic: '每個月都來的冠軍顧客，被當成第一次來的客人。', discount: '她本來就會買，打折只是少賺。' },
+        followWhy: '新款第一次穿，兩週後關心穿起來如何，冠軍顧客會感受到被重視。' },
       huang: { name: '黃先生', say: '我想再買一雙健走鞋。', memo: '忠誠顧客，常買健走鞋；上次來是 100 天前。',
         opts: { push: '這雙是本季最熱賣的，要不要試試？', remind: '黃先生好久不見！上次那雙健走鞋穿三個多月了吧？同系列新色有 27 號。', vip: '您是 VIP，今天直接打九折！' },
         fb: { remind: '你用 CRM 記得他的尺寸和喜好，他覺得被當成老朋友。忠誠顧客要的是被記得。', push: '熱賣款不一定是他要的；CRM 上有他的購買紀錄卻沒用。', vip: '他本來就打算買，打折只是少賺；他真正需要的是常回來的理由。' },
         followWhy: '他上次來已是 100 天前。預約半年複測讓他固定回店，R 不會再拉長。' },
+      chen: { name: '陳先生', say: '最近鞋子穿起來會痛。', memo: '真皮紳士鞋常客；上次足測 200 天前。',
+        opts: { stale: '還是 26 號紳士鞋對吧？我直接去拿。', rescan: '陳先生好久不見！上次足測是半年多前，先幫您重測一次？', sale: '特價區在那邊，您慢慢看。' },
+        fb: { rescan: '200 天沒來，資料也舊了。重新足測才找得到他現在的尺寸。', stale: 'R 很差，代表資料也舊了，腳型可能已經變了。', sale: '「不能失去」的顧客被晾在一旁，他很失望。' },
+        followWhy: '讓他回到半年一次的複測節奏，R 不再拖長，也不會再穿錯尺寸。' },
+      tsai: { name: '蔡小姐', say: '上次買的健走鞋很好穿！', memo: '一個月前第一次買健走鞋；足測顯示扁平足。',
+        opts: { bogo: '今天買兩雙，第二雙半價！', cross: '很高興您喜歡！您是扁平足，搭一雙客製足墊，走久了更不累。', generic: '那您再看看其他款？' },
+        fb: { cross: '用足測資料做加購建議，對她有用，M 也往上走。「有潛力」的顧客就是這樣培養的。', bogo: '她才剛買過鞋，不需要第二雙；折扣反而像推銷。', generic: '錯過了用資料推薦的機會。' },
+        followWhy: '買了足墊，三個月後提醒調整，固定回店的理由就有了。' },
+      chang: { name: '張太太', say: '我隨便看看。', memo: '四個月沒來；以前常買健走鞋。',
+        opts: { bogo: '這雙買一送一！', leave: '（不打擾她）', scan: '最近走路腳會累嗎？可以免費做個足測，三分鐘。' },
+        fb: { scan: '用體驗代替推銷，她留下了新的足測資料。', bogo: '她有點心動，但沒有足測，尺寸是四個月前的。', leave: '「需要關注」的顧客，沒人關注，就走了。' },
+        followWhy: '「需要關注」的顧客，主動關心最有效；兩週後的電話讓她知道店裡記得她。' },
+      lee: { name: '李先生', say: '好久沒來了，鞋子有點舊了。', memo: '以前一年來三次；已經 8 個多月沒來。',
+        opts: { stale: '一樣 27.5 的健走鞋吧？我直接拿。', coupon: '這張折價券給您，買越多越划算。', rescan: '李先生歡迎回來！八個多月了，先免費幫您重測腳型？' },
+        fb: { rescan: '沉睡顧客回來了，用體驗喚醒他，也順便更新過期的資料。', stale: '資料是 250 天前的，腳型可能變了。', coupon: '折扣沒辦法讓他想起這家店的好；他需要的是一次好的體驗。' },
+        followWhy: '剛被喚醒的顧客，兩週後的關懷電話讓他不再沉睡。' },
+      wang: { name: '王同學', say: '上次來測說我扁平足⋯⋯', memo: '20 天前只來做足測，沒有買。',
+        opts: { member: '要不要先辦會員？', sale: '這雙正在特價，很多人買。', report: '你的足測報告在這：扁平足、26.5。試試足弓支撐鞋？' },
+        fb: { report: '上次的足測資料派上用場，他覺得被專業照顧。', member: '他上次足測時就加入會員了。先看資料再開口。', sale: '熱賣款不一定適合扁平足，他的足測資料就在系統裡。' },
+        followWhy: '第一次買鞋，兩週後客服關心穿起來如何（旅程第 3 步），讓新顧客願意再來。' },
+      kao: { name: '高小姐', say: '我只是路過⋯⋯', memo: '半年內來過兩次，只買過一次鞋墊。',
+        opts: { generic: '歡迎光臨。', invite: '高小姐好！您是高足弓，這款足弓支撐鞋很多高足弓的客人喜歡，要不要試穿？', hardsell: '這雙限量，今天不買就沒了！' },
+        fb: { invite: '用足測資料給她一個試穿的理由。「待加溫」的顧客需要的是一次好的體驗。', generic: '路過的客人沒被留下來，下一次不知道是什麼時候。', hardsell: '壓力讓她想快點離開。' },
+        followWhy: '高足弓要定期追蹤，半年複測讓她養成回店的習慣。' },
       wu: { name: '吳小姐', say: '這台機器是做什麼的？', memo: '一年多前買過一次，之後沒再來。',
         opts: { coupon: '會員回來有大折扣，要不要買兩雙？', scan: '可以免費測腳型，三分鐘，不用買。', hardsell: '這是最新款，今天帶走最划算！' },
         fb: { scan: '一年多沒來的顧客，用免費體驗重新開始，R 立刻更新。', coupon: '她覺得被推銷，說聲謝謝就走了。', hardsell: '硬推讓她更想離開。' },
         followWhy: '半年後的複測給她一個回來的理由，慢慢把「已流失」拉回來。' }
     },
-    repKick: '打烊結算', repTitle: '今天的成績',
-    kSales: '營業額', kLoyal: '忠誠客戶', kSat: '平均滿意度', kAngry: '生氣離開',
-    met: '達成', notMet: '未達成', loyalFromTo: (a, b) => `${a} → ${b}`, people: n => `${n} 位`,
-    verdict: [ '兩個目標都達成，今天是很棒的一天！', '業績達標了，但忠誠客戶沒有增加。', '忠誠客戶增加了，但業績沒達標。', '兩個目標都沒達成。看看下面哪位客人出了狀況。' ],
-    boughtL: (p) => `消費 NT$${p}`, angryL: '生氣離開，沒有消費', angryLoyal: '生氣離開：忠誠度下降，不再算忠誠客戶',
-    errsL: n => n ? `服務錯誤 ${n} 次` : '零失誤',
-    satL: '最後滿意度',
-    repNote: '忠誠客戶＝冠軍顧客＋忠誠顧客。生氣離開的客人，CRM 上的 RFM 不會馬上改變，但他已經不打算再來了。',
-    toTalk: '討論題', again: '再上一天班', copy: '複製結算', copied: '已複製',
+    repKick: '季末結算', repTitle: '這三個月的成績',
+    kSales: '營業額', kLoyal: '忠誠客戶 ★', kVisits: '來店人次', kAngry: '生氣離開',
+    met: '達成', notMet: '未達成', loyalFromTo: (a, b) => `${a} → ${b}`, times: n => `${n} 次`,
+    verdict: [ '兩個目標都達成，這一季經營得很好！', '業績達標了，但忠誠客戶沒有增加。', '忠誠客戶增加了，但業績沒達標。', '兩個目標都沒達成。看看下面哪幾位會員出了狀況。' ],
+    repLoy: '忠誠度', repVisits: (n, a) => `來了 ${n} 次${a ? `（${a} 次生氣離開）` : ''}`, repNever: '這三個月沒有來',
+    repGone: '不會再來了', repSpent: p => `消費 NT$${p}`,
+    repNote: '★ 忠誠客戶＝忠誠度 70 以上。RFM 分群看的是行為（多久沒來、來幾次、花多少）；忠誠度看的是感受。兩者不一定同步。',
+    toTalk: '討論題', again: '再經營一季', copy: '複製結算', copied: '已複製',
     talkKick: '課堂討論', talkTitle: '和組員聊聊',
     qs: [
-      ['如果林小姐或黃先生生氣離開，CRM 上他們仍是冠軍或忠誠顧客。RFM 要多久才會發現？店裡還能收集什麼資料提早預警？', '講義 p.36'],
-      ['足測的四個步驟（預約、到店足測、客服關懷、半年複測）各自讓 R、F、M 哪一項變好？今天你用了哪幾步？', '講義 p.34'],
-      ['王同學上次只做足測沒買鞋，算不算活躍顧客？R 只算購買或也算到店，分群會差多少？', '講義 p.36'],
-      ['陳先生的尺寸資料是 200 天前的。POS 與 CRM 串接之後，資料要多久更新一次才夠用？', '講義 p.35'],
-      ['三位客人同時在等，你先服務誰？該依 RFM 分群決定服務順序嗎？衝業績和留住忠誠客戶衝突時怎麼選？', '講義 p.37']
+      ['有人生氣離開時，他的 R 也會更新（他畢竟來過店裡）。只看 RFM 看得出他不滿意嗎？RFM 分群和忠誠度條，差在哪裡？', '講義 p.36'],
+      ['足測旅程的四個步驟（預約、到店足測、客服關懷、半年複測）各自讓 R、F、M 哪一項變好？你這一季用了哪幾步？', '講義 p.34'],
+      ['哪一位會員這一季在 RFM 地圖上移動最多？是哪幾次服務讓他移動的？', '講義 p.37'],
+      ['陳先生和李先生的尺寸資料都超過半年。POS 與 CRM 串接之後，資料要多久更新一次才夠用？', '講義 p.35'],
+      ['同時有好幾位客人在等，你先服務誰？該依 RFM 分群決定服務順序嗎？衝業績和留住忠誠客戶衝突時怎麼選？', '講義 p.37']
     ],
     back2: '返回第二章', backHome: '返回課程首頁'
   },
   en: {
     app: 'Store Manager for a Day',
-    kicker: 'Big Data in Marketing · RFM simulation · about 12 minutes',
-    title: 'Store Manager for a Day',
-    lead: 'Today you run a shoe store with a foot scanner. Customers walk in one, two, then three at a time. You greet them, take them to the scanner, fetch shoes from the stockroom, fit them and ring them up. The system shows each member’s RFM record: use it to decide how to serve them.',
+    kicker: 'Big Data in Marketing · RFM simulation · about 15 minutes',
+    title: 'Three Months as Store Manager',
+    lead: 'You run a shoe store with a foot scanner from October to December, squeezed into a few minutes. The store has 10 members, and they walk in 1 to 3 at a time. You greet them, take them to the scanner, fetch shoes from the stockroom, fit them and ring them up. Serve them well and they grow more loyal and come back sooner; serve them badly and they may come once and never return.',
     begin: 'How to play', skip: 'I know how, open the store',
     pages: [
-      { h: 'Your role and today’s two goals', goals: true },
+      { h: 'Your role and two goals for the quarter', goals: true },
       { h: 'Serving one customer', flow: [
         ['Greet', 'Walk up to the customer, read their RFM record in the CRM, and pick the best opening line.'],
         ['Scan (when needed)', 'If there is no scan on file, or it is too old, take them to the foot scanner.'],
         ['Fetch from the stockroom', 'Walk into the stockroom and pick the box with the right model and size out of four.'],
         ['Fitting', 'Carry the box to the fitting bench and hand it to the customer waiting there.'],
-        ['Checkout + a reason to return', 'Ring them up at the checkout and book a reason for their next visit. The CRM updates at once.']
-      ] },
-      { h: 'Customer satisfaction', sat: true },
+        ['Checkout + a reason to return', 'Ring them up at the checkout. On a first visit, book a reason for their next visit.']
+      ], tail: 'Returning customers take fewer steps: greet, fetch, fit, pay.' },
+      { h: 'Satisfaction and loyalty', sat: true },
       { h: 'RFM at a glance', rfm: true }
     ],
-    goalSales: 'Goal 1: sales', goalSalesB: t => `Reach NT$${t} in sales today`, goalSalesP: 'The bar at the top shows today’s sales against the target. Every pair you sell adds to it.',
-    goalLoyal: 'Goal 2: loyal customers', goalLoyalB: n => `End with more than the ${n} loyal customers you opened with`, goalLoyalP: 'Loyal customers are the “Champions” and “Loyal” squares on the RFM map. Serve people well and they move up and right; an angry walk-out loses one.',
+    goalSales: 'Goal 1: sales', goalSalesB: t => `Reach NT$${t} in sales over the quarter`, goalSalesP: 'The bar at the top shows sales so far against the target. Every pair you sell adds to it.',
+    goalLoyal: 'Goal 2: loyal customers', goalLoyalB: n => `End with more than the ${n} loyal customers you start with`, goalLoyalP: 'The top of the screen shows a loyalty bar for each of the 10 members. Loyalty of 70 or more (right of the black line) makes a loyal customer, marked ★.',
     goalNote: 'The two goals can pull against each other: a discount lifts sales but does not always make people more loyal.',
-    roleP: 'You are the store manager: you walk the floor, serve customers, and make every call yourself.',
-    satIntro: 'Every customer has a satisfaction bar over their head. It changes with time and with your service.',
-    satDown: 'It falls when', satDownL: ['customers wait too long: while anyone is waiting for you, their bar keeps dropping.', 'you make a service mistake: the wrong greeting, the wrong box, or an out-of-date size.'],
-    satUp: 'It rises when', satUpL: ['you pick the right greeting, bring the right pair first time, and book a good reason to return.'],
-    satZero: 'At zero', satZeroL: ['the customer walks out angry. No sale, and they will not be back. Loyalty falls: if they were a loyal customer, your loyal count drops.'],
-    satMore: ['At first customers come one at a time. Later two or three walk in together. You decide who to serve first.', 'When you get something wrong, the game tells you the right move and why.', 'Time stops while a dialog is open, so you can read at your own pace.'],
+    roleP: 'You are the store manager: you walk the floor, serve customers, and make every call yourself. The calendar keeps moving; when the three months are up, the store closes and you see the results.',
+    satIntro: 'The bar over a customer’s head is their satisfaction with this visit. The bars at the top of the screen are each member’s long-term loyalty.',
+    satDown: 'Satisfaction falls when', satDownL: ['customers wait too long: while anyone is waiting for you, their bar keeps dropping.', 'you make a service mistake: the wrong greeting, the wrong box, or an out-of-date size.'],
+    satUp: 'Satisfaction rises when', satUpL: ['you pick the right greeting, bring the right pair first time, and book a good reason to return.'],
+    satZero: 'At zero satisfaction', satZeroL: ['the customer walks out angry, buys nothing, and loyalty drops sharply (−35).'],
+    loyH: 'How loyalty changes', loyL: ['When a customer leaves, loyalty moves with how satisfied they were: the happier, the bigger the gain.', 'The higher their loyalty, the sooner they return. Booking the best reason to return also brings them back sooner.', 'Below 30 loyalty, a member stops coming. Each member visits at most 3 times in the quarter.'],
+    satMore: ['Customers walk in 1 to 3 at a time, at random. You decide who to serve first.', 'When you get something wrong, the game tells you the right move and why.', 'Time stops while a dialog is open, so you can read at your own pace.'],
     rfmL: [['R', 'Recency', 'last purchase or visit, the more recent the better'], ['F', 'Frequency', 'visits a year'], ['M', 'Monetary', 'spend a year']],
-    rfmMap: 'Scores for R and for F+M put each customer in one square of the map (handout p.37). Yellow outline = loyal customers.',
+    rfmMap: 'Scores for R and for F+M put each customer in one square of the map (handout p.37). Over the quarter, R, F and M update with every visit.',
     axR: 'R more recent →', axFM: 'F+M higher ↑',
     ctrlH: 'Controls',
     ctrlTouch: [['Walk', 'tap the floor.'], ['Serve someone', 'tap the customer, the stockroom or the checkout. When you get there it starts.'], ['Not sure what to do?', 'press “Most urgent” at the top.'], ['Yellow label over a head', 'that customer is waiting for you.']],
@@ -416,21 +488,24 @@ const T = {
     note: 'Adapted from the class case (handout p.34–37). Customers and numbers are simulated for teaching; they are not A.S.O. data.',
     me: 'You',
     st: { scan: 'Foot scanner', bench: 'Fitting bench', stock: 'Stockroom', pos: 'Checkout', door: 'Entrance', wall: 'New arrivals' },
-    sales: 'Sales / target', target: t => ` / ${t}`, loyal: 'Loyal', loyalOpen: n => `start ${n}`,
+    date: d => `${['', '', '', '', '', '', '', '', '', '', 'Oct', 'Nov', 'Dec'][d.m]} ${d.d}`, dayOf: (n, N) => `day ${n}/${N}`,
+    sales: 'Sales / target', target: t => ` / ${t}`, loyal: 'Loyal ★', loyalOpen: n => `start ${n}`,
     go: 'Most urgent', paused: 'Time paused',
     chip: { enter: 'Coming in', greet: 'Greet!', scan: 'Scan!', scanq: 'In line', bench: 'Waiting', benchgo: 'Hand over!', benchwalk: 'To bench', pay: 'Pay!', payq: 'In line', payWalk: 'To checkout', angry: 'Leaving angry', happy: 'Thanks!' },
     status: {
       enter: 'just walked in', greet: 'waiting to be greeted', scan: 'waiting at the scanner', scanq: 'in line for the scanner', bench: (s, z) => `waiting for ${s}, size ${z}`, benchHave: 'you have their box: take it over', pay: 'waiting at the checkout', payq: 'in line to pay', walk: 'walking over'
     },
     idleH: 'Customers in the store', idleHint: TOUCH ? 'Tap a customer, the stockroom or the checkout and walk over to serve.' : 'Click a customer, the stockroom or the checkout, or walk up and press E.',
-    idleEmpty: 'No one here right now. The next customers are on their way…',
-    arrive: n => `${n} just walked in`, wave: n => `${n} customers at once!`,
+    idleEmpty: 'No one here right now. Someone will be in soon…',
+    arrive: n => `${n} just walked in`, batch: n => `${n} customers at once!`,
     angryWait: n => `${n} waited too long and left angry`, angryErr: n => `${n} was unhappy and left`,
+    loyToast: (n, d) => `${n}: loyalty ${d > 0 ? '+' : ''}${d}`, loyD: d => `loyalty ${d}`, goneToast: n => `${n} will not be back`,
     needShoes: (n, s, z) => `${n} is waiting for ${s}, size ${z}: fetch it first`,
     handsFull: n => `You are holding ${n}’s box: take it over first`,
-    crmH: 'CRM record', segNow: 'segment',
-    rDays: d => `${d} days ago`, fTimes: n => `${n}× a year`, mAmt: m => `NT$${m} a year`, sizeL: 'Size',
-    sizeKnown: (s, age) => age ? `${s} (scanned ${age} days ago)` : `${s} (scanned just now)`,
+    notIn: n => `${n} is not in the store now`,
+    crmH: 'CRM record', visitN: n => `visit ${n}`,
+    rDays: d => `${d} days ago`, fTimes: n => `${n}× a year`, mAmt: m => `NT$${m} a year`, sizeL: 'Size', loyLab: 'Loyalty',
+    sizeKnown: (s, age) => age ? `${s} (scanned ${age} days ago)` : `${s} (scanned today)`,
     sizeNone: 'no scan on file',
     memoH: 'Notes',
     howGreet: 'How do you greet them?',
@@ -444,101 +519,138 @@ const T = {
     needLine: (n, shoe, size) => `${n} needs: <b>${shoe}</b> · size <b>${size}</b>`,
     sizeUnknown: 'size unknown',
     cancel: 'Not now', took: n => `Got it. Take it to ${n}`,
-    tryOk: 'A perfect fit, first time!', tryOk2: 'This pair fits!',
+    tryOkT: (n, d) => `${n}: a perfect fit!${d ? ` Satisfaction +${d}` : ''}`,
     tryBad: 'It does not fit. The customer frowns.',
     fixBox: (s, z) => `bring the ${s}, size ${z}.`,
     whyBox: 'The box has to match both the model and the size. The model is in what the customer needs; the size is in the CRM scan record.',
     fixStale: 'Re-scan the customer at the foot scanner first, then fetch the shoes.',
     whyStale: d => `The size on file is ${d} days old. The longer the R, the older the data, and feet change.`,
-    refetch: 'Back to the stockroom', rescan: 'Take them to re-scan', toPay: 'Show them to the checkout',
+    refetch: 'Back to the stockroom', rescan: 'Take them to re-scan',
+    paidT: (n, p) => `${n} paid NT$${p}`,
     payH: n => `Ring up ${n}`,
     price: (shoe, p) => `${shoe}　NT$${p}`, discountNote: p => ` (${100 - p * 10}% off)`,
     followH: 'Give them a reason to come back:',
     follow: { insole3m: 'Insole check reminder in 3 months', call: 'Service call in 2 weeks', rescan6m: 'Book a re-scan in 6 months', coupon: 'A coupon for next time' },
-    fixFollow: 'A better plan', followOk: 'Fine, but something else suits this customer better.', followCoupon: 'A discount teaches people to wait for the next coupon, not the next experience.',
+    followOk: 'Fine, but something else suits this customer better.', followCoupon: 'A discount teaches people to wait for the next coupon, not the next experience.',
     crmUpd: m => `CRM updated: R is now 0 days · F +1 · M +NT$${m}`,
     segMove: (a, b) => a === b ? `still “${b}”` : `“${a}” → “${b}”`,
-    closeH: 'Closing time', closeP: 'Everyone has been served today.', toReport: 'See today’s results',
+    closeH: 'The quarter is over', closeP: 'Let us see how it went.', toReport: 'See the results',
     seg: { champ: 'Champions', loyal: 'Loyal', keep: 'Shouldn’t lose', promise: 'Promising', attn: 'Need attention', sleep: 'Sleepers', fresh: 'New', warm: 'Warm leads', lost: 'Lost' },
     shoe: { walk: 'Light walker', arch: 'Arch-support shoe', dress: 'Leather dress shoe', commute: 'Commuter flat', insole: 'Custom insole' },
+    ret: {
+      say: 'Back again!',
+      memo: (n, d, s) => `Visit ${n} this quarter; last came ${d} days ago and bought a ${s}.`,
+      memoAngry: (n, d) => `Visit ${n} this quarter; the last visit, ${d} days ago, went badly.`,
+      opts: { recall: (n, s) => `${n}! How is the ${s} you bought last time?`, generic: 'Welcome, have a look around.', push: 'Everything is on sale today. How about a second pair?' },
+      fb: { recall: 'Returning customers want to be remembered. The CRM knows what they bought last time, so use it.', generic: 'The CRM has their history, yet a returning customer is treated like a stranger.', push: 'A sales pitch turns a good experience into haggling.' }
+    },
     cust: {
-      lin: { name: 'Ms. Lin', say: 'Hi, just seeing if anything new is in.', memo: 'Last bought a commuter flat; added custom insoles three months ago.',
+      lin: { short: 'Lin', name: 'Ms. Lin', say: 'Hi, just seeing if anything new is in.', memo: 'Last bought a commuter flat; added custom insoles three months ago.',
         opts: { crm: 'Ms. Lin! Your insoles are three months old. Adjust them while you look? The new commuter flat comes in 23.5.', generic: 'Welcome, have a look around.', discount: 'Everything is 20% off today!' },
         fb: { crm: 'She is pleased you remembered her. Champions want to be recognised, not discounted.', generic: 'She wandered on her own. The CRM knew her size and taste, and you did not use it.', discount: 'She was going to buy anyway. The discount only cost margin.' },
         followWhy: 'She bought insoles three months ago and they are due for an adjustment: a natural reason to return.' },
-      wang: { name: 'Wang', say: 'Last time the scan said I have flat feet…', memo: 'Came in 20 days ago for a scan only. Bought nothing.',
-        opts: { report: 'Here is your scan: flat feet, size 26.5. Try an arch-support shoe?', member: 'Would you like to sign up as a member?', sale: 'This one is on sale and very popular.' },
-        fb: { report: 'Last visit’s scan pays off. He feels looked after by a professional.', member: 'He joined when he had his scan. Check the record before you speak.', sale: 'A best-seller may not suit flat feet. His scan is already in the system.' },
-        followWhy: 'His first pair. A call in two weeks to ask how it feels (journey step 3) makes a new customer want to return.' },
-      chen: { name: 'Mr. Chen', say: 'My shoes have started to hurt.', memo: 'Regular buyer of leather dress shoes; last scan 200 days ago.',
-        opts: { stale: 'Still a 26 dress shoe, right? I will grab one.', rescan: 'Mr. Chen, it has been a while! Your last scan was over six months ago. Shall we re-scan first?', sale: 'The sale rack is over there, take your time.' },
-        fb: { rescan: '200 days away means old data too. Only a re-scan finds his size today.', stale: 'A poor R means the data is old too. His feet may have changed.', sale: 'A customer you should not lose was left alone. He is disappointed.' },
-        followWhy: 'It puts him back on a six-monthly scan, so his R never drifts that far again and his size stays right.' },
-      chang: { name: 'Mrs. Chang', say: 'I am just browsing.', memo: 'Four months since her last visit; often bought walking shoes.',
-        opts: { bogo: 'Buy one, get one free on these!', leave: '(Leave her be)', scan: 'Do your feet get tired lately? A free foot scan takes three minutes.' },
-        fb: { scan: 'An experience instead of a pitch, and she leaves fresh scan data.', bogo: 'She is tempted, but without a scan her size is four months old.', leave: 'She needed attention, got none, and left.' },
-        followWhy: 'For someone who needs attention, reaching out works best. A call in two weeks shows the store remembers her.' },
-      huang: { name: 'Mr. Huang', say: 'I would like another pair of walking shoes.', memo: 'Loyal customer, buys walking shoes; last visit 100 days ago.',
+      ho: { short: 'Ho', name: 'Mrs. Ho', say: 'Just stopping by on my way home.', memo: 'Comes every month, buys commuter flats; VIP member.',
+        opts: { generic: 'Welcome, have a look around.', reserve: 'Mrs. Ho! The new commuter flats arrived last week, and I put a 24.0 aside for you.', discount: 'Everything is 20% off today!' },
+        fb: { reserve: 'Champions care most about priority treatment. The CRM told you her size and habits, so you held a pair.', generic: 'A Champion who comes every month was treated like a first-timer.', discount: 'She was going to buy anyway. The discount only cost margin.' },
+        followWhy: 'A new style on its first outing: a call in two weeks makes a Champion feel valued.' },
+      huang: { short: 'Huang', name: 'Mr. Huang', say: 'I would like another pair of walking shoes.', memo: 'Loyal customer, buys walking shoes; last visit 100 days ago.',
         opts: { push: 'This is our best-seller this season. Want to try it?', remind: 'Mr. Huang, good to see you! Your walking shoes must be over three months old. The same line has a new colour in 27.', vip: 'You are a VIP, so it is 10% off today!' },
         fb: { remind: 'You used the CRM to remember his size and taste, and he feels like an old friend. Loyal customers want to be remembered.', push: 'A best-seller may not be what he wants; his purchase history is in the CRM and went unused.', vip: 'He was going to buy anyway, so the discount only cost margin. What he needs is a reason to come back more often.' },
         followWhy: 'His last visit was 100 days ago. A six-month re-scan brings him back on a schedule, so his R stops drifting.' },
-      wu: { name: 'Ms. Wu', say: 'What is that machine for?', memo: 'Bought once over a year ago. Not seen since.',
+      chen: { short: 'Chen', name: 'Mr. Chen', say: 'My shoes have started to hurt.', memo: 'Regular buyer of leather dress shoes; last scan 200 days ago.',
+        opts: { stale: 'Still a 26 dress shoe, right? I will grab one.', rescan: 'Mr. Chen, it has been a while! Your last scan was over six months ago. Shall we re-scan first?', sale: 'The sale rack is over there, take your time.' },
+        fb: { rescan: '200 days away means old data too. Only a re-scan finds his size today.', stale: 'A poor R means the data is old too. His feet may have changed.', sale: 'A customer you should not lose was left alone. He is disappointed.' },
+        followWhy: 'It puts him back on a six-monthly scan, so his R never drifts that far again and his size stays right.' },
+      tsai: { short: 'Tsai', name: 'Ms. Tsai', say: 'The walking shoes I bought last time are great!', memo: 'Bought her first walking shoes a month ago; scan shows flat feet.',
+        opts: { bogo: 'Buy two today and the second pair is half price!', cross: 'Glad you like them! With flat feet, a pair of custom insoles will keep you comfortable for longer walks.', generic: 'Would you like to look at some other styles?' },
+        fb: { cross: 'An add-on built on her scan data actually helps her, and lifts her M. That is how you grow a Promising customer.', bogo: 'She just bought shoes and does not need a second pair; the discount feels like a pitch.', generic: 'You missed the chance to recommend from her data.' },
+        followWhy: 'She bought insoles. A reminder to adjust them in three months gives her a regular reason to return.' },
+      chang: { short: 'Chang', name: 'Mrs. Chang', say: 'I am just browsing.', memo: 'Four months since her last visit; often bought walking shoes.',
+        opts: { bogo: 'Buy one, get one free on these!', leave: '(Leave her be)', scan: 'Do your feet get tired lately? A free foot scan takes three minutes.' },
+        fb: { scan: 'An experience instead of a pitch, and she leaves fresh scan data.', bogo: 'She is tempted, but without a scan her size is four months old.', leave: 'She needed attention, got none, and left.' },
+        followWhy: 'For someone who needs attention, reaching out works best. A call in two weeks shows the store remembers her.' },
+      lee: { short: 'Lee', name: 'Mr. Lee', say: 'It has been a while. My shoes are getting old.', memo: 'Used to come three times a year; not seen for over 8 months.',
+        opts: { stale: 'The same 27.5 walkers? I will grab a pair.', coupon: 'Here is a coupon: the more you buy, the more you save.', rescan: 'Welcome back, Mr. Lee! It has been eight months. Let me re-scan your feet first, free of charge.' },
+        fb: { rescan: 'A Sleeper is back. An experience wakes him up, and refreshes his old data too.', stale: 'His data is 250 days old. His feet may have changed.', coupon: 'A discount will not remind him why he liked this store; a good experience will.' },
+        followWhy: 'He has just woken up. A service call in two weeks keeps him from drifting back to sleep.' },
+      wang: { short: 'Wang', name: 'Wang', say: 'Last time the scan said I have flat feet…', memo: 'Came in 20 days ago for a scan only. Bought nothing.',
+        opts: { member: 'Would you like to sign up as a member?', sale: 'This one is on sale and very popular.', report: 'Here is your scan: flat feet, size 26.5. Try an arch-support shoe?' },
+        fb: { report: 'Last visit’s scan pays off. He feels looked after by a professional.', member: 'He joined when he had his scan. Check the record before you speak.', sale: 'A best-seller may not suit flat feet. His scan is already in the system.' },
+        followWhy: 'His first pair. A call in two weeks to ask how it feels (journey step 3) makes a new customer want to return.' },
+      kao: { short: 'Kao', name: 'Ms. Kao', say: 'I was just passing by…', memo: 'Two visits in six months; bought insoles once.',
+        opts: { generic: 'Welcome.', invite: 'Hello, Ms. Kao! With your high arches, many customers like this arch-support shoe. Would you like to try it?', hardsell: 'This one is limited. If you do not buy today it will be gone!' },
+        fb: { invite: 'Her scan data gives her a reason to try something on. A Warm lead needs one good experience.', generic: 'A passer-by was not given a reason to stay, and who knows when she will be back.', hardsell: 'The pressure makes her want to leave quickly.' },
+        followWhy: 'High arches need regular checks. A six-month re-scan builds a habit of coming back.' },
+      wu: { short: 'Wu', name: 'Ms. Wu', say: 'What is that machine for?', memo: 'Bought once over a year ago. Not seen since.',
         opts: { coupon: 'Returning members get a big discount. Two pairs?', scan: 'It maps your feet. Free, three minutes, no need to buy.', hardsell: 'This is our newest model. Best deal if you take it today!' },
         fb: { scan: 'Over a year away. A free experience restarts the relationship and resets her R.', coupon: 'She felt sold to, said thanks and left.', hardsell: 'The hard sell made her want to leave.' },
         followWhy: 'A re-scan in six months gives her a reason to return, slowly bringing a lost customer back.' }
     },
-    repKick: 'Closing report', repTitle: 'How your day went',
-    kSales: 'Sales', kLoyal: 'Loyal customers', kSat: 'Average satisfaction', kAngry: 'Walked out angry',
-    met: 'target met', notMet: 'target missed', loyalFromTo: (a, b) => `${a} → ${b}`, people: n => `${n}`,
-    verdict: [ 'Both goals met. A great day!', 'Sales target met, but loyal customers did not grow.', 'Loyal customers grew, but sales fell short.', 'Neither goal met. See below which customers ran into trouble.' ],
-    boughtL: p => `spent NT$${p}`, angryL: 'left angry, bought nothing', angryLoyal: 'left angry: loyalty fell, no longer a loyal customer',
-    errsL: n => n ? `${n} service mistake${n > 1 ? 's' : ''}` : 'no mistakes',
-    satL: 'final satisfaction',
-    repNote: 'Loyal customers = Champions + Loyal. When someone walks out angry, their RFM record does not change straight away, but they are not planning to return.',
-    toTalk: 'Discussion', again: 'Work another day', copy: 'Copy results', copied: 'Copied',
+    repKick: 'End of quarter', repTitle: 'Your three months',
+    kSales: 'Sales', kLoyal: 'Loyal ★', kVisits: 'Visits', kAngry: 'Walked out angry',
+    met: 'target met', notMet: 'target missed', loyalFromTo: (a, b) => `${a} → ${b}`, times: n => `${n}`,
+    verdict: [ 'Both goals met. A great quarter!', 'Sales target met, but loyal customers did not grow.', 'Loyal customers grew, but sales fell short.', 'Neither goal met. See below which members ran into trouble.' ],
+    repLoy: 'Loyalty', repVisits: (n, a) => `${n} visit${n > 1 ? 's' : ''}${a ? ` (${a} angry)` : ''}`, repNever: 'did not visit this quarter',
+    repGone: 'will not be back', repSpent: p => `spent NT$${p}`,
+    repNote: '★ Loyal customer = loyalty 70 or more. RFM segments describe behaviour (how recently, how often, how much); loyalty describes how people feel. The two do not always move together.',
+    toTalk: 'Discussion', again: 'Run another quarter', copy: 'Copy results', copied: 'Copied',
     talkKick: 'Class discussion', talkTitle: 'Talk it over with your team',
     qs: [
-      ['If Ms. Lin or Mr. Huang walked out angry, the CRM still shows them as Champions or Loyal. How long until RFM notices? What else could the store record to warn you earlier?', 'handout p.36'],
-      ['Which of R, F and M does each journey step (booking, in-store scan, service call, six-month re-scan) improve? Which steps did you use today?', 'handout p.34'],
-      ['Wang only had a scan last time and bought nothing. Is he an active customer? How much do segments change if R counts purchases only, or visits too?', 'handout p.36'],
-      ['Mr. Chen’s size was 200 days old. With the POS and CRM connected, how often does the data need refreshing to be useful?', 'handout p.35'],
-      ['Three customers are waiting. Who do you serve first? Should RFM segments decide the order? When sales and loyalty pull apart, which do you choose?', 'handout p.37']
+      ['When someone walks out angry, their R still updates (they did visit). Can RFM alone tell you they were unhappy? How do RFM segments differ from the loyalty bars?', 'handout p.36'],
+      ['Which of R, F and M does each journey step (booking, in-store scan, service call, six-month re-scan) improve? Which steps did you use this quarter?', 'handout p.34'],
+      ['Which member moved furthest on the RFM map this quarter, and which visits moved them?', 'handout p.37'],
+      ['Mr. Chen’s and Mr. Lee’s sizes were both over six months old. With the POS and CRM connected, how often does the data need refreshing to be useful?', 'handout p.35'],
+      ['Several customers are waiting. Who do you serve first? Should RFM segments decide the order? When sales and loyalty pull apart, which do you choose?', 'handout p.37']
     ],
     back2: 'Back to Chapter 2', backHome: 'Back to course home'
   }
 };
 
 /* ============================================================
-   CUSTOMERS — simulated members
-   known: what the CRM says before any scan; need: what fits
+   MEMBERS — 10 simulated members
+   r/f/m: RFM on the first day of the quarter
+   known: what the CRM says before any scan; scanned: true size if it changed
    ============================================================ */
-const TARGET = 16000;
+const TARGET = 55000;
+const DAYS = 92, DAY_SEC = 2.3;        // 92 days, 2.3 s of play per day ≈ 3.5 minutes of play (time stops in dialogs)
+const MAX_VISITS = 3, LOYAL_AT = 70, GONE_BELOW = 30;
 const PRICE = { walk: 2980, arch: 3580, dress: 4680, commute: 3280, insole: 1680 };
 const CUSTOMERS = [
   { id: 'lin', color: '#c2457a', r: 12, f: 6, m: 18000, seg: 'champ', sat: 100, known: { size: '23.5', age: 12, arch: 'high' },
     need: { shoe: 'commute', size: '23.5' }, scanNeeded: false, good: 'crm', opts: ['generic', 'crm', 'discount'], leaveOn: [], disc: { discount: 0.8 },
     shelf: [['commute', '23.0'], ['walk', '23.5'], ['commute', '23.5'], ['arch', '23.5']], best: 'insole3m' },
-  { id: 'wang', color: '#2f8f6b', r: 20, f: 1, m: 0, seg: 'fresh', sat: 90, known: { size: '26.5', age: 20, arch: 'flat' },
-    need: { shoe: 'arch', size: '26.5' }, scanNeeded: false, good: 'report', opts: ['member', 'sale', 'report'], leaveOn: [], disc: {},
-    shelf: [['walk', '26.5'], ['arch', '26.0'], ['dress', '26.5'], ['arch', '26.5']], best: 'call' },
+  { id: 'ho', color: '#8e3fa8', r: 25, f: 8, m: 26000, seg: 'champ', sat: 100, known: { size: '24.0', age: 25, arch: 'normal' },
+    need: { shoe: 'commute', size: '24.0' }, scanNeeded: false, good: 'reserve', opts: ['generic', 'reserve', 'discount'], leaveOn: [], disc: { discount: 0.8 },
+    shelf: [['commute', '24.5'], ['commute', '24.0'], ['walk', '24.0'], ['arch', '24.0']], best: 'call' },
+  { id: 'huang', color: '#1f7a8c', r: 100, f: 4, m: 14000, seg: 'loyal', sat: 95, known: { size: '27.0', age: 100, arch: 'normal' },
+    need: { shoe: 'walk', size: '27.0' }, scanNeeded: false, good: 'remind', opts: ['push', 'remind', 'vip'], leaveOn: [], disc: { vip: 0.9 },
+    shelf: [['walk', '27.0'], ['walk', '26.5'], ['dress', '27.0'], ['arch', '27.0']], best: 'rescan6m' },
   { id: 'chen', color: '#5b4bb5', r: 200, f: 5, m: 15000, seg: 'keep', sat: 85, known: { size: '26.0', age: 200, arch: 'normal' },
     scanned: { size: '26.5', arch: 'low' }, need: { shoe: 'dress', size: '26.5' }, scanNeeded: true, good: 'rescan', opts: ['stale', 'rescan', 'sale'], leaveOn: [], disc: {},
     shelf: [['dress', '26.0'], ['dress', '26.5'], ['walk', '26.5'], ['dress', '27.0']], best: 'rescan6m' },
+  { id: 'tsai', color: '#d0692a', r: 30, f: 3, m: 7000, seg: 'promise', sat: 95, known: { size: '24.5', age: 30, arch: 'flat' },
+    need: { shoe: 'insole', size: '24.5' }, scanNeeded: false, good: 'cross', opts: ['bogo', 'cross', 'generic'], leaveOn: [], disc: {},
+    shelf: [['insole', '24.0'], ['walk', '24.5'], ['insole', '24.5'], ['arch', '24.5']], best: 'insole3m' },
   { id: 'chang', color: '#b5651d', r: 120, f: 4, m: 10000, seg: 'attn', sat: 80, known: { size: '24.5', age: 120, arch: 'normal' },
     scanned: { size: '24.0', arch: 'normal' }, need: { shoe: 'walk', size: '24.0' }, scanNeeded: true, good: 'scan', opts: ['bogo', 'leave', 'scan'], leaveOn: ['leave'], disc: {},
     shelf: [['walk', '24.5'], ['walk', '24.0'], ['commute', '24.0'], ['arch', '24.0']], best: 'call' },
-  { id: 'huang', color: '#1f7a8c', r: 100, f: 4, m: 14000, seg: 'loyal', sat: 90, known: { size: '27.0', age: 100, arch: 'normal' },
-    need: { shoe: 'walk', size: '27.0' }, scanNeeded: false, good: 'remind', opts: ['push', 'remind', 'vip'], leaveOn: [], disc: { vip: 0.9 },
-    shelf: [['walk', '27.0'], ['walk', '26.5'], ['dress', '27.0'], ['arch', '27.0']], best: 'rescan6m' },
+  { id: 'lee', color: '#4f6d3a', r: 250, f: 3, m: 8000, seg: 'sleep', sat: 80, known: { size: '27.5', age: 250, arch: 'normal' },
+    scanned: { size: '27.0', arch: 'low' }, need: { shoe: 'walk', size: '27.0' }, scanNeeded: true, good: 'rescan', opts: ['stale', 'coupon', 'rescan'], leaveOn: [], disc: {},
+    shelf: [['walk', '27.5'], ['arch', '27.0'], ['walk', '27.0'], ['dress', '27.0']], best: 'call' },
+  { id: 'wang', color: '#2f8f6b', r: 20, f: 1, m: 0, seg: 'fresh', sat: 90, known: { size: '26.5', age: 20, arch: 'flat' },
+    need: { shoe: 'arch', size: '26.5' }, scanNeeded: false, good: 'report', opts: ['member', 'sale', 'report'], leaveOn: [], disc: {},
+    shelf: [['walk', '26.5'], ['arch', '26.0'], ['dress', '26.5'], ['arch', '26.5']], best: 'call' },
+  { id: 'kao', color: '#c0398f', r: 150, f: 2, m: 3500, seg: 'warm', sat: 75, known: { size: '23.0', age: 150, arch: 'high' },
+    need: { shoe: 'arch', size: '23.0' }, scanNeeded: false, good: 'invite', opts: ['generic', 'invite', 'hardsell'], leaveOn: [], disc: {},
+    shelf: [['arch', '23.5'], ['arch', '23.0'], ['commute', '23.0'], ['walk', '23.0']], best: 'rescan6m' },
   { id: 'wu', color: '#3a7bbf', r: 400, f: 1, m: 2000, seg: 'lost', sat: 75, known: null,
     scanned: { size: '23.0', arch: 'flat' }, need: { shoe: 'insole', size: '23.0' }, scanNeeded: true, good: 'scan', opts: ['coupon', 'scan', 'hardsell'], leaveOn: ['coupon', 'hardsell'], disc: {},
     shelf: [['insole', '23.5'], ['arch', '23.0'], ['insole', '23.0'], ['walk', '23.0']], best: 'rescan6m' }
 ];
 const BYID = Object.fromEntries(CUSTOMERS.map(c => [c.id, c]));
-const WAVES = [['lin'], ['wang', 'chen'], ['chang', 'huang', 'wu']];
-const WAVE_GAP = 30;        // seconds of play before the next group comes in anyway
+const LOY0 = { champ: 85, loyal: 75, keep: 60, promise: 55, attn: 45, fresh: 42, sleep: 38, warm: 34, lost: 22 };
 const DECAY = 1.5;          // satisfaction lost per second while waiting
-const D = { goodGreet: 10, badGreet: -25, scan: 5, fitFirst: 10, badBox: -20, stale: -15, bestFollow: 10, coupon: -10 };
+const D = { goodGreet: 10, badGreet: -25, okGreet: -10, scan: 5, fitFirst: 10, badBox: -20, stale: -15, bestFollow: 10, coupon: -10 };
 const FOLLOW = ['insole3m', 'call', 'rescan6m', 'coupon'];
 // RFM scoring and the 3 x 3 map (after the chart on handout p.37)
 const rS = d => d <= 90 ? 3 : d <= 180 ? 2 : 1;
@@ -547,15 +659,14 @@ const mS = m => m >= 12000 ? 3 : m >= 6000 ? 2 : 1;
 const GRID = [['keep', 'loyal', 'champ'], ['sleep', 'attn', 'promise'], ['lost', 'warm', 'fresh']];
 const VALUE = { champ: 5, loyal: 4, keep: 4, promise: 3, attn: 3, sleep: 2, fresh: 2, warm: 1, lost: 1 };
 const segOf = (r, f, m) => GRID[3 - Math.round((fS(f) + mS(m)) / 2)][rS(r) - 1];
-const isLoyal = s => s === 'champ' || s === 'loyal';
-const LOYAL0 = CUSTOMERS.filter(c => isLoyal(c.seg)).length;
+const LOYAL0 = CUSTOMERS.filter(c => LOY0[c.seg] >= LOYAL_AT).length;
 
 /* ============================================================
    STORE LAYOUTS — landscape for wide screens, portrait for phones
    ============================================================ */
 const LAYOUT = {
   wide: { W: 1000, H: 620, door: [500, 585], scan: [170, 330], bench: [500, 300], stock: [860, 130], pos: [850, 470], wall: [330, 95], start: [640, 470],
-    browse: [[300, 215], [430, 220], [330, 490]] },
+    browse: [[300, 255], [430, 262], [330, 490]] },
   tall: { W: 600, H: 900, door: [300, 868], scan: [120, 330], bench: [300, 520], stock: [470, 125], pos: [455, 715], wall: [140, 110], start: [400, 800],
     browse: [[110, 220], [240, 230], [150, 660]] }
 };
@@ -575,9 +686,10 @@ const SPOTS_N = { browse: 3, scan: 2, bench: 3, pay: 3 };
 const qs = new URLSearchParams(location.search);
 let LANG = null;
 try { LANG = localStorage.getItem('aso-store.lang'); } catch (e) { /* no storage */ }
-if (!LANG && (qs.get('lang') === 'en' || qs.get('lang') === 'zh')) LANG = qs.get('lang');
 if (qs.get('lang') === 'en' || qs.get('lang') === 'zh') LANG = qs.get('lang');
 LANG = LANG === 'en' || LANG === 'zh' ? LANG : (/^zh/i.test(navigator.language || 'zh') ? 'zh' : 'en');
+let SEED = +qs.get('seed') || Math.floor(Math.random() * 1e9);
+let rnd = mulberry(SEED);
 let view = 'intro', slide = 0;
 let G = null;
 let L = LAYOUT.wide, layoutName = 'wide', scale = 1;
@@ -587,14 +699,30 @@ const t = () => T[LANG];
 const $ = id => document.getElementById(id);
 const nf = n => Math.round(n).toLocaleString('en-US');
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const clockText = m => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(Math.floor(m % 60)).padStart(2, '0')}`;
 const SPEED = 330, CSPEED = 260, REACH = 78;
 const nm = id => t().cust[id].name;
+function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let x = Math.imul(a ^ a >>> 15, 1 | a); x = x + Math.imul(x ^ x >>> 7, 61 | x) ^ x; return ((x ^ x >>> 14) >>> 0) / 4294967296; }; }
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const dayNow = () => Math.min(DAYS - 1, Math.floor(G.time / DAY_SEC));
+function dateOf(day) { const mm = [[10, 31], [11, 30], [12, 31]]; let d = day; for (const [m, n] of mm) { if (d < n) return { m, d: d + 1 }; d -= n; } return { m: 12, d: 31 }; }
 
 function newDay() {
-  return { time: 0, wave: -1, waveT: 0, pending: [], custs: [], res: [], sales: 0, data: 0, panel: null, closed: false,
+  rnd = mulberry(SEED);
+  const order = shuffle(CUSTOMERS.map(c => c.id));
+  const mem = {};
+  order.forEach((id, i) => {
+    const d = BYID[id];
+    mem[id] = { loyalty: LOY0[d.seg], l0: LOY0[d.seg], visits: 0, angry: 0, gone: false, due: Math.round(i * 4.2 + rnd() * 3),
+      last: -d.r, f: d.f, m: d.m, rescanned: false, lastShoe: null, lastAngry: false, spent: 0,
+      know: d.known ? { size: d.known.size, arch: d.known.arch, day: -d.known.age } : null };
+  });
+  return { time: 0, nextBatch: 1.2, pending: [], custs: [], mem, sales: 0, data: 0, visits: 0, panel: null, closed: false, ending: false,
     me: { x: 0, y: 0, tx: null, ty: null, goal: null, carry: null, moved: true } };
 }
+const memOf = id => G.mem[id];
+const rNow = id => dayNow() - memOf(id).last;
+const segNow = id => { const m = memOf(id); return segOf(rNow(id), m.f, m.m); };
+const loyalCount = () => CUSTOMERS.filter(c => memOf(c.id).loyalty >= LOYAL_AT).length;
 
 /* ============================================================
    FIGURES
@@ -617,9 +745,13 @@ const FOOT_SVG = (heat) => `<svg viewBox="0 0 110 200" aria-hidden="true">
   ${heat === 'flat' || heat === 'low' ? '<ellipse cx="50" cy="110" rx="16" ry="26" fill="url(#hh)" opacity=".9"/>' : '<ellipse cx="76" cy="108" rx="9" ry="20" fill="url(#hh)" opacity=".7"/>'}
   <rect class="scanline" x="8" y="12" width="94" height="4" rx="2" fill="#7fe3ff" opacity=".8"/>
 </svg>`;
-function satBar(v, extra) {
+function satBar(v) {
   const f = Math.max(0, Math.min(100, v));
-  return `<span class="sat ${f < 30 ? 'low' : f < 60 ? 'mid' : ''}" ${extra || ''}><u style="width:${f}%"></u></span>`;
+  return `<span class="sat ${f < 30 ? 'low' : f < 60 ? 'mid' : ''}"><u style="width:${f}%"></u></span>`;
+}
+function loyBar(v) {
+  const f = Math.max(0, Math.min(100, v));
+  return `<span class="lbar"><u class="${f >= LOYAL_AT ? 'hi' : f < GONE_BELOW ? 'lo' : ''}" style="width:${f}%"></u><em></em></span>`;
 }
 
 /* ============================================================
@@ -630,7 +762,7 @@ function bigMap() {
   let h = `<div class="ax" style="grid-row:1/4;writing-mode:vertical-rl;transform:rotate(180deg)">${X.axFM}</div>`;
   for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) {
     const s = GRID[r][c], v = VALUE[s];
-    h += `<div class="cell ${isLoyal(s) ? 'loyalc' : ''}" style="background:var(--c${v});color:${v >= 4 ? '#fff' : 'var(--ink)'}">${X.seg[s]}</div>`;
+    h += `<div class="cell" style="background:var(--c${v});color:${v >= 4 ? '#fff' : 'var(--ink)'}">${X.seg[s]}</div>`;
   }
   h += `<div></div><div class="ax" style="grid-column:2/5">${X.axR}</div>`;
   return `<div class="bigmap">${h}</div>`;
@@ -644,13 +776,14 @@ function vIntro() {
   let body = '';
   if (s.goals) body = `<p style="margin-bottom:12px">${X.roleP}</p><div class="goals">
       <div class="goal"><div class="gk">${X.goalSales}</div><b>${X.goalSalesB(nf(TARGET))}</b><p>${X.goalSalesP}</p></div>
-      <div class="goal"><div class="gk">${X.goalLoyal}</div><b>${X.goalLoyalB(LOYAL0)}</b><p>${X.goalLoyalP}</p></div></div>
+      <div class="goal"><div class="gk">${X.goalLoyal}</div><b>${X.goalLoyalB(LOYAL0)}</b><p>${X.goalLoyalP}</p><p style="margin-top:8px;display:flex;gap:10px;align-items:center">${loyBar(45)}${loyBar(82)}</p></div></div>
       <p class="hint" style="margin-top:12px">${X.goalNote}</p>`;
-  if (s.flow) body = `<ol class="flow">${s.flow.map(f => `<li><div><b>${f[0]}</b><span>${f[1]}</span></div></li>`).join('')}</ol>`;
+  if (s.flow) body = `<ol class="flow">${s.flow.map(f => `<li><div><b>${f[0]}</b><span>${f[1]}</span></div></li>`).join('')}</ol><p class="hint" style="margin-top:12px">${s.tail}</p>`;
   if (s.sat) body = `<div class="satdemo">${satBar(85)}${satBar(45)}${satBar(15)}<span>${X.satIntro}</span></div>
       <p><b style="color:var(--bad)">${X.satDown}</b></p><ul class="ul">${X.satDownL.map(x => `<li>${x}</li>`).join('')}</ul>
       <p style="margin-top:8px"><b style="color:var(--good)">${X.satUp}</b></p><ul class="ul">${X.satUpL.map(x => `<li>${x}</li>`).join('')}</ul>
       <p style="margin-top:8px"><b style="color:var(--bad)">${X.satZero}</b></p><ul class="ul">${X.satZeroL.map(x => `<li>${x}</li>`).join('')}</ul>
+      <p style="margin-top:8px"><b style="color:var(--navy)">${X.loyH}</b></p><ul class="ul">${X.loyL.map(x => `<li>${x}</li>`).join('')}</ul>
       <div class="hint" style="margin-top:12px"><ul class="ul">${X.satMore.map(x => `<li>${x}</li>`).join('')}</ul></div>`;
   if (s.rfm) body = `<div class="rfm3">${X.rfmL.map((r, i) => `<div style="background:${['#1f5fb8', '#c2457a', '#127a3d'][i]}"><b>${r[0]}</b>${r[1]}<br><span>${r[2]}</span></div>`).join('')}</div>
       <p style="margin-top:12px;color:var(--ink2)">${X.rfmMap}</p>${bigMap()}`;
@@ -675,35 +808,27 @@ function mini(from, to) {
   }
   return `<div class="mini" role="img" aria-label="${esc(from && from !== to ? t().segMove(t().seg[from], t().seg[to]) : t().seg[to])}">${h}</div>`;
 }
-function loyalNow() {
-  if (!G) return LOYAL0;
-  return CUSTOMERS.reduce((n, c) => {
-    const r = G.res.find(x => x.id === c.id);
-    if (r) return n + (!r.angry && isLoyal(r.after) ? 1 : 0);
-    return n + (isLoyal(c.seg) ? 1 : 0);
-  }, 0);
-}
 function totals() {
-  const r = G.res, n = r.length || 1;
-  return { sales: G.sales, loyal: loyalNow(), sat: Math.round(r.reduce((s, x) => s + x.sat, 0) / n), angry: r.filter(x => x.angry).length, data: G.data };
+  return { sales: G.sales, loyal: loyalCount(), visits: G.visits, angry: CUSTOMERS.reduce((s, c) => s + memOf(c.id).angry, 0) };
 }
 function vReport() {
   const X = t(), k = totals(), sMet = k.sales >= TARGET, lMet = k.loyal > LOYAL0;
-  const rows = CUSTOMERS.map(c => G.res.find(x => x.id === c.id)).filter(Boolean).map(x => {
-    const c = BYID[x.id];
-    const out = x.angry ? (isLoyal(c.seg) ? X.angryLoyal : X.angryL) : `${X.boughtL(nf(x.price))}・${X.segMove(X.seg[c.seg], X.seg[x.after])}`;
-    return `<li><span class="who">${nm(x.id)}</span><span class="satn">${X.satL} ${x.sat}</span>
-      <div class="mv">${mini(c.seg, x.angry ? c.seg : x.after)}<span>${out}<br><span class="small">${X.errsL(x.errs)}</span></span></div></li>`;
+  const rows = CUSTOMERS.map(c => {
+    const m = memOf(c.id), seg1 = segNow(c.id), d = m.loyalty - m.l0;
+    const visits = m.visits ? X.repVisits(m.visits, m.angry) : X.repNever;
+    return `<div class="rmem"><span class="who">${esc(nm(c.id))}${m.loyalty >= LOYAL_AT ? ' ★' : ''}</span><span class="visits">${visits}</span>
+      <div class="row2"><span>${X.repLoy} ${m.l0} → ${m.loyalty}<span class="dl ${d < 0 ? 'neg' : ''}">${d > 0 ? '+' : ''}${d}</span></span>${loyBar(m.loyalty)}</div>
+      <div class="row2">${mini(c.seg, seg1)}<span>RFM ${X.segMove(X.seg[c.seg], X.seg[seg1])}${m.spent ? '・' + X.repSpent(nf(m.spent)) : ''}${m.gone ? '・<b style="color:var(--bad)">' + X.repGone + '</b>' : ''}</span></div></div>`;
   }).join('');
   return `<div class="page"><p class="kicker">${X.repKick}</p><h1 class="title" tabindex="-1">${X.repTitle}</h1>
     <div class="kpis" style="margin-top:12px">
       <div class="kpi"><span>${X.kSales}</span><b>NT$${nf(k.sales)}</b><em class="${sMet ? 'y' : 'n'}">${sMet ? '✓' : '✗'} ${sMet ? X.met : X.notMet}（${nf(TARGET)}）</em></div>
       <div class="kpi"><span>${X.kLoyal}</span><b>${X.loyalFromTo(LOYAL0, k.loyal)}</b><em class="${lMet ? 'y' : 'n'}">${lMet ? '✓' : '✗'} ${lMet ? X.met : X.notMet}</em></div>
-      <div class="kpi"><span>${X.kSat}</span><b>${k.sat}</b></div>
-      <div class="kpi"><span>${X.kAngry}</span><b>${X.people(k.angry)}</b></div>
+      <div class="kpi"><span>${X.kVisits}</span><b>${X.times(k.visits)}</b></div>
+      <div class="kpi"><span>${X.kAngry}</span><b>${X.times(k.angry)}</b></div>
     </div>
     <p class="verdict">${X.verdict[sMet && lMet ? 0 : sMet ? 1 : lMet ? 2 : 3]}</p>
-    <div class="card" style="margin-top:12px"><ul class="rep">${rows}</ul><p class="small" style="margin-top:8px">${X.repNote}</p></div>
+    <div class="card" style="margin-top:12px">${rows}<p class="small" style="margin-top:8px">${X.repNote}</p></div>
     <div class="row" style="margin-top:16px"><button type="button" class="btn" data-act="talk">${X.toTalk}</button><button type="button" class="btn ghost" data-act="copy">${X.copy}</button><button type="button" class="btn ghost" data-act="again">${X.again}</button><span class="small" id="copymsg" role="status"></span></div></div>`;
 }
 function vTalk() {
@@ -768,7 +893,7 @@ function applyLayout() {
   const game = $('game');
   game.classList.toggle('wide', name === 'wide'); game.classList.toggle('tall', name === 'tall');
   layoutName = name; L = LAYOUT[name];
-  if (G && prev !== L) {   // carry everyone across layouts
+  if (G && prev !== L) {
     G.me.x = G.me.x / prev.W * L.W; G.me.y = G.me.y / prev.H * L.H; G.me.tx = null; G.me.goal = null;
     for (const c of G.custs) { c.x = c.x / prev.W * L.W; c.y = c.y / prev.H * L.H; retarget(c); }
   }
@@ -776,6 +901,7 @@ function applyLayout() {
   stage.style.width = L.W + 'px'; stage.style.height = L.H + 'px';
   stage.innerHTML = storeSvg() + meHtml();
   if (G) { for (const c of G.custs) custEl(c); if (G.me.carry) $('carry').classList.remove('hide'); }
+  roster(true);
   fit();
   if (G) drawEntities();
 }
@@ -785,7 +911,6 @@ function fit() {
   scale = Math.min(r.width / L.W, avH / L.H);
   const ox = (r.width - L.W * scale) / 2;
   let oy = Math.max(0, (avH - L.H * scale) / 2);
-  // phones: when the bottom sheet is up, slide the store so the action stays in view
   if (layoutName === 'tall' && G && G.panel && !side.classList.contains('idle')) {
     const vis = side.getBoundingClientRect().top - r.top;
     const fy = G.me.y - 40;
@@ -797,22 +922,14 @@ function fit() {
 }
 
 /* ============================================================
-   THE DAY — customers, spots, waves
+   THE QUARTER — members, visits, spots
    ============================================================ */
 function openStore() {
   G = newDay(); view = 'game';
-  G.me.x = LAYOUT.wide.start[0]; G.me.y = LAYOUT.wide.start[1];
-  L = LAYOUT.wide;
+  L = LAYOUT.wide; G.me.x = L.start[0]; G.me.y = L.start[1];
   render();
   G.me.x = L.start[0]; G.me.y = L.start[1];
-  startWave();
   loop();
-}
-function startWave() {
-  G.wave++; G.waveT = 0;
-  const ids = WAVES[G.wave];
-  ids.forEach((id, i) => G.pending.push({ id, at: G.time + i * 2.5 }));
-  if (ids.length > 1) toast(t().wave(ids.length));
 }
 function spotTaken(kind, i) { return G.custs.some(c => c.spot && c.spot.kind === kind && c.spot.i === i); }
 function freeSpot(kind) { for (let i = 0; i < SPOTS_N[kind]; i++) if (!spotTaken(kind, i)) return i; return -1; }
@@ -825,7 +942,6 @@ function sendTo(c, kind) {
   const i = freeSpot(kind);
   c.spot = { kind, i: i < 0 ? SPOTS_N[kind] - 1 : i }; c.arrived = false; retarget(c);
 }
-// queues: scanner and checkout serve spot 0; others step forward when it frees up
 function reflow() {
   for (const kind of ['scan', 'pay']) {
     for (let i = 1; i < SPOTS_N[kind]; i++) {
@@ -836,12 +952,21 @@ function reflow() {
     }
   }
 }
+function candidates() {
+  const day = dayNow(), inStore = new Set(G.custs.map(c => c.id).concat(G.pending.map(p => p.id)));
+  return CUSTOMERS.map(c => c.id).filter(id => { const m = memOf(id); return !inStore.has(id) && !m.gone && m.visits < MAX_VISITS && m.due <= day; })
+    .sort((a, b) => (memOf(a).visits === 0 ? -1000 : 0) + memOf(a).due - ((memOf(b).visits === 0 ? -1000 : 0) + memOf(b).due));
+}
 function spawn(id) {
-  const def = BYID[id];
-  const c = { id, def, x: L.door[0], y: L.door[1] + 20, state: 'greet', spot: null, arrived: false, sat: def.sat,
-    know: def.known ? Object.assign({}, def.known) : null, scanned: false, approach: null, tries: 0, errs: 0, firstFit: false, price: 0 };
+  const def = BYID[id], m = memOf(id);
+  m.visits++; G.visits++;
+  const first = m.visits === 1;
+  const c = { id, def, m, first, visitNo: m.visits, x: L.door[0], y: L.door[1] + 20, state: 'greet', spot: null, arrived: false,
+    sat: first ? def.sat : Math.min(100, Math.round(55 + m.loyalty * 0.45)),
+    approach: null, tries: 0, errs: 0, price: 0, follow: null,
+    greetOpts: first ? def.opts : shuffle(['recall', 'generic', 'push']), shelf: shuffle(def.shelf) };
   G.custs.push(c); sendTo(c, 'browse'); custEl(c);
-  if (WAVES[G.wave].length === 1) toast(t().arrive(nm(id)));
+  roster(true);
 }
 function setState(c, st) {
   c.state = st; c.spot = null;
@@ -852,25 +977,34 @@ function setState(c, st) {
   reflow();
 }
 function changeSat(c, d) { c.sat = Math.max(0, Math.min(100, c.sat + d)); return d; }
-function record(c) {
-  if (G.res.find(x => x.id === c.id)) return;
-  G.res.push({ id: c.id, sat: Math.max(0, Math.round(c.sat)), angry: !!c.angry, price: c.price, follow: c.follow || null, after: c.after || c.def.seg, errs: c.errs });
-}
 function leave(c, angry, why) {
+  const m = c.m, day = dayNow();
   c.angry = angry; if (angry) c.sat = 0;
   if (G.me.carry && G.me.carry.id === c.id) { G.me.carry = null; $('carry').classList.add('hide'); }
   if (G.me.goal && G.me.goal.indexOf(c.id) >= 0) G.me.goal = null;
-  record(c);
+  // loyalty: how this visit felt
+  let dl;
+  if (angry) dl = -35;
+  else dl = Math.round((c.sat - 55) / 3) + 3 + (c.follow === c.def.best ? 6 : c.follow === 'coupon' ? -5 : 0);
+  m.loyalty = Math.max(0, Math.min(100, m.loyalty + dl));
+  // RFM: a visit updates R; a purchase updates F and M
+  m.last = day; m.lastAngry = angry;
+  if (!angry) { m.f += 1; m.m += c.price; m.spent += c.price; m.lastShoe = c.def.need.shoe; }
+  else m.angry++;
+  // will they come back, and when?
+  m.gone = m.loyalty < GONE_BELOW;
+  m.due = day + Math.round(34 - m.loyalty / 5 - (c.follow === c.def.best ? 4 : 0));
   setState(c, 'leaving');
-  if (angry && why) toast(why === 'wait' ? t().angryWait(nm(c.id)) : t().angryErr(nm(c.id)), true);
-  updateStats();
+  if (angry && why) toast((why === 'wait' ? t().angryWait(nm(c.id)) : t().angryErr(nm(c.id))) + '・' + t().loyD(dl), true);
+  else toast(t().loyToast(nm(c.id), dl), dl < 0);
+  if (m.gone && m.visits < MAX_VISITS) setTimeout(() => G && toast(t().goneToast(nm(c.id)), true), 1600);
+  roster(true); updateStats();
 }
 
 /* ---------- what can the manager do right now? ---------- */
 function targets() {
   if (!G) return [];
-  const out = [];
-  const carry = G.me.carry;
+  const out = [], carry = G.me.carry;
   for (const c of G.custs) {
     if (!c.arrived || c.state === 'leaving') continue;
     const beside = [c.x + (c.x > L.W / 2 ? -54 : 54), c.y + 12];
@@ -888,8 +1022,9 @@ function goTo(key) { const tg = targets().find(x => x.key === key); if (!tg || G
 function openTarget(tg) {
   G.me.tx = null; G.me.goal = null; keys.clear();
   if (tg.kind === 'stock') { const o = G.custs.filter(c => c.state === 'bench'); G.panel = { kind: 'stock', sel: o.length === 1 ? o[0].id : null }; }
-  else if (tg.kind === 'scan') { G.panel = { kind: 'scan', id: tg.c.id, done: false }; setTimeout(() => { if (G && G.panel && G.panel.kind === 'scan' && G.panel.id === tg.c.id) { finishScan(tg.c); } }, matchMedia('(prefers-reduced-motion:reduce)').matches ? 60 : 1300); }
-  else if (tg.kind === 'try') { tryOn(tg.c); }
+  else if (tg.kind === 'scan') { G.panel = { kind: 'scan', id: tg.c.id, done: false }; setTimeout(() => { if (G && G.panel && G.panel.kind === 'scan' && G.panel.id === tg.c.id) finishScan(tg.c); }, matchMedia('(prefers-reduced-motion:reduce)').matches ? 60 : 1200); }
+  else if (tg.kind === 'try') { if (tryOn(tg.c)) return; }
+  else if (tg.kind === 'pay' && !tg.c.first) { quickPay(tg.c); return; }
   else G.panel = { kind: tg.kind, id: tg.c.id };
   panel(); drawEntities();
 }
@@ -901,59 +1036,82 @@ function chooseApproach(k) {
   const P = G.panel, c = cOf(P.id), d = c.def;
   if (c.approach) return;
   c.approach = k;
-  if (k === d.good) P.delta = changeSat(c, D.goodGreet);
-  else { c.errs++; P.delta = d.leaveOn.includes(k) ? -Math.round(c.sat) : changeSat(c, D.badGreet); if (d.leaveOn.includes(k)) c.sat = 0; }
+  if (c.first) {
+    if (k === d.good) P.delta = changeSat(c, D.goodGreet);
+    else if (d.leaveOn.includes(k)) { c.errs++; P.delta = -Math.round(c.sat); c.sat = 0; }
+    else { c.errs++; P.delta = changeSat(c, D.badGreet); }
+  } else {
+    if (k === 'recall') P.delta = changeSat(c, D.goodGreet);
+    else if (k === 'generic') P.delta = changeSat(c, D.okGreet);
+    else { c.errs++; P.delta = changeSat(c, D.badGreet); }
+  }
   panel(true); updateStats();
 }
 function afterApproach() {
   const c = cOf(G.panel.id), d = c.def;
   if (c.sat <= 0) { closePanel(); leave(c, true, 'err'); return; }
-  setState(c, c.approach === d.good && d.scanNeeded ? 'scan' : 'bench');
+  setState(c, c.first && c.approach === d.good && d.scanNeeded && !c.m.rescanned ? 'scan' : 'bench');
   closePanel();
 }
 function finishScan(c) {
   const d = c.def;
-  c.scanned = true; G.data++;
-  c.know = { size: d.scanned ? d.scanned.size : d.known.size, age: 0, arch: d.scanned ? d.scanned.arch : d.known.arch };
+  G.data++;
+  if (d.scanned) c.m.rescanned = true;
+  c.m.know = { size: (d.scanned || d.known).size, arch: (d.scanned || d.known).arch, day: dayNow() };
   G.panel.done = true; G.panel.delta = changeSat(c, D.scan);
   panel(true);
 }
 function afterScan() { const c = cOf(G.panel.id); setState(c, 'bench'); closePanel(); }
 function pickBox(id, i) {
   const c = cOf(id); if (!c) return;
-  G.me.carry = { id, box: c.def.shelf[i] };
+  G.me.carry = { id, box: c.shelf[i] };
   $('carry').classList.remove('hide');
   closePanel();
   toast(t().took(nm(id)));
 }
+// returns true when it handled everything itself (a good fit needs no dialog)
 function tryOn(c) {
   const d = c.def, box = G.me.carry.box, ok = box[0] === d.need.shoe && box[1] === d.need.size;
   G.me.carry = null; $('carry').classList.add('hide');
   c.tries++;
+  if (ok) {
+    const delta = c.tries === 1 ? changeSat(c, D.fitFirst) : 0;
+    setState(c, 'pay'); G.me.moved = false;
+    toast(t().tryOkT(nm(c.id), delta));
+    drawEntities(); updateStats();
+    return true;
+  }
   const P = { kind: 'try', id: c.id };
-  if (ok) { P.result = 'ok'; if (c.tries === 1) { c.firstFit = true; P.delta = changeSat(c, D.fitFirst); } else P.delta = 0; }
-  else if (d.scanNeeded && !c.scanned) { P.result = 'stale'; c.errs++; P.delta = changeSat(c, D.stale); }
+  if (d.scanned && !c.m.rescanned) { P.result = 'stale'; c.errs++; P.delta = changeSat(c, D.stale); }
   else { P.result = 'wrong'; c.errs++; P.delta = changeSat(c, D.badBox); }
   G.panel = P;
+  return false;
 }
 function afterTry() {
   const P = G.panel, c = cOf(P.id);
   if (c.sat <= 0) { closePanel(); leave(c, true, 'err'); return; }
-  if (P.result === 'ok') setState(c, 'pay');
-  else if (P.result === 'stale') setState(c, 'scan');
-  else { c.arrived = true; }      // stays on the bench, waiting for the right box
+  if (P.result === 'stale') setState(c, 'scan');
+  else c.arrived = true;
   closePanel();
+}
+function priceOf(c) { return Math.round(PRICE[c.def.need.shoe] * (c.first && c.def.disc[c.approach] || 1)); }
+function quickPay(c) {
+  c.price = priceOf(c); G.sales += c.price;
+  G.me.moved = false;
+  leave(c, false);
+  setTimeout(() => G && toast(t().paidT(nm(c.id), nf(c.price))), 1400);
 }
 function chooseFollow(k) {
   const P = G.panel, c = cOf(P.id), d = c.def;
   if (c.follow) return;
   c.follow = k;
   if (k === d.best) P.delta = changeSat(c, D.bestFollow);
-  else if (k === 'coupon') { c.errs++; P.delta = Math.max(1, c.sat + D.coupon) - c.sat; c.sat = Math.max(1, c.sat + D.coupon); }
+  else if (k === 'coupon') { c.errs++; const s = Math.max(1, c.sat + D.coupon); P.delta = Math.round(s - c.sat); c.sat = s; }
   else P.delta = 0;
-  c.price = Math.round(PRICE[d.need.shoe] * (d.disc[c.approach] || 1));
+  c.price = priceOf(c);
   G.sales += c.price;
-  c.after = segOf(0, d.f + 1, d.m + c.price);
+  P.before = segNow(c.id);
+  P.after = segOf(0, c.m.f + 1, c.m.m + c.price);
   panel(true); updateStats();
 }
 function afterPay() { const c = cOf(G.panel.id); closePanel(); leave(c, false); }
@@ -962,11 +1120,12 @@ function afterPay() { const c = cOf(G.panel.id); closePanel(); leave(c, false); 
    SIDE PANEL / BOTTOM SHEET
    ============================================================ */
 function crmCard(c) {
-  const X = t(), d = c.def, k = c.know;
-  return `<div class="crm"><div class="crm-h"><b>${esc(nm(c.id))}</b><span class="seglabel v${VALUE[d.seg]}" style="background:var(--c${VALUE[d.seg]})">${X.seg[d.seg]}</span><span class="small">${X.crmH}</span></div>
-    <div class="crm-grid"><dl><dt>R</dt><dd>${X.rDays(d.r)}</dd><dt>F</dt><dd>${X.fTimes(d.f)}</dd><dt>M</dt><dd>${X.mAmt(nf(d.m))}</dd>
-      <dt>${X.sizeL}</dt><dd>${k ? X.sizeKnown(k.size, k.age) : X.sizeNone}</dd></dl>${mini(null, d.seg)}</div>
-    <p class="memo"><b>${X.memoH}：</b>${t().cust[c.id].memo}</p></div>`;
+  const X = t(), d = c.def, m = c.m, k = m.know, seg = segNow(c.id), r = rNow(c.id);
+  const memo = c.first ? X.cust[c.id].memo : (m.lastAngry ? X.ret.memoAngry(c.visitNo, r) : X.ret.memo(c.visitNo, r, X.shoe[m.lastShoe]));
+  return `<div class="crm"><div class="crm-h"><b>${esc(nm(c.id))}</b><span class="seglabel v${VALUE[seg]}" style="background:var(--c${VALUE[seg]})">${X.seg[seg]}</span><span class="small">${X.crmH}・${X.visitN(c.visitNo)}</span></div>
+    <div class="crm-grid"><dl><dt>R</dt><dd>${X.rDays(r)}</dd><dt>F</dt><dd>${X.fTimes(m.f)}</dd><dt>M</dt><dd>${X.mAmt(nf(m.m))}</dd>
+      <dt>${X.sizeL}</dt><dd>${k ? X.sizeKnown(k.size, dayNow() - k.day) : X.sizeNone}</dd><dt>${X.loyLab}</dt><dd>${loyBar(m.loyalty)}</dd></dl>${mini(null, seg)}</div>
+    <p class="memo"><b>${X.memoH}：</b>${memo}</p></div>`;
 }
 const fbBox = (cls, delta, html) => `<div class="fb ${cls}">${delta ? `<span class="d">${t().satD(delta)}</span>` : ''}${html}</div>`;
 const fixBox = (fix, why) => `<div class="fix"><p><b>${t().fixH}：</b>${fix}</p><p><b>${t().whyH}：</b>${why}</p></div>`;
@@ -975,7 +1134,7 @@ function custStatus(c) {
   if (!c.arrived && c.state !== 'bench') return c.state === 'greet' ? S.enter : S.walk;
   if (c.state === 'greet') return S.greet;
   if (c.state === 'scan') return c.spot.i === 0 ? S.scan : S.scanq;
-  if (c.state === 'bench') return G.me.carry && G.me.carry.id === c.id ? S.benchHave : S.bench(X.shoe[c.def.need.shoe], c.know ? c.know.size : X.sizeUnknown);
+  if (c.state === 'bench') return G.me.carry && G.me.carry.id === c.id ? S.benchHave : S.bench(X.shoe[c.def.need.shoe], c.m.know ? c.m.know.size : X.sizeUnknown);
   if (c.state === 'pay') return c.spot.i === 0 ? S.pay : S.payq;
   return '';
 }
@@ -983,8 +1142,13 @@ function idleBody() {
   const X = t(), act = new Set(targets().map(x => x.c && x.c.id));
   const list = G.custs.filter(c => c.state !== 'leaving');
   if (!list.length) return `<h2>${X.idleH}</h2><p class="hint">${X.idleEmpty}</p>`;
-  return `<h2>${X.idleH}</h2><div class="clist">${list.map(c => `<button type="button" class="crow ${act.has(c.id) ? 'act' : ''}" data-act="who" data-v="${c.id}"><b>${esc(nm(c.id))} <span class="seglabel v${VALUE[c.def.seg]}" style="background:var(--c${VALUE[c.def.seg]})">${X.seg[c.def.seg]}</span></b>${satBar(c.sat)}<span class="st">${custStatus(c)}</span></button>`).join('')}</div>
+  return `<h2>${X.idleH}</h2><div class="clist">${list.map(c => { const s = segNow(c.id); return `<button type="button" class="crow ${act.has(c.id) ? 'act' : ''}" data-act="who" data-v="${c.id}"><b>${esc(nm(c.id))} <span class="seglabel v${VALUE[s]}" style="background:var(--c${VALUE[s]})">${X.seg[s]}</span></b>${satBar(c.sat)}<span class="st">${custStatus(c)}</span></button>`; }).join('')}</div>
     <p class="hint">${X.idleHint}</p>`;
+}
+function greetText(c, k) {
+  const X = t();
+  if (c.first) return X.cust[c.id].opts[k];
+  return k === 'recall' ? X.ret.opts.recall(nm(c.id), X.shoe[c.m.lastShoe || c.def.need.shoe]) : X.ret.opts[k];
 }
 function panel(toEnd) {
   const X = t(), side = $('side');
@@ -996,44 +1160,43 @@ function panel(toEnd) {
   } else if (!P) {
     body = layoutName === 'wide' ? idleBody() : '';
   } else if (P.kind === 'greet') {
-    const c = cOf(P.id), d = c.def, cx = X.cust[c.id];
-    body = crmCard(c) + `<div class="say"><b>${esc(cx.name)}</b>${cx.say}</div><p class="q">${X.howGreet}</p>
-      <div class="opts">${d.opts.map(k => `<button type="button" class="opt ${c.approach === k ? 'picked ' + (k === d.good ? 'good' : 'bad') : ''} ${c.approach && c.approach !== d.good && k === d.good ? 'right' : ''}" data-act="appr" data-v="${k}" ${c.approach ? 'disabled' : ''}>${cx.opts[k]}</button>`).join('')}</div>`;
+    const c = cOf(P.id), d = c.def, cx = X.cust[c.id], good = c.first ? d.good : 'recall';
+    const fbOf = k => c.first ? cx.fb[k] : X.ret.fb[k];
+    body = crmCard(c) + `<div class="say"><b>${esc(cx.name)}</b>${c.first ? cx.say : X.ret.say}</div><p class="q">${X.howGreet}</p>
+      <div class="opts">${c.greetOpts.map(k => `<button type="button" class="opt ${c.approach === k ? 'picked ' + (k === good ? 'good' : c.first || k === 'push' ? 'bad' : 'ok') : ''} ${c.approach && c.approach !== good && k === good ? 'right' : ''}" data-act="appr" data-v="${k}" ${c.approach ? 'disabled' : ''}>${greetText(c, k)}</button>`).join('')}</div>`;
     if (c.approach) {
-      const good = c.approach === d.good;
-      body += fbBox(good ? 'good' : 'bad', P.delta, cx.fb[c.approach]);
-      if (!good) body += fixBox(`「${cx.opts[d.good]}」`, cx.fb[d.good]);
-      body += `<button type="button" class="btn" data-act="afterAppr">${c.sat <= 0 ? X.seeOut : good && d.scanNeeded ? X.goScan : X.goBench}</button>`;
+      const ok = c.approach === good;
+      body += fbBox(ok ? 'good' : (c.first || c.approach === 'push' ? 'bad' : 'ok'), P.delta, fbOf(c.approach));
+      if (!ok) body += fixBox(`「${greetText(c, good)}」`, fbOf(good));
+      body += `<button type="button" class="btn" data-act="afterAppr">${c.sat <= 0 ? X.seeOut : c.first && ok && d.scanNeeded && !c.m.rescanned ? X.goScan : X.goBench}</button>`;
     }
   } else if (P.kind === 'scan') {
-    const c = cOf(P.id), k = c.know;
+    const c = cOf(P.id), k = c.m.know;
     body = `<div class="scanfx">${FOOT_SVG(P.done ? k.arch : 'normal')}<div><p class="q">${esc(nm(c.id))}</p><p style="font-weight:800;font-size:20px">${P.done ? X.scanDone(k.size, X.arch[k.arch]) : X.scanH}</p>${P.done ? `<p class="small" style="margin-top:6px">${X.scanNote}</p>` : ''}</div></div>
       ${P.done ? fbBox('good', P.delta, '') + `<button type="button" class="btn" data-act="afterScan">${X.goBench}</button>` : ''}`;
   } else if (P.kind === 'stock') {
     const orders = G.custs.filter(c => c.state === 'bench');
     body = `<h2>${X.stockH}</h2>`;
-    if (orders.length > 1) body += `<p class="q">${X.whichOrder}</p><div class="orders">${orders.map(c => `<button type="button" class="opt ${P.sel === c.id ? 'picked ok' : ''}" data-act="order" data-v="${c.id}"><b>${esc(nm(c.id))}</b>：${X.shoe[c.def.need.shoe]} ${c.know ? c.know.size : X.sizeUnknown}</button>`).join('')}</div>`;
+    if (orders.length > 1) body += `<p class="q">${X.whichOrder}</p><div class="orders">${orders.map(c => `<button type="button" class="opt ${P.sel === c.id ? 'picked ok' : ''}" data-act="order" data-v="${c.id}"><b>${esc(nm(c.id))}</b>：${X.shoe[c.def.need.shoe]} ${c.m.know ? c.m.know.size : X.sizeUnknown}</button>`).join('')}</div>`;
     const c = P.sel ? cOf(P.sel) : null;
     if (c && c.state === 'bench') {
-      body += `<div class="need">${X.needLine(esc(nm(c.id)), X.shoe[c.def.need.shoe], c.know ? c.know.size : X.sizeUnknown)}</div><p class="q">${X.shelfH}</p>
-        <div class="shelf">${c.def.shelf.map((b, i) => `<button type="button" class="box" data-act="box" data-v="${i}"><b>${X.shoe[b[0]]}</b><span>${b[1]}</span></button>`).join('')}</div>`;
+      body += `<div class="need">${X.needLine(esc(nm(c.id)), X.shoe[c.def.need.shoe], c.m.know ? c.m.know.size : X.sizeUnknown)}</div><p class="q">${X.shelfH}</p>
+        <div class="shelf">${c.shelf.map((b, i) => `<button type="button" class="box" data-act="box" data-v="${i}"><b>${X.shoe[b[0]]}</b><span>${b[1]}</span></button>`).join('')}</div>`;
     }
     body += `<button type="button" class="btn ghost" data-act="close">${X.cancel}</button>`;
   } else if (P.kind === 'try') {
     const c = cOf(P.id), d = c.def;
-    if (P.result === 'ok') body = `<p class="q">${esc(nm(c.id))}</p>` + fbBox('good', P.delta, c.tries === 1 ? X.tryOk : X.tryOk2) + `<button type="button" class="btn" data-act="afterTry">${X.toPay}</button>`;
-    else if (P.result === 'stale') body = `<p class="q">${esc(nm(c.id))}</p>` + fbBox('bad', P.delta, X.tryBad) + fixBox(X.fixStale, X.whyStale(d.known.age)) + `<button type="button" class="btn" data-act="afterTry">${c.sat <= 0 ? X.seeOut : X.rescan}</button>`;
+    if (P.result === 'stale') body = `<p class="q">${esc(nm(c.id))}</p>` + fbBox('bad', P.delta, X.tryBad) + fixBox(X.fixStale, X.whyStale(dayNow() - c.m.know.day)) + `<button type="button" class="btn" data-act="afterTry">${c.sat <= 0 ? X.seeOut : X.rescan}</button>`;
     else body = `<p class="q">${esc(nm(c.id))}</p>` + fbBox('bad', P.delta, X.tryBad) + fixBox(X.fixBox(X.shoe[d.need.shoe], d.need.size), X.whyBox) + `<button type="button" class="btn" data-act="afterTry">${c.sat <= 0 ? X.seeOut : X.refetch}</button>`;
   } else if (P.kind === 'pay') {
     const c = cOf(P.id), d = c.def, cx = X.cust[c.id], dsc = d.disc[c.approach];
-    const price = Math.round(PRICE[d.need.shoe] * (dsc || 1));
-    body = `<h2>${X.payH(esc(cx.name))}</h2><p style="font-variant-numeric:tabular-nums;font-size:20px;font-weight:800">${X.price(X.shoe[d.need.shoe], nf(price))}${dsc ? X.discountNote(dsc * 10) : ''}</p>
+    body = `<h2>${X.payH(esc(cx.name))}</h2><p style="font-variant-numeric:tabular-nums;font-size:20px;font-weight:800">${X.price(X.shoe[d.need.shoe], nf(priceOf(c)))}${dsc ? X.discountNote(dsc * 10) : ''}</p>
       <p class="q">${X.followH}</p>
       <div class="opts">${FOLLOW.map(k => `<button type="button" class="opt ${c.follow === k ? 'picked ' + (k === d.best ? 'good' : k === 'coupon' ? 'bad' : 'ok') : ''} ${c.follow && c.follow !== d.best && k === d.best ? 'right' : ''}" data-act="follow" data-v="${k}" ${c.follow ? 'disabled' : ''}>${X.follow[k]}</button>`).join('')}</div>`;
     if (c.follow) {
       const best = c.follow === d.best;
       body += best ? fbBox('good', P.delta, cx.followWhy) : fbBox(c.follow === 'coupon' ? 'bad' : 'ok', P.delta, c.follow === 'coupon' ? X.followCoupon : X.followOk) + fixBox(X.follow[d.best], cx.followWhy);
-      body += `<div class="crm" style="display:flex;gap:12px;align-items:center">${mini(d.seg, c.after)}<div><p style="font-size:16px">${X.crmUpd(nf(c.price))}</p><p style="font-weight:800">${X.segMove(X.seg[d.seg], X.seg[c.after])}</p></div></div>
+      body += `<div class="crm" style="display:flex;gap:12px;align-items:center">${mini(P.before, P.after)}<div><p style="font-size:16px">${X.crmUpd(nf(c.price))}</p><p style="font-weight:800">${X.segMove(X.seg[P.before], X.seg[P.after])}</p></div></div>
         <button type="button" class="btn" data-act="afterPay">${X.seeOut}</button>`;
     }
   }
@@ -1051,9 +1214,24 @@ function panel(toEnd) {
   else if (P) side.scrollTop = 0;
   if (layoutName === 'tall') requestAnimationFrame(fit);
 }
+// the 10 members along the top: loyalty bar, visits, who is in the store
+let rosterSig = '';
+function roster(force) {
+  if (!G) return;
+  const X = t(), inStore = new Set(G.custs.filter(c => c.state !== 'leaving').map(c => c.id)), act = new Set(targets().map(x => x.c && x.c.id));
+  const sig = LANG + CUSTOMERS.map(c => { const m = memOf(c.id); return [c.id, m.loyalty, m.visits, m.angry, m.gone, inStore.has(c.id), act.has(c.id)].join(','); }).join('|');
+  if (!force && sig === rosterSig) return;
+  rosterSig = sig;
+  $('roster').innerHTML = CUSTOMERS.map(c => {
+    const m = memOf(c.id);
+    let dots = ''; for (let i = 0; i < MAX_VISITS; i++) dots += i < m.visits ? (i >= m.visits - m.angry && m.angry ? '<s>✕</s>' : '<b>●</b>') : '○';
+    const cls = [inStore.has(c.id) ? 'in' : '', act.has(c.id) ? 'act' : '', m.visits ? '' : 'new', m.gone ? 'gone' : '', m.loyalty >= LOYAL_AT ? 'loyal' : ''].join(' ');
+    return `<button type="button" class="mem ${cls}" data-act="mem" data-v="${c.id}" title="${esc(nm(c.id))} ${X.loyLab} ${m.loyalty}"><span class="mn"><i style="background:${c.color}"></i>${esc(t().cust[c.id].short || nm(c.id))}</span>${loyBar(m.loyalty)}<span class="vis">${dots}</span></button>`;
+  }).join('');
+}
 function updateStats() {
   if (!G) return;
-  const X = t(), lo = loyalNow();
+  const X = t(), lo = loyalCount();
   $('sLab').textContent = X.sales;
   $('sVal').innerHTML = `NT$${nf(G.sales)}<small>${X.target(nf(TARGET))}</small>`;
   const bar = $('sBar'); bar.style.width = Math.min(100, G.sales / TARGET * 100) + '%'; bar.classList.toggle('met', G.sales >= TARGET);
@@ -1061,9 +1239,11 @@ function updateStats() {
   const lv = $('lVal'); lv.innerHTML = `${lo} <small>${X.loyalOpen(LOYAL0)}</small>`; lv.classList.toggle('up', lo > LOYAL0); lv.classList.toggle('down', lo < LOYAL0);
   const go = $('goBtn'); go.textContent = X.go; go.disabled = !!G.panel || !targets().length;
   $('pause').textContent = X.paused;
-  $('clock').textContent = clockText(600 + G.time * 2);
+  const day = dayNow();
+  $('clock').innerHTML = `${X.date(dateOf(day))}<small>${X.dayOf(day + 1, DAYS)}</small>`;
 }
 function toast(msg, bad) {
+  if (view !== 'game') return;
   document.querySelectorAll('.toast').forEach(el => el.remove());
   const el = document.createElement('div'); el.className = 'toast' + (bad ? ' bad' : ''); el.textContent = msg; el.setAttribute('role', 'status');
   document.body.appendChild(el); setTimeout(() => el.remove(), 2400);
@@ -1104,7 +1284,6 @@ let sideTick = 0;
 function step(dt) {
   if (!G || G.closed) return;
   const paused = !!G.panel;
-  // you
   if (!paused) {
     const me = G.me, ox = me.x, oy = me.y;
     if (keys.size) {
@@ -1120,25 +1299,31 @@ function step(dt) {
     me.x = Math.max(24, Math.min(L.W - 24, me.x)); me.y = Math.max(72, Math.min(L.H - 12, me.y));
     if (Math.hypot(me.x - ox, me.y - oy) > 0.5) me.moved = true;
   }
-  // customers walk (also while paused, so they finish their steps)
   for (const c of [...G.custs]) {
     const dx = c.tx - c.x, dy = c.ty - c.y, d = Math.hypot(dx, dy);
     if (d > 2) { const s = Math.min(d, CSPEED * dt); c.x += dx / d * s; c.y += dy / d * s; }
-    else if (!c.arrived) { c.arrived = true; if (c.state === 'leaving') { c.el && c.el.remove(); G.custs.splice(G.custs.indexOf(c), 1); reflow(); } }
+    else if (!c.arrived) { c.arrived = true; if (c.state === 'leaving') { c.el && c.el.remove(); G.custs.splice(G.custs.indexOf(c), 1); reflow(); roster(); } }
   }
   if (!paused) {
-    G.time += dt; G.waveT += dt;
+    G.time += dt;
     for (const c of [...G.custs]) {
       if (c.state === 'leaving') continue;
       c.sat -= DECAY * dt;
       if (c.sat <= 0) leave(c, true, 'wait');
     }
-    // arrivals
+    // arrivals: a random group of 1 to 3 members who are due
+    if (!G.ending && G.time >= DAYS * DAY_SEC) { G.ending = true; G.pending = []; }
     for (const p of [...G.pending]) if (G.time >= p.at && freeSpot('browse') >= 0) { G.pending.splice(G.pending.indexOf(p), 1); spawn(p.id); }
-    const active = G.custs.filter(c => c.state !== 'leaving').length;
-    if (G.wave < WAVES.length - 1 && !G.pending.length && (active === 0 || G.waveT >= WAVE_GAP)) startWave();
-    if (G.wave === WAVES.length - 1 && !G.pending.length && G.custs.length === 0) { G.closed = true; G.me.carry = null; panel(); updateStats(); }
-    // interact
+    if (!G.ending && !G.pending.length && (G.nextBatch -= dt) <= 0) {
+      const room = 3 - G.custs.filter(c => c.state !== 'leaving').length, cand = candidates();
+      if (room > 0 && cand.length) {
+        const n = Math.min(1 + Math.floor(rnd() * 3), room, cand.length);
+        cand.slice(0, n).forEach((id, i) => G.pending.push({ id, at: G.time + i * 2 }));
+        toast(n > 1 ? t().batch(n) : t().arrive(nm(cand[0])));
+        G.nextBatch = 6 + rnd() * 6;
+      } else G.nextBatch = 0.6;
+    }
+    if (G.ending && G.custs.length === 0) { G.closed = true; G.me.carry = null; $('carry').classList.add('hide'); panel(); updateStats(); }
     const me = G.me, ts = targets();
     if (me.goal) {
       const tg = ts.find(x => x.key === me.goal);
@@ -1150,7 +1335,7 @@ function step(dt) {
     }
   }
   drawEntities();
-  if ((sideTick += dt) > 0.25) { sideTick = 0; updateStats(); if (!G.panel && layoutName === 'wide' && !G.closed) panel(); }
+  if ((sideTick += dt) > 0.25) { sideTick = 0; updateStats(); roster(); if (!G.panel && layoutName === 'wide' && !G.closed) panel(); }
 }
 function loop() {
   cancelAnimationFrame(raf);
@@ -1179,8 +1364,8 @@ function render() {
 }
 function summary() {
   const X = t(), k = totals();
-  const lines = [X.app, `${X.kSales} NT$${nf(k.sales)} / ${nf(TARGET)} | ${X.kLoyal} ${X.loyalFromTo(LOYAL0, k.loyal)} | ${X.kSat} ${k.sat} | ${X.kAngry} ${k.angry}`];
-  for (const c of CUSTOMERS) { const x = G.res.find(r => r.id === c.id); if (!x) continue; lines.push(`${nm(x.id)}: ${X.satL} ${x.sat}, ${x.angry ? X.angryL : X.boughtL(nf(x.price)) + ', ' + X.segMove(X.seg[c.seg], X.seg[x.after])}, ${X.errsL(x.errs)}`); }
+  const lines = [X.app, `${X.kSales} NT$${nf(k.sales)} / ${nf(TARGET)} | ${X.kLoyal} ${X.loyalFromTo(LOYAL0, k.loyal)} | ${X.kVisits} ${k.visits} | ${X.kAngry} ${k.angry}`];
+  for (const c of CUSTOMERS) { const m = memOf(c.id); lines.push(`${nm(c.id)}: ${X.repLoy} ${m.l0}→${m.loyalty}, ${m.visits ? X.repVisits(m.visits, m.angry) : X.repNever}, RFM ${X.segMove(X.seg[c.seg], X.seg[segNow(c.id)])}`); }
   return lines.join('\n');
 }
 document.addEventListener('click', e => {
@@ -1193,10 +1378,10 @@ document.addEventListener('click', e => {
   if (a === 'open') { openStore(); return; }
   if (a === 'report') { view = 'report'; render(); return; }
   if (a === 'talk') { view = 'talk'; render(); return; }
-  if (a === 'again') { G = null; view = 'ctrl'; render(); return; }
+  if (a === 'again') { G = null; SEED = Math.floor(Math.random() * 1e9); view = 'ctrl'; render(); return; }
   if (a === 'copy') { const m = $('copymsg'); (navigator.clipboard ? navigator.clipboard.writeText(summary()) : Promise.reject()).then(() => { m.textContent = t().copied; }, () => { m.textContent = summary(); }); return; }
   if (!G) return;
-  if (a === 'who') { tapCustomer(cOf(v)); return; }
+  if (a === 'who' || a === 'mem') { const c = cOf(v); if (c) tapCustomer(c); else if (a === 'mem' && !G.panel) toast(t().notIn(nm(v))); return; }
   if (a === 'appr') return chooseApproach(v);
   if (a === 'afterAppr') return afterApproach();
   if (a === 'afterScan') return afterScan();
@@ -1214,10 +1399,9 @@ function tapCustomer(c) {
   if (tg) { goTo(tg.key); return; }
   if (c.state === 'bench' && c.arrived) {
     if (G.me.carry) toast(t().handsFull(nm(G.me.carry.id)));
-    else { toast(t().needShoes(nm(c.id), t().shoe[c.def.need.shoe], c.know ? c.know.size : t().sizeUnknown)); goTo('stock'); }
+    else { toast(t().needShoes(nm(c.id), t().shoe[c.def.need.shoe], c.m.know ? c.m.know.size : t().sizeUnknown)); goTo('stock'); }
   }
 }
-// tap or click: a customer, a station, or the floor
 $('wrap').addEventListener('pointerdown', e => {
   if (!G || G.panel || view !== 'game' || G.closed) return;
   const st = $('stage'), r = $('wrap').getBoundingClientRect();
@@ -1250,7 +1434,7 @@ addEventListener('blur', () => keys.clear());
 let rz = 0;
 addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (view === 'game') { applyLayout(); panel(); } }, 120); });
 render();
-window.__store = { get G() { return G; }, get view() { return view; }, get layout() { return layoutName; }, targets, mostUrgent, CUSTOMERS, segOf, TARGET, LOYAL0 };
+window.__store = { get G() { return G; }, get view() { return view; }, get layout() { return layoutName; }, targets, mostUrgent, CUSTOMERS, segOf, segNow, TARGET, LOYAL0, DAYS, DAY_SEC };
 })();
 </script>
 </body>
