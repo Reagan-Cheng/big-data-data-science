@@ -264,12 +264,17 @@ ol.qs small{display:block;color:var(--ink3);font-size:14px}
 .goal .lbar{width:120px;height:10px}
 @media (max-width:420px){ .sbox .val small{display:block;font-size:12px;line-height:1.1} .sbox .val{font-size:17px} .stats{gap:8px;padding:5px 10px} }
 @media (max-width:420px){ .mem .vis{letter-spacing:0;font-size:9px} }
+.top .timer{font-variant-numeric:tabular-nums;font-weight:900;background:#f2b705;color:var(--navy);border-radius:8px;padding:2px 10px;font-size:20px;white-space:nowrap;min-width:84px;text-align:center}
+.top .timer.low{background:#d23a3a;color:#fff;animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.08)}}
+@media (max-width:640px){ body.ingame .top .name{display:none} body.ingame .top{justify-content:flex-end} .top .timer{font-size:18px;min-width:74px;padding:2px 7px} .top .date{font-size:15px;padding:2px 7px} }
 </style>
 </head>
 <body>
 <header class="top">
   <div class="name" id="appname"></div>
   <div class="date hide" id="clock"></div>
+  <div class="timer hide" id="timer" role="timer" aria-live="off"></div>
   <div class="lang" role="group" aria-label="Language 語言">
     <button type="button" data-lang="zh">中文</button>
     <button type="button" data-lang="en">EN</button>
@@ -290,6 +295,9 @@ ol.qs small{display:block;color:var(--ink3);font-size:14px}
 <script>
 (() => {
 'use strict';
+// the countdown: real seconds from the first customer to closing time (?sec= overrides it for testing)
+const DURATION = Math.max(60, Math.min(900, +new URLSearchParams(location.search).get('sec') || 300));
+const MIN = Math.round(DURATION / 6) / 10;
 const TOUCH = window.matchMedia ? window.matchMedia('(pointer:coarse)').matches : false;
 
 /* ============================================================
@@ -299,8 +307,9 @@ const T = {
   zh: {
     app: '店長的一天：RFM 足測鞋店',
     kicker: '大數據行銷 · RFM 模擬遊戲 · 約 15 分鐘',
+    timerL: s => `剩下 ${s} 秒`,
     title: '店長的三個月',
-    lead: '你是足測鞋店的店長，要經營 10 月到 12 月這三個月（濃縮成幾分鐘）。店裡有 10 位會員，每次會隨機走進 1～3 位。你要親自招呼、帶去足測、到倉庫拿鞋、試穿、結帳。服務得好，他們會更忠誠、更常回來；服務不好，可能來一次就不再出現。',
+    lead: `你是足測鞋店的店長，要經營 10 月到 12 月這三個月，濃縮成 ${MIN} 分鐘的倒數計時。店裡有 10 位會員，每次會隨機走進 1～3 位。你要親自招呼、帶去足測、到倉庫拿鞋、試穿、結帳。服務得好，他們會更忠誠、更常回來；服務不好，可能來一次就不再出現。`,
     begin: '看遊戲說明', skip: '已經會玩，直接開店',
     pages: [
       { h: '你的角色與三個月的兩個目標', goals: true },
@@ -317,13 +326,13 @@ const T = {
     goalSales: '目標一：業績', goalSalesB: t => `三個月營業額達到 NT$${t}`, goalSalesP: '畫面上方會顯示目前營業額和目標。每賣出一雙，營業額就會增加。',
     goalLoyal: '目標二：忠誠客戶', goalLoyalB: n => `忠誠客戶比開店時的 ${n} 位更多`, goalLoyalP: '上方有 10 位會員的忠誠度條。忠誠度 70 以上（黑線右邊）就是忠誠客戶，名字旁會出現 ★。',
     goalNote: '兩個目標有時會互相拉扯：打折可以衝業績，卻不一定讓客人更忠誠。',
-    roleP: '你是店長：在店裡走動、服務客人，所有決定都由你來做。日期會一直往前走，三個月結束就打烊結算。',
+    roleP: `你是店長：在店裡走動、服務客人，所有決定都由你來做。右上角有倒數計時：第一位客人進店就開始，${MIN} 分鐘一到立刻打烊結算，不管店裡還有沒有客人。日期也會跟著從 10 月 1 日走到 12 月 31 日。`,
     satIntro: '客人頭上的是這次來店的滿意度；畫面上方的是每位會員長期的忠誠度。',
     satDown: '滿意度會下降', satDownL: ['讓客人等太久：只要有客人在等你，滿意度就會一直往下掉。', '服務錯誤：選錯招呼方式、拿錯鞋、用了過期的尺寸資料。'],
     satUp: '滿意度會上升', satUpL: ['招呼方式選對、一次就拿對鞋、回店安排得好。'],
     satZero: '滿意度歸零', satZeroL: ['客人生氣離開、不消費，忠誠度大跌（−35）。'],
     loyH: '忠誠度怎麼變', loyL: ['客人離開時，依這次的滿意度加減忠誠度：越滿意加越多。', '忠誠度越高，下次越快回來；安排了最適合的回店理由，也會更快回來。', '忠誠度低於 30，這位會員就不會再來了。每位會員三個月內最多來 3 次。'],
-    satMore: ['每次隨機走進 1～3 位客人，要先服務誰，由你決定。', '選錯時，畫面會告訴你正確做法和原因。', '對話框打開時時間會暫停，可以慢慢讀。'],
+    satMore: ['每次隨機走進 1～3 位客人，要先服務誰，由你決定。', '選錯時，畫面會告訴你正確做法和原因。', '倒數計時不會停，對話框開著也一樣；不過你在跟一位客人對話時，其他客人的滿意度會暫停下降，可以讀完說明再繼續。'],
     rfmL: [['R', '最近一次互動', '購買或到店都算，越近越好'], ['F', '互動頻率', '一年來店幾次'], ['M', '消費金額', '一年花了多少']],
     rfmMap: '依 R 與 F＋M 的分數，每位顧客落在地圖的一格（講義 p.37）。三個月裡，R、F、M 會隨每次來店更新。',
     axR: 'R 越近 →', axFM: 'F＋M 越高 ↑',
@@ -380,7 +389,7 @@ const T = {
     followOk: '可以，但還有更適合這位客人的安排。', followCoupon: '折扣讓人等下一張券，而不是期待下一次體驗。',
     crmUpd: m => `CRM 已更新：R 變成 0 天・F +1・M +NT$${m}`,
     segMove: (a, b) => a === b ? `仍是「${b}」` : `「${a}」→「${b}」`,
-    closeH: '三個月結束，打烊了', closeP: '來看看這一季的成績。', toReport: '看結算',
+    closeH: '時間到！12 月 31 日，打烊了', closeP: n => n ? `還有 ${n} 位客人沒服務完，這一趟不列入計算。` : '來看看這一季的成績。', toReport: '看結算',
     seg: { champ: '冠軍顧客', loyal: '忠誠顧客', keep: '不能失去', promise: '有潛力', attn: '需要關注', sleep: '沉睡顧客', fresh: '新顧客', warm: '待加溫', lost: '已流失' },
     shoe: { walk: '輕量健走鞋', arch: '足弓支撐鞋', dress: '真皮紳士鞋', commute: '通勤女鞋', insole: '客製足墊' },
     ret: {
@@ -453,8 +462,9 @@ const T = {
   en: {
     app: 'Store Manager for a Day',
     kicker: 'Big Data in Marketing · RFM simulation · about 15 minutes',
+    timerL: s => `${s} seconds left`,
     title: 'Three Months as Store Manager',
-    lead: 'You run a shoe store with a foot scanner from October to December, squeezed into a few minutes. The store has 10 members, and they walk in 1 to 3 at a time. You greet them, take them to the scanner, fetch shoes from the stockroom, fit them and ring them up. Serve them well and they grow more loyal and come back sooner; serve them badly and they may come once and never return.',
+    lead: `You run a shoe store with a foot scanner from October to December, squeezed into a ${MIN}-minute countdown. The store has 10 members, and they walk in 1 to 3 at a time. You greet them, take them to the scanner, fetch shoes from the stockroom, fit them and ring them up. Serve them well and they grow more loyal and come back sooner; serve them badly and they may come once and never return.`,
     begin: 'How to play', skip: 'I know how, open the store',
     pages: [
       { h: 'Your role and two goals for the quarter', goals: true },
@@ -471,13 +481,13 @@ const T = {
     goalSales: 'Goal 1: sales', goalSalesB: t => `Reach NT$${t} in sales over the quarter`, goalSalesP: 'The bar at the top shows sales so far against the target. Every pair you sell adds to it.',
     goalLoyal: 'Goal 2: loyal customers', goalLoyalB: n => `End with more than the ${n} loyal customers you start with`, goalLoyalP: 'The top of the screen shows a loyalty bar for each of the 10 members. Loyalty of 70 or more (right of the black line) makes a loyal customer, marked ★.',
     goalNote: 'The two goals can pull against each other: a discount lifts sales but does not always make people more loyal.',
-    roleP: 'You are the store manager: you walk the floor, serve customers, and make every call yourself. The calendar keeps moving; when the three months are up, the store closes and you see the results.',
+    roleP: `You are the store manager: you walk the floor, serve customers, and make every call yourself. The countdown in the top-right corner starts when the first customer walks in. When ${MIN} minutes are up the store closes at once, whoever is still inside, and you see the results. The date moves from October 1 to December 31 with it.`,
     satIntro: 'The bar over a customer’s head is their satisfaction with this visit. The bars at the top of the screen are each member’s long-term loyalty.',
     satDown: 'Satisfaction falls when', satDownL: ['customers wait too long: while anyone is waiting for you, their bar keeps dropping.', 'you make a service mistake: the wrong greeting, the wrong box, or an out-of-date size.'],
     satUp: 'Satisfaction rises when', satUpL: ['you pick the right greeting, bring the right pair first time, and book a good reason to return.'],
     satZero: 'At zero satisfaction', satZeroL: ['the customer walks out angry, buys nothing, and loyalty drops sharply (−35).'],
     loyH: 'How loyalty changes', loyL: ['When a customer leaves, loyalty moves with how satisfied they were: the happier, the bigger the gain.', 'The higher their loyalty, the sooner they return. Booking the best reason to return also brings them back sooner.', 'Below 30 loyalty, a member stops coming. Each member visits at most 3 times in the quarter.'],
-    satMore: ['Customers walk in 1 to 3 at a time, at random. You decide who to serve first.', 'When you get something wrong, the game tells you the right move and why.', 'Time stops while a dialog is open, so you can read at your own pace.'],
+    satMore: ['Customers walk in 1 to 3 at a time, at random. You decide who to serve first.', 'When you get something wrong, the game tells you the right move and why.', 'The countdown never stops, even while a dialog is open. But while you are talking to one customer, the others’ satisfaction stops falling, so you can finish reading.'],
     rfmL: [['R', 'Recency', 'last purchase or visit, the more recent the better'], ['F', 'Frequency', 'visits a year'], ['M', 'Monetary', 'spend a year']],
     rfmMap: 'Scores for R and for F+M put each customer in one square of the map (handout p.37). Over the quarter, R, F and M update with every visit.',
     axR: 'R more recent →', axFM: 'F+M higher ↑',
@@ -534,7 +544,7 @@ const T = {
     followOk: 'Fine, but something else suits this customer better.', followCoupon: 'A discount teaches people to wait for the next coupon, not the next experience.',
     crmUpd: m => `CRM updated: R is now 0 days · F +1 · M +NT$${m}`,
     segMove: (a, b) => a === b ? `still “${b}”` : `“${a}” → “${b}”`,
-    closeH: 'The quarter is over', closeP: 'Let us see how it went.', toReport: 'See the results',
+    closeH: 'Time is up! December 31: closing time', closeP: n => n ? `${n} customer${n > 1 ? 's were' : ' was'} still in the store; that visit does not count.` : 'Let us see how it went.', toReport: 'See the results',
     seg: { champ: 'Champions', loyal: 'Loyal', keep: 'Shouldn’t lose', promise: 'Promising', attn: 'Need attention', sleep: 'Sleepers', fresh: 'New', warm: 'Warm leads', lost: 'Lost' },
     shoe: { walk: 'Light walker', arch: 'Arch-support shoe', dress: 'Leather dress shoe', commute: 'Commuter flat', insole: 'Custom insole' },
     ret: {
@@ -611,8 +621,8 @@ const T = {
    r/f/m: RFM on the first day of the quarter
    known: what the CRM says before any scan; scanned: true size if it changed
    ============================================================ */
-const TARGET = 55000;
-const DAYS = 92, DAY_SEC = 2.3;        // 92 days, 2.3 s of play per day ≈ 3.5 minutes of play (time stops in dialogs)
+const TARGET = Math.round(30000 * DURATION / 300 / 1000) * 1000;   // NT$30,000 for the 5-minute game, scaled if ?sec= changes the length
+const DAYS = 92;                        // October to December
 const MAX_VISITS = 3, LOYAL_AT = 70, GONE_BELOW = 30;
 const PRICE = { walk: 2980, arch: 3580, dress: 4680, commute: 3280, insole: 1680 };
 const CUSTOMERS = [
@@ -703,7 +713,7 @@ const SPEED = 330, CSPEED = 260, REACH = 78;
 const nm = id => t().cust[id].name;
 function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let x = Math.imul(a ^ a >>> 15, 1 | a); x = x + Math.imul(x ^ x >>> 7, 61 | x) ^ x; return ((x ^ x >>> 14) >>> 0) / 4294967296; }; }
 function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
-const dayNow = () => Math.min(DAYS - 1, Math.floor(G.time / DAY_SEC));
+const dayNow = () => Math.min(DAYS - 1, Math.floor(G.time / DURATION * DAYS));
 function dateOf(day) { const mm = [[10, 31], [11, 30], [12, 31]]; let d = day; for (const [m, n] of mm) { if (d < n) return { m, d: d + 1 }; d -= n; } return { m: 12, d: 31 }; }
 
 function newDay() {
@@ -712,11 +722,11 @@ function newDay() {
   const mem = {};
   order.forEach((id, i) => {
     const d = BYID[id];
-    mem[id] = { loyalty: LOY0[d.seg], l0: LOY0[d.seg], visits: 0, angry: 0, gone: false, due: Math.round(i * 4.2 + rnd() * 3),
+    mem[id] = { loyalty: LOY0[d.seg], l0: LOY0[d.seg], visits: 0, angry: 0, gone: false, due: i === 0 ? 0 : Math.round(i * 4.2 + rnd() * 3),
       last: -d.r, f: d.f, m: d.m, rescanned: false, lastShoe: null, lastAngry: false, spent: 0,
       know: d.known ? { size: d.known.size, arch: d.known.arch, day: -d.known.age } : null };
   });
-  return { time: 0, nextBatch: 1.2, pending: [], custs: [], mem, sales: 0, data: 0, visits: 0, panel: null, closed: false, ending: false,
+  return { time: 0, started: false, timeUp: false, nextBatch: 0.8, pending: [], custs: [], mem, sales: 0, data: 0, visits: 0, panel: null, closed: false, ending: false,
     me: { x: 0, y: 0, tx: null, ty: null, goal: null, carry: null, moved: true } };
 }
 const memOf = id => G.mem[id];
@@ -960,6 +970,7 @@ function candidates() {
 function spawn(id) {
   const def = BYID[id], m = memOf(id);
   m.visits++; G.visits++;
+  G.started = true;
   const first = m.visits === 1;
   const c = { id, def, m, first, visitNo: m.visits, x: L.door[0], y: L.door[1] + 20, state: 'greet', spot: null, arrived: false,
     sat: first ? def.sat : Math.min(100, Math.round(55 + m.loyalty * 0.45)),
@@ -1156,7 +1167,7 @@ function panel(toEnd) {
   const P = G.panel;
   let body = '';
   if (G.closed) {
-    body = `<h2>${X.closeH}</h2><p>${X.closeP}</p><button type="button" class="btn" data-act="report">${X.toReport}</button>`;
+    body = `<h2>${X.closeH}</h2><p>${X.closeP(G.left || 0)}</p><button type="button" class="btn" data-act="report">${X.toReport}</button>`;
   } else if (!P) {
     body = layoutName === 'wide' ? idleBody() : '';
   } else if (P.kind === 'greet') {
@@ -1209,7 +1220,7 @@ function panel(toEnd) {
   }
   side.dataset.sig = sig || '';
   side.innerHTML = `<div class="grab"></div>${body}`;
-  $('pause').classList.toggle('hide', !P);
+  $('pause').classList.add('hide');
   if (toEnd) requestAnimationFrame(() => { const last = side.lastElementChild; if (last) last.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); });
   else if (P) side.scrollTop = 0;
   if (layoutName === 'tall') requestAnimationFrame(fit);
@@ -1237,10 +1248,13 @@ function updateStats() {
   const bar = $('sBar'); bar.style.width = Math.min(100, G.sales / TARGET * 100) + '%'; bar.classList.toggle('met', G.sales >= TARGET);
   $('lLab').textContent = X.loyal;
   const lv = $('lVal'); lv.innerHTML = `${lo} <small>${X.loyalOpen(LOYAL0)}</small>`; lv.classList.toggle('up', lo > LOYAL0); lv.classList.toggle('down', lo < LOYAL0);
-  const go = $('goBtn'); go.textContent = X.go; go.disabled = !!G.panel || !targets().length;
+  const go = $('goBtn'); go.textContent = X.go; go.disabled = !!G.panel || G.closed || !targets().length;
   $('pause').textContent = X.paused;
   const day = dayNow();
   $('clock').innerHTML = `${X.date(dateOf(day))}<small>${X.dayOf(day + 1, DAYS)}</small>`;
+  const left = Math.max(0, Math.ceil(DURATION - G.time)), tm = $('timer');
+  tm.textContent = `⏱ ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
+  tm.classList.toggle('low', left <= 30 && !G.closed); tm.setAttribute('aria-label', X.timerL(left));
 }
 function toast(msg, bad) {
   if (view !== 'game') return;
@@ -1304,26 +1318,27 @@ function step(dt) {
     if (d > 2) { const s = Math.min(d, CSPEED * dt); c.x += dx / d * s; c.y += dy / d * s; }
     else if (!c.arrived) { c.arrived = true; if (c.state === 'leaving') { c.el && c.el.remove(); G.custs.splice(G.custs.indexOf(c), 1); reflow(); roster(); } }
   }
+  // the countdown never stops, not even while a dialog is open
+  if (G.started) G.time += dt;
+  if (G.started && G.time >= DURATION) { timeUp(); return; }
+  // arrivals: a random group of 1 to 3 members who are due
+  for (const p of [...G.pending]) if (G.time >= p.at && freeSpot('browse') >= 0) { G.pending.splice(G.pending.indexOf(p), 1); spawn(p.id); }
+  if (!G.pending.length && (G.nextBatch -= dt) <= 0) {
+      const room = 3 - G.custs.filter(c => c.state !== 'leaving').length, cand = candidates();
+      if (room > 0 && cand.length) {
+        const n = Math.min(1 + Math.floor(rnd() * 3), room, cand.length);
+        cand.slice(0, n).forEach((id, i) => G.pending.push({ id, at: G.time + i * 2 }));
+        if (!G.panel) toast(n > 1 ? t().batch(n) : t().arrive(nm(cand[0])));
+        G.nextBatch = 6 + rnd() * 6;
+      } else G.nextBatch = 0.6;
+  }
   if (!paused) {
-    G.time += dt;
+    // while you are talking with someone, the others wait patiently
     for (const c of [...G.custs]) {
       if (c.state === 'leaving') continue;
       c.sat -= DECAY * dt;
       if (c.sat <= 0) leave(c, true, 'wait');
     }
-    // arrivals: a random group of 1 to 3 members who are due
-    if (!G.ending && G.time >= DAYS * DAY_SEC) { G.ending = true; G.pending = []; }
-    for (const p of [...G.pending]) if (G.time >= p.at && freeSpot('browse') >= 0) { G.pending.splice(G.pending.indexOf(p), 1); spawn(p.id); }
-    if (!G.ending && !G.pending.length && (G.nextBatch -= dt) <= 0) {
-      const room = 3 - G.custs.filter(c => c.state !== 'leaving').length, cand = candidates();
-      if (room > 0 && cand.length) {
-        const n = Math.min(1 + Math.floor(rnd() * 3), room, cand.length);
-        cand.slice(0, n).forEach((id, i) => G.pending.push({ id, at: G.time + i * 2 }));
-        toast(n > 1 ? t().batch(n) : t().arrive(nm(cand[0])));
-        G.nextBatch = 6 + rnd() * 6;
-      } else G.nextBatch = 0.6;
-    }
-    if (G.ending && G.custs.length === 0) { G.closed = true; G.me.carry = null; $('carry').classList.add('hide'); panel(); updateStats(); }
     const me = G.me, ts = targets();
     if (me.goal) {
       const tg = ts.find(x => x.key === me.goal);
@@ -1335,7 +1350,17 @@ function step(dt) {
     }
   }
   drawEntities();
-  if ((sideTick += dt) > 0.25) { sideTick = 0; updateStats(); roster(); if (!G.panel && layoutName === 'wide' && !G.closed) panel(); }
+  if ((sideTick += dt) > 0.2) { sideTick = 0; updateStats(); roster(); if (!G.panel && layoutName === 'wide' && !G.closed) panel(); }
+}
+function timeUp() {
+  G.closed = true; G.timeUp = true; G.time = DURATION;
+  const still = G.custs.filter(c => c.state !== 'leaving');
+  G.left = still.length;
+  for (const c of still) { c.m.visits--; G.visits--; }     // an unfinished visit does not count
+  G.panel = null; G.me.carry = null; G.me.tx = null; G.me.goal = null; keys.clear();
+  $('carry').classList.add('hide');
+  document.querySelectorAll('.toast').forEach(el => el.remove());
+  panel(); updateStats(); roster(true); drawEntities();
 }
 function loop() {
   cancelAnimationFrame(raf);
@@ -1353,7 +1378,8 @@ function render() {
   document.title = X.app; $('appname').textContent = X.app;
   document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === LANG)));
   const inGame = view === 'game';
-  $('game').classList.toggle('hide', !inGame); $('page').classList.toggle('hide', inGame); $('clock').classList.toggle('hide', !inGame);
+  $('game').classList.toggle('hide', !inGame); $('page').classList.toggle('hide', inGame); $('clock').classList.toggle('hide', !inGame); $('timer').classList.toggle('hide', !inGame);
+  document.body.classList.toggle('ingame', inGame);
   if (inGame) { applyLayout(); panel(); updateStats(); }
   else {
     document.querySelectorAll('.toast').forEach(el => el.remove());
@@ -1434,7 +1460,7 @@ addEventListener('blur', () => keys.clear());
 let rz = 0;
 addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (view === 'game') { applyLayout(); panel(); } }, 120); });
 render();
-window.__store = { get G() { return G; }, get view() { return view; }, get layout() { return layoutName; }, targets, mostUrgent, CUSTOMERS, segOf, segNow, TARGET, LOYAL0, DAYS, DAY_SEC };
+window.__store = { get G() { return G; }, get view() { return view; }, get layout() { return layoutName; }, targets, mostUrgent, CUSTOMERS, segOf, segNow, TARGET, LOYAL0, DAYS, DURATION };
 })();
 </script>
 </body>
