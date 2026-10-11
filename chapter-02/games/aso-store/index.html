@@ -1,0 +1,1016 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#102a56">
+<title>店長的一天：RFM 足測鞋店 | Store Manager for a Day</title>
+<meta name="description" content="扮演足測鞋店店長經營一天，用 RFM 決定怎麼服務每位會員。改編自阿瘦數位轉型個案。Play a shoe-store manager for a day and use RFM to serve each member.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%23102a56%22/%3E%3Cpath%20d%3D%22M8%2024V17h4v7zm6%200V11h4v13zm6%200V6h4v18z%22%20fill%3D%22%23ffffff%22/%3E%3C/svg%3E">
+<!-- ============================================================
+     店長的一天：RFM 足測鞋店 · Store Manager for a Day
+     大數據與資料科學 第二章（講義 p.33–37：阿瘦個案與 RFM）
+     單一檔案、無外部資源。寬螢幕是橫向門市＋側欄；手機與直向螢幕
+     改用直向門市＋底部面板；觸控裝置用點地板走路，電腦也可用方向鍵。
+     One file, no external resources. Wide screens get a landscape
+     store with a side panel; phones and portrait screens get a
+     portrait store with a bottom sheet. All words live in T below.
+     ============================================================ -->
+<style>
+:root{
+  --bg:#f3f1ec; --panel:#fff; --ink:#1b2433; --ink2:#4d5869; --ink3:#7a8494; --line:#dcd8cf; --line2:#ebe8e1;
+  --navy:#102a56; --blue:#1f5fb8; --blue-wash:#e8f0fc;
+  --good:#127a3d; --good-wash:#e6f5ec; --bad:#b4232c; --bad-wash:#fcebeb; --warn:#a15c00;
+  --floor:#ead9bf; --floor2:#e2cdae; --wall:#cdb894;
+  --c1:#e6effc; --c2:#c4d9f6; --c3:#86b6ef; --c4:#3f84d6; --c5:#184f95;
+  --tap:44px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",Arial,sans-serif;line-height:1.55;font-size:16px;overscroll-behavior:none}
+html[lang="zh-Hant"] body{line-height:1.7}
+button{font:inherit;color:inherit}
+h1,h2,h3,p{margin:0}
+:focus-visible{outline:3px solid #f2b705;outline-offset:2px;border-radius:6px}
+.hide{display:none!important}
+
+/* ---------- top bar ---------- */
+.top{position:fixed;top:0;left:0;right:0;z-index:40;background:var(--navy);color:#fff;height:calc(48px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 12px 0;display:flex;align-items:center;gap:10px}
+.top .name{font-weight:800;font-size:15px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top .clock{font-variant-numeric:tabular-nums;font-weight:800;background:rgba(255,255,255,.14);border-radius:8px;padding:2px 8px;font-size:14px}
+.lang{display:flex;border:1px solid rgba(255,255,255,.5);border-radius:999px;overflow:hidden;flex-shrink:0}
+.lang button{border:0;background:transparent;color:#fff;padding:4px 11px;font-size:13px;cursor:pointer;min-height:32px}
+.lang button[aria-pressed="true"]{background:#fff;color:var(--navy);font-weight:700}
+
+/* ---------- pages (intro, report, discussion) ---------- */
+.page{max-width:860px;margin:0 auto;padding:calc(64px + env(safe-area-inset-top)) 16px 40px}
+.kicker{font-size:13px;font-weight:800;color:var(--blue)}
+.title{font-size:clamp(26px,6vw,40px);font-weight:900;margin:4px 0 8px;line-height:1.15}
+.lead{color:var(--ink2);max-width:60ch;font-size:17px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}
+.stack>*+*{margin-top:12px}
+.small{font-size:13px;color:var(--ink3)}
+.btn{border:0;border-radius:12px;background:var(--blue);color:#fff;font-weight:800;padding:12px 20px;min-height:var(--tap);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.btn:hover{background:var(--navy)}
+.btn.ghost{background:transparent;color:var(--blue);border:2px solid var(--blue)}
+.btn.ghost:hover{background:var(--blue-wash)}
+.btn[disabled]{background:#b8c0cc;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.intro-hero{display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:18px;align-items:center}
+.intro-hero svg{width:100%;max-width:190px;justify-self:center}
+.slides{margin-top:18px}
+.slide h2{font-size:20px;margin-bottom:8px}
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.fact{background:var(--bg);border-radius:12px;padding:12px}
+.fact b{display:block;font-size:24px;color:var(--navy);font-weight:900}
+.fact span{font-size:14px;color:var(--ink2)}
+.journey{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:10px 0 0;padding:0;list-style:none;counter-reset:j}
+.journey li{background:var(--blue-wash);border-radius:12px;padding:10px;font-size:14px;counter-increment:j}
+.journey li::before{content:counter(j);display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--blue);color:#fff;font-size:12px;font-weight:800;margin-right:6px}
+.rfm3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.rfm3 div{border-radius:12px;padding:12px;color:#fff}
+.rfm3 b{display:block;font-size:26px;font-weight:900;line-height:1}
+.rfm3 span{font-size:14px}
+.pager{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px}
+.pdots{display:flex;gap:6px}
+.pdots i{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.pdots i.on{background:var(--blue)}
+.ctrl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ctrl div{background:var(--bg);border-radius:12px;padding:12px;font-size:15px}
+.ctrl kbd{display:inline-block;border:1px solid var(--ink3);border-bottom-width:3px;border-radius:5px;padding:0 6px;font-size:13px;font-family:inherit;background:#fff;margin:0 1px}
+.note{font-size:12px;color:var(--ink3);margin-top:14px}
+
+/* ---------- game screen ---------- */
+#game{position:fixed;inset:0;top:calc(48px + env(safe-area-inset-top));display:grid}
+#game.wide{grid-template-columns:minmax(0,1fr) 360px}
+#game.tall{grid-template-rows:auto minmax(0,1fr)}
+.hud{background:#fff;border-bottom:1px solid var(--line);padding:8px 12px;display:flex;gap:8px;align-items:center}
+#game.wide .hud{display:none}
+.obj{flex:1;min-width:0;font-weight:800;font-size:15px;line-height:1.35}
+.obj small{display:block;font-weight:400;color:var(--ink3);font-size:12px}
+.goBtn{border:0;border-radius:10px;background:var(--navy);color:#fff;font-weight:800;padding:8px 12px;min-height:40px;cursor:pointer;white-space:nowrap}
+.goBtn[disabled]{background:#b8c0cc}
+.stagewrap{position:relative;overflow:hidden;background:#d9c7a8;touch-action:none}
+.stage{position:absolute;left:0;top:0;transform-origin:0 0;transition:transform .35s ease}
+.stage svg.floor{position:absolute;left:0;top:0}
+.ent{position:absolute;left:0;top:0;will-change:transform;pointer-events:none}
+.person{width:56px;height:76px;margin-left:-28px;margin-top:-66px;position:relative}
+.person svg{width:56px;height:62px;display:block}
+.person .tag{position:absolute;left:50%;top:60px;transform:translateX(-50%);background:rgba(16,42,86,.88);color:#fff;font-size:12px;font-weight:700;border-radius:6px;padding:0 6px;white-space:nowrap}
+.person.me .tag{background:var(--blue)}
+.carry{position:absolute;right:-12px;top:22px;width:24px;height:16px;border-radius:3px;background:#c98a3b;border:2px solid #fff;box-shadow:0 1px 2px rgba(0,0,0,.3)}
+.bang{position:absolute;left:50%;top:-34px;transform:translateX(-50%);width:28px;height:28px;border-radius:50%;background:#f2b705;color:#1b2433;font-weight:900;display:grid;place-items:center;font-size:18px;box-shadow:0 2px 6px rgba(0,0,0,.25);animation:bob 1s ease-in-out infinite}
+@keyframes bob{50%{transform:translate(-50%,-5px)}}
+.patience{position:absolute;left:50%;top:-8px;transform:translateX(-50%);width:44px;height:6px;border-radius:3px;background:rgba(0,0,0,.18);overflow:hidden}
+.patience u{display:block;height:100%;background:#2fa35a;text-decoration:none}
+.patience.low u{background:#d9822b}
+.marker{position:absolute;left:0;top:0;pointer-events:none}
+.marker .bang{top:-46px}
+.ring{position:absolute;left:-40px;top:-40px;width:80px;height:80px;border-radius:50%;border:3px dashed #f2b705;animation:spin 6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tapdot{position:absolute;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;border:3px solid var(--navy);opacity:.8;pointer-events:none;animation:ping .5s ease-out forwards}
+@keyframes ping{to{transform:scale(2.2);opacity:0}}
+
+/* side panel / bottom sheet */
+.side{background:var(--panel);border-left:1px solid var(--line);overflow:auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+#game.tall .side{position:fixed;left:0;right:0;bottom:0;max-height:62vh;border-left:0;border-top:1px solid var(--line);border-radius:18px 18px 0 0;box-shadow:0 -8px 24px rgba(0,0,0,.12);padding:12px 14px calc(14px + env(safe-area-inset-bottom));z-index:30}
+#game.tall .side.idle{max-height:none}
+#game.tall .side.idle .sidebody{display:none}
+#game.tall .side .objbox{display:none}
+.grab{display:none;width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 2px}
+#game.tall .grab{display:block}
+.objbox{background:var(--bg);border-radius:12px;padding:10px 12px}
+.objbox .obj{font-size:16px}
+.objbox .goBtn{margin-top:8px;width:100%}
+.ctl-hint{font-size:12px;color:var(--ink3)}
+.crm{border:1px solid var(--line);border-radius:14px;padding:12px}
+.crm-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.crm-h b{font-size:17px}
+.seglabel{font-size:12px;font-weight:800;border-radius:999px;padding:2px 9px;color:#fff;background:var(--c5)}
+.seglabel.v1,.seglabel.v2,.seglabel.v3{color:var(--ink)}
+.crm-grid{display:grid;grid-template-columns:minmax(0,1fr) 92px;gap:10px;margin-top:8px;align-items:center}
+.crm dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:2px 8px;font-size:14px}
+.crm dt{color:var(--blue);font-weight:800}
+.crm dd{margin:0;font-variant-numeric:tabular-nums}
+.crm .memo{margin-top:8px;font-size:13px;color:var(--ink2);background:var(--bg);border-radius:8px;padding:6px 8px}
+.mini{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;width:92px}
+.mini i{aspect-ratio:1;border-radius:3px;position:relative}
+.mini i.on::after{content:"";position:absolute;inset:25%;border-radius:50%;background:#f2b705;border:2px solid #fff}
+.mini i.from::after{content:"";position:absolute;inset:30%;border-radius:50%;background:transparent;border:2px dashed #fff}
+.say{background:var(--bg);border-radius:14px 14px 14px 4px;padding:10px 12px;font-size:15px}
+.say b{display:block;font-size:12px;color:var(--ink3)}
+.opts{display:grid;gap:8px}
+.opt{border:2px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;text-align:left;cursor:pointer;min-height:var(--tap);font-size:15px}
+.opt:hover{border-color:var(--blue)}
+.opt.picked.good{border-color:var(--good);background:var(--good-wash)}
+.opt.picked.bad{border-color:var(--bad);background:var(--bad-wash)}
+.opt.picked.ok{border-color:var(--warn);background:#fff6e6}
+.fb{border-radius:12px;padding:10px 12px;font-size:15px;background:var(--blue-wash)}
+.fb.good{background:var(--good-wash)}
+.fb.bad{background:var(--bad-wash)}
+.fb.ok{background:#fff6e6}
+.shelf{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.box{border:0;border-radius:10px;background:#c98a3b;color:#fff;padding:10px;min-height:64px;cursor:pointer;text-align:left;box-shadow:inset 0 -6px 0 rgba(0,0,0,.15)}
+.box b{display:block;font-size:14px}
+.box span{display:block;font-size:20px;font-weight:900;font-variant-numeric:tabular-nums}
+.box:hover{background:#b9782b}
+.need{background:#fff6e6;border-radius:10px;padding:8px 10px;font-size:14px}
+.need b{font-weight:900}
+.scanfx{display:grid;grid-template-columns:110px minmax(0,1fr);gap:12px;align-items:center}
+.scanfx svg{width:110px;height:auto}
+.scanline{animation:scan 1.2s ease-in-out 2}
+@keyframes scan{0%{transform:translateY(0)}50%{transform:translateY(150px)}100%{transform:translateY(0)}}
+.stars{color:#e0a800;font-size:18px;letter-spacing:2px}
+.stars s{color:#d3cfc6;text-decoration:none}
+.toast{position:fixed;left:50%;top:calc(124px + env(safe-area-inset-top));transform:translateX(-50%);background:var(--navy);color:#fff;border-radius:12px;padding:8px 14px;font-size:14px;z-index:50;box-shadow:0 6px 18px rgba(0,0,0,.2);max-width:92vw}
+
+/* ---------- report ---------- */
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px}
+.kpi span{display:block;font-size:13px;color:var(--ink2)}
+.kpi b{display:block;font-size:clamp(22px,4.6vw,28px);font-weight:900;color:var(--navy);white-space:nowrap}
+.rep{margin:0;padding:0;list-style:none}
+.rep li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:12px 0;border-top:1px solid var(--line2)}
+.rep li:first-child{border-top:0}
+.rep .who{font-weight:800}
+.rep .mv{grid-column:1/-1;display:flex;align-items:center;gap:10px;font-size:14px;color:var(--ink2);flex-wrap:wrap}
+.rep .mv .mini{width:66px}
+ol.qs{margin:8px 0 0;padding-left:1.3em}
+ol.qs li{margin:12px 0}
+ol.qs small{display:block;color:var(--ink3);font-size:12px}
+
+/* ---------- device adaptation ---------- */
+@media (pointer:coarse){:root{--tap:48px}}
+@media (max-width:640px){
+  .intro-hero{grid-template-columns:minmax(0,1fr) 96px;gap:10px}
+  .intro-hero svg{max-width:96px}
+  .facts,.rfm3{grid-template-columns:minmax(0,1fr)}
+  .journey{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ctrl{grid-template-columns:minmax(0,1fr)}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .top .name{font-size:14px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="name" id="appname"></div>
+  <div class="clock hide" id="clock"></div>
+  <div class="lang" role="group" aria-label="Language 語言">
+    <button type="button" data-lang="zh">中文</button>
+    <button type="button" data-lang="en">EN</button>
+  </div>
+</header>
+<div id="page"></div>
+<div id="game" class="hide">
+  <div class="hud"><div class="obj" id="hudObj"></div><button type="button" class="goBtn" id="hudGo"></button></div>
+  <div class="stagewrap" id="wrap"><div class="stage" id="stage"></div></div>
+  <aside class="side" id="side" aria-live="polite"></aside>
+</div>
+
+<script>
+(() => {
+'use strict';
+const TOUCH = window.matchMedia ? window.matchMedia('(pointer:coarse)').matches : false;
+
+/* ============================================================
+   COPY — every word on screen, 繁體中文 and English
+   ============================================================ */
+const T = {
+  zh: {
+    app: '店長的一天：RFM 足測鞋店',
+    kicker: '大數據行銷 · RFM 模擬遊戲 · 約 12 分鐘',
+    title: '店長的一天',
+    lead: '今天你是足測鞋店的店長。每位走進來的會員，系統都會顯示 RFM 資料。用它決定怎麼招呼、要不要足測、拿哪一雙鞋。',
+    begin: '開始前言', skip: '跳過前言',
+    slides: [
+      { h: '一家老鞋店的危機', facts: [['−38%', '5 年營收衰退'], ['252 → 160', '門市家數'], ['兩位數', 'VIP 回購人次逐年下滑']], p: '2016 年新任總經理說：「會這樣，一定是有些事情錯了。」' },
+      { h: '數位轉型：從一台足測機開始', journey: ['上網預約', '到店足測', '客服關懷', '半年回店複測'], p: '每一步都是一個接觸點。足壓、尺寸和購買紀錄都寫進 POS 與 CRM。導入一年，客單價成長 25%。' },
+      { h: 'RFM：三個問題看懂一位顧客', rfm: [['R', '最近一次互動', '購買或到店都算'], ['F', '互動次數', '一年來了幾次'], ['M', '消費金額', '一年花了多少']], p: '依 R 與 F＋M 的分數，顧客落在地圖上不同的格子：冠軍顧客、不能失去、新顧客、已流失⋯⋯' },
+      { h: '今天的任務', task: true, p: '服務 5 位會員。看 RFM 決定怎麼招呼，必要時先足測，再去倉庫拿對的鞋，試穿、結帳，最後替每個人安排下一次回來的理由。' }
+    ],
+    ctrlH: '操作方式',
+    ctrlTouch: [['走路', '點一下地板'], ['互動', '走到黃色「！」旁邊會自動開始'], ['迷路了', '按「帶我去」']],
+    ctrlMouse: [['走路', '方向鍵、<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 或點地板'], ['互動', '走到黃色「！」旁邊會自動開始'], ['迷路了', '按「帶我去」']],
+    prev: '上一頁', next: '下一頁', open: '開店',
+    note: '情境改編自課堂個案（講義 p.33–37）。顧客與數字皆為教學模擬，不是阿瘦的實際資料。',
+    me: '店長',
+    st: { scan: '足壓測試機', bench: '試穿區', stock: '倉庫', pos: '結帳櫃台', door: '入口', wall: '新品牆' },
+    goto: '帶我去',
+    objGreet: n => `去招呼 ${n}`,
+    objScan: n => `帶 ${n} 去足壓測試機`,
+    objFetch: (shoe, size) => `去倉庫拿：${shoe} ${size}`,
+    objTry: n => `拿去試穿區給 ${n}`,
+    objPay: n => `到結帳櫃台幫 ${n} 結帳`,
+    objWait: '等下一位客人⋯⋯',
+    hintTouch: '點地板走路，靠近「！」會自動互動。',
+    hintMouse: '方向鍵／WASD 或點地板走路，靠近「！」會自動互動。',
+    arrive: n => `${n} 進店了`,
+    crmH: 'CRM 會員資料',
+    rDays: d => `${d} 天前`, fTimes: n => `一年 ${n} 次`, mAmt: m => `一年 NT$${m}`,
+    sizeKnown: (s, age) => age ? `${s}（${age} 天前足測）` : s,
+    sizeNone: '沒有足測資料',
+    memoH: '紀錄',
+    howGreet: '你要怎麼招呼？',
+    patienceGone: '讓客人等太久，心情變差了。',
+    scanH: '足壓測試中⋯⋯',
+    scanDone: (size, arch) => `尺寸 ${size}・${arch}`,
+    arch: { high: '高足弓', flat: '扁平足', normal: '足弓正常', low: '足弓略塌' },
+    contShelf: '去倉庫拿鞋',
+    shelfH: '倉庫：拿哪一盒？',
+    needLine: (shoe, size) => `要找：<b>${shoe}</b>・尺寸 <b>${size}</b>`,
+    took: '拿好了，送去試穿區。',
+    tryOk: '剛剛好！',
+    tryBadSize: '尺寸不對，太緊了。',
+    tryBadModel: '款式不對，不是這雙。',
+    tryStale: '尺寸不對。資料是半年多前的，腳型變了，先去重新足測。',
+    refetch: '回倉庫換一雙',
+    rescan: '帶去重新足測',
+    payH: n => `幫 ${n} 結帳`,
+    price: (shoe, p) => `${shoe}　NT$${p}`,
+    discountNote: '（打八折）',
+    followH: '再安排一個回來的理由：',
+    follow: { insole3m: '三個月後提醒調整鞋墊', call: '兩週後客服關懷電話', rescan6m: '預約半年後回店複測', coupon: '送一張下次折價券' },
+    followOk: '可以，但還有更適合的。',
+    followCoupon: '折扣讓人等下一張券，不是等下一次體驗。',
+    crmUpd: (m) => `CRM 已更新：R 變成 0 天・F +1・M +NT$${m}`,
+    segMove: (a, b) => a === b ? `仍是「${b}」` : `「${a}」→「${b}」`,
+    bye: '送客',
+    leftH: n => `${n} 離開了`,
+    nextCust: '迎接下一位',
+    closeH: '打烊了',
+    toReport: '看結算',
+    // customers
+    seg: { champ: '冠軍顧客', loyal: '忠誠顧客', keep: '不能失去', promise: '有潛力', attn: '需要關注', sleep: '沉睡顧客', fresh: '新顧客', warm: '待加溫', lost: '已流失' },
+    shoe: { walk: '輕量健走鞋', arch: '足弓支撐鞋', dress: '真皮紳士鞋', commute: '通勤女鞋', insole: '客製足墊' },
+    cust: {
+      lin: { name: '林小姐', say: '嗨，我來看看有沒有新款。', memo: '上次買通勤女鞋；三個月前加購客製足墊。',
+        opts: { crm: '林小姐！您的鞋墊用三個月了，順便幫您調整？新款通勤鞋有 23.5。', generic: '歡迎光臨，請隨意看看。', discount: '今天全館八折喔！' },
+        fb: { crm: '她很開心你記得她。冠軍顧客要的是被認得，不是折扣。', generic: '她自己逛了一圈。CRM 明明知道她的尺寸和喜好，卻沒用上。', discount: '她本來就會買，折扣只是少賺。' },
+        followWhy: '她三個月前買了足墊，該調整了，這就是回來的理由。' },
+      wang: { name: '王同學', say: '上次來測說我扁平足⋯⋯', memo: '20 天前只來做足測，沒有買。',
+        opts: { report: '你的足測報告在這：扁平足、26.5。試試足弓支撐鞋？', member: '要不要先辦會員？', sale: '這雙正在特價，很多人買。' },
+        fb: { report: '上次的足測資料派上用場，他覺得被專業照顧。', member: '他上次足測時就加入會員了。先看資料再開口。', sale: '熱賣款不一定適合扁平足，他的資料就在系統裡。' },
+        followWhy: '第一次買鞋，兩週後客服關心穿起來如何（旅程第 3 步）。' },
+      chen: { name: '陳先生', say: '最近鞋子穿起來會痛。', memo: '真皮紳士鞋常客；上次足測 200 天前。',
+        opts: { rescan: '陳先生好久不見！上次足測是半年多前，先幫您重測一次？', stale: '還是 26 號紳士鞋對吧？我直接去拿。', sale: '特價區在那邊，您慢慢看。' },
+        fb: { rescan: '200 天沒來，資料也舊了。重新足測才找得到他現在的尺寸。', stale: 'R 很差，代表資料也舊了，腳型可能已經變了。', sale: '不能失去的顧客被晾在一旁，他差點就走了。' },
+        followWhy: '讓他回到半年一次的複測節奏，R 不再拖長。' },
+      chang: { name: '張太太', say: '我隨便看看。', memo: '四個月沒來；以前買過健走鞋。',
+        opts: { scan: '最近走路腳會累嗎？可以免費做個足測，三分鐘。', bogo: '這雙買一送一！', leave: '（不打擾她）' },
+        fb: { scan: '用體驗代替推銷，她留下了新的足測資料。', bogo: '她拿了特價款，但沒有足測，尺寸是四個月前的。', leave: '需要關注的顧客，沒人關注，就走了。' },
+        followWhy: '需要關注的顧客，主動關心最有效。' },
+      wu: { name: '吳小姐', say: '這台機器是做什麼的？', memo: '一年多前買過一次，之後沒再來。',
+        opts: { scan: '可以免費測腳型，三分鐘，不用買。', coupon: '會員回來有大折扣，要不要買兩雙？', hardsell: '這是最新款，今天帶走最划算！' },
+        fb: { scan: '一年多沒來的顧客，用免費體驗重新開始，R 立刻更新。', coupon: '她覺得被推銷，說聲謝謝就走了。', hardsell: '硬推讓她更想離開。' },
+        followWhy: '半年後的複測，給她一個回來的理由。' }
+    },
+    // report
+    repKick: '打烊結算', repTitle: '今天的成績',
+    kStars: '服務評分', kSales: '營業額', kData: '新足測資料', kBook: '安排回店',
+    starsOf: (a, b) => `${a}／${b}`,
+    leftEarly: '提早離開，沒有留下紀錄',
+    starWhy: ['招呼', '一次拿對', '回店安排'],
+    repNote: '每位顧客三顆星：招呼方式對、一次拿對鞋、安排了最適合的回店理由。',
+    toTalk: '討論題', again: '再上一天班', copy: '複製結算', copied: '已複製',
+    talkKick: '課堂討論', talkTitle: '和組員聊聊',
+    qs: [
+      ['VIP 回購人次連年下滑。從 RFM 來看，最先亮紅燈的是哪一個字母？', '講義 p.33'],
+      ['足測的四個步驟（預約、到店、客服關懷、半年複測）各自讓 R、F、M 哪一項變好？今天你用了哪幾步？', '講義 p.34'],
+      ['王同學只做了足測沒買鞋，算不算活躍顧客？R 用購買或到訪來算，分群差多少？', '講義 p.36'],
+      ['陳先生的尺寸資料是 200 天前的。POS 與 CRM 串接之後，還要多久更新一次資料才夠用？', '講義 p.35'],
+      ['今天哪一位顧客在 RFM 地圖上移動最多？是哪一個動作讓他移動的？', '講義 p.37']
+    ],
+    back2: '返回第二章', backHome: '返回課程首頁'
+  },
+  en: {
+    app: 'Store Manager for a Day',
+    kicker: 'Big Data in Marketing · RFM simulation · about 12 minutes',
+    title: 'Store Manager for a Day',
+    lead: 'Today you run a shoe store with a foot scanner. When a member walks in, the system shows their RFM record. Use it to decide how to greet them, whether to scan, and which pair to bring.',
+    begin: 'Read the briefing', skip: 'Skip the briefing',
+    slides: [
+      { h: 'An old shoe brand in trouble', facts: [['−38%', 'revenue over 5 years'], ['252 → 160', 'stores'], ['double digits', 'yearly fall in VIP repeat visits']], p: 'In 2016 the new CEO said: “If it has come to this, something must have gone wrong.”' },
+      { h: 'Going digital, starting with a foot scanner', journey: ['Book online', 'Scan in store', 'Service call', 'Re-scan in 6 months'], p: 'Every step is a touchpoint. Foot pressure, size and purchases all go into the POS and CRM. Within a year, basket size grew 25%.' },
+      { h: 'RFM: three questions about a customer', rfm: [['R', 'most recent interaction', 'a purchase or a visit'], ['F', 'how often', 'visits a year'], ['M', 'how much', 'spend a year']], p: 'Scores for R and for F+M place each customer on a map: Champions, Shouldn’t lose, New, Lost…' },
+      { h: 'Today’s job', task: true, p: 'Serve 5 members. Read their RFM to decide how to greet them, scan their feet when needed, fetch the right pair from the stockroom, fit it and ring it up, then give each a reason to come back.' }
+    ],
+    ctrlH: 'Controls',
+    ctrlTouch: [['Walk', 'tap the floor'], ['Interact', 'walk up to the yellow “!” and it starts'], ['Lost?', 'press “Take me there”']],
+    ctrlMouse: [['Walk', 'arrow keys, <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>, or click the floor'], ['Interact', 'walk up to the yellow “!” and it starts'], ['Lost?', 'press “Take me there”']],
+    prev: 'Back', next: 'Next', open: 'Open the store',
+    note: 'Adapted from the class case (handout p.33–37). Customers and numbers are simulated for teaching; they are not A.S.O. data.',
+    me: 'You',
+    st: { scan: 'Foot scanner', bench: 'Fitting bench', stock: 'Stockroom', pos: 'Checkout', door: 'Entrance', wall: 'New arrivals' },
+    goto: 'Take me there',
+    objGreet: n => `Greet ${n}`,
+    objScan: n => `Take ${n} to the foot scanner`,
+    objFetch: (shoe, size) => `Stockroom: ${shoe}, size ${size}`,
+    objTry: n => `Bring it to ${n} at the fitting bench`,
+    objPay: n => `Ring up ${n} at the checkout`,
+    objWait: 'Waiting for the next customer…',
+    hintTouch: 'Tap the floor to walk. Get close to the “!” to interact.',
+    hintMouse: 'Arrow keys, WASD or click to walk. Get close to the “!” to interact.',
+    arrive: n => `${n} just walked in`,
+    crmH: 'CRM member record',
+    rDays: d => `${d} days ago`, fTimes: n => `${n}× a year`, mAmt: m => `NT$${m} a year`,
+    sizeKnown: (s, age) => age ? `${s} (scanned ${age} days ago)` : s,
+    sizeNone: 'no scan on file',
+    memoH: 'Notes',
+    howGreet: 'How do you greet them?',
+    patienceGone: 'You kept them waiting too long, and their mood dropped.',
+    scanH: 'Scanning…',
+    scanDone: (size, arch) => `Size ${size} · ${arch}`,
+    arch: { high: 'high arch', flat: 'flat feet', normal: 'normal arch', low: 'arch slightly fallen' },
+    contShelf: 'Go to the stockroom',
+    shelfH: 'Stockroom: which box?',
+    needLine: (shoe, size) => `Looking for: <b>${shoe}</b> · size <b>${size}</b>`,
+    took: 'Got it. Take it to the fitting bench.',
+    tryOk: 'A perfect fit!',
+    tryBadSize: 'Wrong size: too tight.',
+    tryBadModel: 'Wrong model: not this one.',
+    tryStale: 'Wrong size. The record is over six months old and their feet have changed. Re-scan first.',
+    refetch: 'Fetch another pair',
+    rescan: 'Take them to re-scan',
+    payH: n => `Ring up ${n}`,
+    price: (shoe, p) => `${shoe}　NT$${p}`,
+    discountNote: ' (20% off)',
+    followH: 'Give them a reason to come back:',
+    follow: { insole3m: 'Insole check reminder in 3 months', call: 'Service call in 2 weeks', rescan6m: 'Book a re-scan in 6 months', coupon: 'A coupon for next time' },
+    followOk: 'Fine, but something else fits better.',
+    followCoupon: 'A discount teaches people to wait for the next coupon, not the next experience.',
+    crmUpd: (m) => `CRM updated: R is now 0 days · F +1 · M +NT$${m}`,
+    segMove: (a, b) => a === b ? `still “${b}”` : `“${a}” → “${b}”`,
+    bye: 'See them out',
+    leftH: n => `${n} left`,
+    nextCust: 'Welcome the next one',
+    closeH: 'Closing time',
+    toReport: 'See the results',
+    seg: { champ: 'Champions', loyal: 'Loyal', keep: 'Shouldn’t lose', promise: 'Promising', attn: 'Need attention', sleep: 'Sleepers', fresh: 'New', warm: 'Warm leads', lost: 'Lost' },
+    shoe: { walk: 'Light walker', arch: 'Arch-support shoe', dress: 'Leather dress shoe', commute: 'Commuter flat', insole: 'Custom insole' },
+    cust: {
+      lin: { name: 'Ms. Lin', say: 'Hi, just seeing if anything new is in.', memo: 'Last bought a commuter flat; added custom insoles three months ago.',
+        opts: { crm: 'Ms. Lin! Your insoles are three months old. Adjust them while you look? The new commuter flat comes in 23.5.', generic: 'Welcome, have a look around.', discount: 'Everything is 20% off today!' },
+        fb: { crm: 'She is pleased you remembered her. Champions want to be recognised, not discounted.', generic: 'She wandered on her own. The CRM knew her size and taste, and you did not use it.', discount: 'She was going to buy anyway. The discount only cost margin.' },
+        followWhy: 'She bought insoles three months ago. They are due for an adjustment: a reason to return.' },
+      wang: { name: 'Wang', say: 'Last time the scan said I have flat feet…', memo: 'Came in 20 days ago for a scan only. Bought nothing.',
+        opts: { report: 'Here is your scan: flat feet, size 26.5. Try an arch-support shoe?', member: 'Would you like to sign up as a member?', sale: 'This one is on sale and very popular.' },
+        fb: { report: 'Last visit’s scan pays off. He feels looked after by a professional.', member: 'He joined when he had his scan. Check the record before you speak.', sale: 'A best-seller may not suit flat feet. His scan is already in the system.' },
+        followWhy: 'His first pair. A call in two weeks to ask how it feels is step 3 of the journey.' },
+      chen: { name: 'Mr. Chen', say: 'My shoes have started to hurt.', memo: 'Regular buyer of leather dress shoes; last scan 200 days ago.',
+        opts: { rescan: 'Mr. Chen, it has been a while! Your last scan was over six months ago. Shall we re-scan first?', stale: 'Still a 26 dress shoe, right? I will grab one.', sale: 'The sale rack is over there, take your time.' },
+        fb: { rescan: '200 days away means old data too. Only a re-scan finds his size today.', stale: 'A poor R means the data is old too. His feet may have changed.', sale: 'A customer you should not lose was left alone. He nearly walked out.' },
+        followWhy: 'It puts him back on a six-monthly scan, so his R never drifts that far again.' },
+      chang: { name: 'Mrs. Chang', say: 'I am just browsing.', memo: 'Four months since her last visit; bought walking shoes before.',
+        opts: { scan: 'Do your feet get tired lately? A free foot scan takes three minutes.', bogo: 'Buy one, get one free on these!', leave: '(Leave her be)' },
+        fb: { scan: 'An experience instead of a pitch, and she leaves fresh scan data.', bogo: 'She takes the deal, but without a scan her size is four months old.', leave: 'She needed attention, got none, and left.' },
+        followWhy: 'For someone who needs attention, reaching out works best.' },
+      wu: { name: 'Ms. Wu', say: 'What is that machine for?', memo: 'Bought once over a year ago. Not seen since.',
+        opts: { scan: 'It maps your feet. Free, three minutes, no need to buy.', coupon: 'Returning members get a big discount. Two pairs?', hardsell: 'This is our newest model. Best deal if you take it today!' },
+        fb: { scan: 'Over a year away. A free experience restarts the relationship and resets her R.', coupon: 'She felt sold to, said thanks and left.', hardsell: 'The hard sell made her want to leave.' },
+        followWhy: 'A re-scan in six months gives her a reason to come back.' }
+    },
+    repKick: 'Closing report', repTitle: 'How your day went',
+    kStars: 'Service score', kSales: 'Sales', kData: 'New scan records', kBook: 'Return visits booked',
+    starsOf: (a, b) => `${a} / ${b}`,
+    leftEarly: 'left early, no record kept',
+    starWhy: ['greeting', 'right pair first time', 'return plan'],
+    repNote: 'Three stars per customer: the right greeting, the right pair first time, and the best reason to come back.',
+    toTalk: 'Discussion', again: 'Work another day', copy: 'Copy results', copied: 'Copied',
+    talkKick: 'Class discussion', talkTitle: 'Talk it over with your team',
+    qs: [
+      ['VIP repeat visits fell year after year. In RFM terms, which letter flashed red first?', 'handout p.33'],
+      ['Which of R, F and M does each journey step (booking, in-store scan, service call, re-scan) improve? Which steps did you use today?', 'handout p.34'],
+      ['Wang only had a scan and bought nothing. Is he an active customer? How much do segments change if R counts purchases only?', 'handout p.36'],
+      ['Mr. Chen’s size was 200 days old. With the POS and CRM connected, how often does the data need refreshing to be useful?', 'handout p.35'],
+      ['Which customer moved furthest on the RFM map today, and which action moved them?', 'handout p.37']
+    ],
+    back2: 'Back to Chapter 2', backHome: 'Back to course home'
+  }
+};
+
+/* ============================================================
+   CUSTOMERS — simulated members, in order of arrival
+   need: what fits; known: what the CRM says before any scan
+   ============================================================ */
+const PRICE = { walk: 2980, arch: 3580, dress: 4680, commute: 3280, insole: 1680 };
+const CUSTOMERS = [
+  { id: 'lin', time: 10 * 60 + 10, color: '#c2457a', r: 12, f: 6, m: 18000, seg: 'champ', known: { size: '23.5', age: 12, arch: 'high' },
+    need: { shoe: 'commute', size: '23.5' }, scanNeeded: false, good: 'crm', opts: ['generic', 'crm', 'discount'], leaveOn: [],
+    shelf: [['commute', '23.0'], ['walk', '23.5'], ['commute', '23.5'], ['arch', '23.5']], best: 'insole3m', poor: ['coupon'] },
+  { id: 'wang', time: 11 * 60 + 40, color: '#2f8f6b', r: 20, f: 1, m: 0, seg: 'fresh', known: { size: '26.5', age: 20, arch: 'flat' },
+    need: { shoe: 'arch', size: '26.5' }, scanNeeded: false, good: 'report', opts: ['member', 'sale', 'report'], leaveOn: [],
+    shelf: [['walk', '26.5'], ['arch', '26.0'], ['dress', '26.5'], ['arch', '26.5']], best: 'call', poor: ['coupon'] },
+  { id: 'chen', time: 13 * 60 + 25, color: '#5b4bb5', r: 200, f: 5, m: 15000, seg: 'keep', known: { size: '26.0', age: 200, arch: 'normal' },
+    scanned: { size: '26.5', arch: 'low' }, need: { shoe: 'dress', size: '26.5' }, scanNeeded: true, good: 'rescan', opts: ['stale', 'rescan', 'sale'], leaveOn: [],
+    shelf: [['dress', '26.0'], ['dress', '26.5'], ['walk', '26.5'], ['dress', '27.0']], best: 'rescan6m', poor: ['coupon'] },
+  { id: 'chang', time: 15 * 60 + 5, color: '#b5651d', r: 120, f: 3, m: 7000, seg: 'attn', known: { size: '24.5', age: 120, arch: 'normal' },
+    scanned: { size: '24.0', arch: 'normal' }, need: { shoe: 'walk', size: '24.0' }, scanNeeded: true, good: 'scan', opts: ['bogo', 'leave', 'scan'], leaveOn: ['leave'],
+    shelf: [['walk', '24.5'], ['walk', '24.0'], ['commute', '24.0'], ['arch', '24.0']], best: 'call', poor: ['coupon'] },
+  { id: 'wu', time: 17 * 60 + 15, color: '#3a7bbf', r: 400, f: 1, m: 2000, seg: 'lost', known: null,
+    scanned: { size: '23.0', arch: 'flat' }, need: { shoe: 'insole', size: '23.0' }, scanNeeded: true, good: 'scan', opts: ['coupon', 'scan', 'hardsell'], leaveOn: ['coupon', 'hardsell'],
+    shelf: [['insole', '23.5'], ['arch', '23.0'], ['insole', '23.0'], ['walk', '23.0']], best: 'rescan6m', poor: ['coupon'] }
+];
+const FOLLOW = ['insole3m', 'call', 'rescan6m', 'coupon'];
+// RFM scoring and the 3 x 3 map (after the chart on handout p.37)
+const rS = d => d <= 90 ? 3 : d <= 180 ? 2 : 1;
+const fS = v => v >= 5 ? 3 : v >= 3 ? 2 : 1;
+const mS = m => m >= 12000 ? 3 : m >= 6000 ? 2 : 1;
+const GRID = [['keep', 'loyal', 'champ'], ['sleep', 'attn', 'promise'], ['lost', 'warm', 'fresh']];
+const VALUE = { champ: 5, loyal: 4, keep: 4, promise: 3, attn: 3, sleep: 2, fresh: 2, warm: 1, lost: 1 };
+const segOf = (r, f, m) => GRID[3 - Math.round((fS(f) + mS(m)) / 2)][rS(r) - 1];
+
+/* ============================================================
+   STORE LAYOUTS — landscape for wide screens, portrait for phones
+   ============================================================ */
+const LAYOUT = {
+  wide: { W: 1000, H: 620, door: [500, 585], scan: [170, 330], bench: [500, 300], stock: [860, 130], pos: [850, 470], wall: [330, 95], browse: [330, 480], start: [760, 520] },
+  tall: { W: 600, H: 900, door: [300, 868], scan: [120, 330], bench: [300, 520], stock: [470, 125], pos: [455, 715], wall: [140, 110], browse: [170, 700], start: [380, 780] }
+};
+// where the customer stands (NEAR) and where you stand (STAND) at each station, relative to it
+const NEAR = { scan: [0, 8], bench: [-30, 6], pos: [-112, 12] };
+const STAND = { scan: [88, 24], bench: [42, 62], pos: [0, -44], stock: [0, 30] };
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const qs = new URLSearchParams(location.search);
+let LANG = qs.get('lang') === 'en' || qs.get('lang') === 'zh' ? qs.get('lang') : null;
+try { LANG = LANG || localStorage.getItem('aso-store.lang'); } catch (e) { /* no storage */ }
+LANG = LANG === 'en' || LANG === 'zh' ? LANG : (/^zh/i.test(navigator.language || 'zh') ? 'zh' : 'en');
+let view = 'intro', slide = 0;
+let G = null;            // the day in progress
+let L = LAYOUT.wide, layoutName = 'wide', scale = 1;
+const keys = new Set();
+let raf = 0, lastT = 0;
+const t = () => T[LANG];
+const $ = id => document.getElementById(id);
+const nf = n => Math.round(n).toLocaleString('en-US');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const clockText = m => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+const SPEED = 330, REACH = 72, PATIENCE = 35;
+
+function newDay() {
+  return { i: -1, step: 'idle', clock: 10 * 60, me: { x: 0, y: 0, tx: null, ty: null, carry: null }, c: null, res: [], data: 0, sales: 0, panel: null, busy: false, patience: PATIENCE, greeted: false };
+}
+
+/* ============================================================
+   FIGURES
+   ============================================================ */
+function figure(color, apron) {
+  return `<svg viewBox="0 0 56 62" aria-hidden="true">
+    <ellipse cx="28" cy="58" rx="16" ry="4" fill="rgba(0,0,0,.18)"/>
+    <rect x="13" y="26" width="30" height="30" rx="13" fill="${color}"/>
+    ${apron ? '<rect x="19" y="32" width="18" height="22" rx="4" fill="#102a56"/><circle cx="28" cy="38" r="2.4" fill="#f2b705"/>' : ''}
+    <circle cx="28" cy="17" r="12" fill="#f3d2b3"/>
+    <path d="M16 15c1-8 7-12 12-12s11 4 12 12c-4-3-8-4-12-4s-8 1-12 4z" fill="#3b2a20"/>
+    <circle cx="24" cy="18" r="1.5" fill="#1b2433"/><circle cx="32" cy="18" r="1.5" fill="#1b2433"/>
+  </svg>`;
+}
+const FOOT_SVG = (heat) => `<svg viewBox="0 0 110 200" aria-hidden="true">
+  <defs><radialGradient id="hh" r=".5"><stop offset="0" stop-color="#e8452c"/><stop offset=".45" stop-color="#ff9a4d"/><stop offset=".85" stop-color="#ffd27a"/><stop offset="1" stop-color="#ffd27a" stop-opacity="0"/></radialGradient></defs>
+  <rect width="110" height="200" rx="14" fill="#102a56"/>
+  <path d="M58 14c18 0 30 18 31 42 1 20-6 34-8 54-2 18 6 32 4 50-2 20-14 28-29 28s-27-10-27-29c0-16 6-27 5-46-1-21-12-32-11-54C24 34 40 14 58 14z" fill="#1d3f78"/>
+  <ellipse cx="58" cy="58" rx="27" ry="24" fill="url(#hh)"/><ellipse cx="56" cy="160" rx="22" ry="21" fill="url(#hh)"/>
+  ${heat === 'flat' || heat === 'low' ? '<ellipse cx="50" cy="110" rx="16" ry="26" fill="url(#hh)" opacity=".9"/>' : '<ellipse cx="76" cy="108" rx="9" ry="20" fill="url(#hh)" opacity=".7"/>'}
+  <rect class="scanline" x="8" y="12" width="94" height="4" rx="2" fill="#7fe3ff" opacity=".8"/>
+</svg>`;
+
+/* ============================================================
+   INTRO, REPORT, DISCUSSION PAGES
+   ============================================================ */
+function vIntro() {
+  const X = t();
+  if (slide < 0) slide = 0;
+  if (slide === 0) return `<div class="page"><div class="intro-hero"><div><p class="kicker">${X.kicker}</p><h1 class="title" tabindex="-1">${X.title}</h1><p class="lead">${X.lead}</p>
+      <div class="row" style="margin-top:18px"><button type="button" class="btn" data-act="slide" data-v="1">${X.begin}</button><button type="button" class="btn ghost" data-act="ctrl">${X.skip}</button></div></div>
+      <div>${figure('#e7eef9', true)}</div></div><p class="note">${X.note}</p></div>`;
+  const n = X.slides.length;
+  if (slide <= n) {
+    const s = X.slides[slide - 1];
+    let body = '';
+    if (s.facts) body = `<div class="facts">${s.facts.map(f => `<div class="fact"><b>${f[0]}</b><span>${f[1]}</span></div>`).join('')}</div>`;
+    if (s.journey) body = `<ol class="journey">${s.journey.map(j => `<li>${j}</li>`).join('')}</ol>`;
+    if (s.rfm) body = `<div class="rfm3">${s.rfm.map((r, i) => `<div style="background:${['#1f5fb8', '#c2457a', '#127a3d'][i]}"><b>${r[0]}</b>${r[1]}<br><span>${r[2]}</span></div>`).join('')}</div>`;
+    if (s.task) body = `<div class="row" style="gap:6px">${CUSTOMERS.map(c => `<span style="display:inline-flex;align-items:center;gap:6px;background:var(--bg);border-radius:999px;padding:4px 10px 4px 4px;font-size:14px"><span style="width:26px;height:26px;border-radius:50%;background:${c.color};display:inline-block"></span>${X.cust[c.id].name}</span>`).join('')}</div>`;
+    return `<div class="page"><p class="kicker">${X.kicker}</p><div class="card slide" style="margin-top:10px"><h2 tabindex="-1">${s.h}</h2>${body}<p style="margin-top:12px;color:var(--ink2)">${s.p}</p></div>
+      <div class="pager"><button type="button" class="btn ghost" data-act="slide" data-v="${slide - 1}">${X.prev}</button>
+      <div class="pdots">${X.slides.map((_, i) => `<i class="${i === slide - 1 ? 'on' : ''}"></i>`).join('')}</div>
+      <button type="button" class="btn" data-act="${slide === n ? 'ctrl' : 'slide'}" data-v="${slide + 1}">${X.next}</button></div><p class="note">${X.note}</p></div>`;
+  }
+  return '';
+}
+function vControls() {
+  const X = t(), rows = TOUCH ? X.ctrlTouch : X.ctrlMouse;
+  return `<div class="page"><p class="kicker">${X.kicker}</p><div class="card" style="margin-top:10px"><h2 tabindex="-1" style="font-size:20px;margin-bottom:10px">${X.ctrlH}</h2>
+    <div class="ctrl">${rows.map(r => `<div><b>${r[0]}</b><br>${r[1]}</div>`).join('')}</div></div>
+    <div class="row" style="margin-top:16px;justify-content:flex-end"><button type="button" class="btn" data-act="open">${X.open}</button></div></div>`;
+}
+function stars(n, max) { return `<span class="stars" aria-label="${n}/${max}">${'★'.repeat(n)}<s>${'★'.repeat(max - n)}</s></span>`; }
+function mini(from, to) {
+  let h = '';
+  for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) {
+    const s = GRID[r][c];
+    h += `<i class="${s === to ? 'on' : ''} ${from && s === from && from !== to ? 'from' : ''}" style="background:var(--c${VALUE[s]})" title="${esc(t().seg[s])}"></i>`;
+  }
+  return `<div class="mini" role="img" aria-label="${esc(from && from !== to ? t().segMove(t().seg[from], t().seg[to]) : t().seg[to])}">${h}</div>`;
+}
+function totals() {
+  const r = G.res, starsN = r.reduce((s, x) => s + x.stars.reduce((a, b) => a + b, 0), 0);
+  return { stars: starsN, max: CUSTOMERS.length * 3, sales: G.sales, data: G.data, booked: r.filter(x => x.follow && x.follow !== 'coupon').length };
+}
+function vReport() {
+  const X = t(), k = totals();
+  const rows = G.res.map(x => {
+    const c = CUSTOMERS.find(y => y.id === x.id);
+    return `<li><span class="who">${X.cust[x.id].name}</span>${stars(x.stars.reduce((a, b) => a + b, 0), 3)}
+      <div class="mv">${mini(c.seg, x.after)}<span>${x.left ? X.leftEarly : X.segMove(X.seg[c.seg], X.seg[x.after])}</span></div></li>`;
+  }).join('');
+  return `<div class="page"><p class="kicker">${X.repKick}</p><h1 class="title" tabindex="-1">${X.repTitle}</h1>
+    <div class="kpis" style="margin-top:12px">
+      <div class="kpi"><span>${X.kStars}</span><b>${X.starsOf(k.stars, k.max)}</b></div>
+      <div class="kpi"><span>${X.kSales}</span><b>NT$${nf(k.sales)}</b></div>
+      <div class="kpi"><span>${X.kData}</span><b>${k.data}</b></div>
+      <div class="kpi"><span>${X.kBook}</span><b>${k.booked}</b></div>
+    </div>
+    <div class="card" style="margin-top:12px"><ul class="rep">${rows}</ul><p class="small" style="margin-top:8px">${X.repNote}</p></div>
+    <div class="row" style="margin-top:16px"><button type="button" class="btn" data-act="talk">${X.toTalk}</button><button type="button" class="btn ghost" data-act="copy">${X.copy}</button><button type="button" class="btn ghost" data-act="again">${X.again}</button><span class="small" id="copymsg" role="status"></span></div></div>`;
+}
+function vTalk() {
+  const X = t();
+  return `<div class="page"><p class="kicker">${X.talkKick}</p><h1 class="title" tabindex="-1">${X.talkTitle}</h1>
+    <div class="card" style="margin-top:12px"><ol class="qs">${X.qs.map(q => `<li>${q[0]}<small>${q[1]}</small></li>`).join('')}</ol></div>
+    <div class="row" style="margin-top:16px"><button type="button" class="btn" data-act="again">${X.again}</button><button type="button" class="btn ghost" data-act="report">${X.repKick}</button>
+    <a class="btn ghost" href="../../index.html">${X.back2}</a></div>
+    <p class="note"><a href="../../../index.html">${X.backHome}</a></p></div>`;
+}
+
+/* ============================================================
+   STORE DRAWING
+   ============================================================ */
+function storeSvg() {
+  const X = t(), W = L.W, H = L.H;
+  const lab = (x, y, s, anchor) => `<text x="${x}" y="${y}" text-anchor="${anchor || 'middle'}" font-size="15" font-weight="700" fill="#4a3a26">${esc(s)}</text>`;
+  let planks = ''; for (let y = 0; y < H; y += 34) planks += `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="#dcc6a4" stroke-width="1"/>`;
+  const [sx, sy] = L.scan, [bx, by] = L.bench, [kx, ky] = L.stock, [px, py] = L.pos, [wx, wy] = L.wall, [dx, dy] = L.door;
+  return `<svg class="floor" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true">
+    <rect width="${W}" height="${H}" fill="var(--floor)"/>${planks}
+    <rect x="0" y="0" width="${W}" height="${H}" fill="none" stroke="var(--wall)" stroke-width="16"/>
+    <!-- stockroom -->
+    <rect x="${kx - 120}" y="${ky - 115}" width="240" height="190" rx="10" fill="#d8c8ae" stroke="#bda57f" stroke-width="3"/>
+    ${[0, 1, 2].map(i => `<rect x="${kx - 100}" y="${ky - 98 + i * 34}" width="200" height="24" rx="4" fill="#9a7a50"/>${[0, 1, 2, 3, 4].map(j => `<rect x="${kx - 94 + j * 39}" y="${ky - 95 + i * 34}" width="32" height="18" rx="2" fill="#c98a3b"/>`).join('')}`).join('')}
+    ${lab(kx - 70, ky + 64, X.st.stock)}
+    <!-- new arrivals wall -->
+    <rect x="${wx - 110}" y="${wy - 70}" width="220" height="70" rx="8" fill="#f6efe3" stroke="#bda57f" stroke-width="3"/>
+    ${[0, 1, 2, 3].map(j => `<path d="M${wx - 92 + j * 52} ${wy - 26}q10-14 30-8l8 6h-38z" fill="${['#c2457a', '#3a7bbf', '#2f8f6b', '#b5651d'][j]}"/>`).join('')}
+    ${lab(wx, wy + 20, X.st.wall)}
+    <!-- foot scanner -->
+    <rect x="${sx - 55}" y="${sy - 70}" width="110" height="130" rx="14" fill="#102a56"/>
+    <rect x="${sx - 38}" y="${sy - 52}" width="76" height="68" rx="8" fill="#1d3f78"/>
+    <ellipse cx="${sx - 14}" cy="${sy - 18}" rx="9" ry="22" fill="#ff9a4d" opacity=".85"/><ellipse cx="${sx + 14}" cy="${sy - 18}" rx="9" ry="22" fill="#ff9a4d" opacity=".85"/>
+    <rect x="${sx - 30}" y="${sy + 26}" width="60" height="16" rx="4" fill="#7fe3ff" opacity=".7"/>
+    ${lab(sx, sy + 84, X.st.scan)}
+    <!-- fitting bench -->
+    <rect x="${bx - 95}" y="${by - 26}" width="190" height="52" rx="22" fill="#8a5a3b"/><rect x="${bx - 85}" y="${by - 18}" width="170" height="36" rx="16" fill="#b07a52"/>
+    <rect x="${bx - 30}" y="${by + 40}" width="60" height="30" rx="6" fill="#e7dccb" stroke="#bda57f"/>
+    ${lab(bx, by + 98, X.st.bench)}
+    <!-- checkout -->
+    <rect x="${px - 80}" y="${py - 34}" width="160" height="68" rx="10" fill="#f6efe3" stroke="#bda57f" stroke-width="3"/>
+    <rect x="${px - 20}" y="${py - 26}" width="46" height="30" rx="4" fill="#1b2433"/><rect x="${px - 16}" y="${py - 22}" width="38" height="20" rx="2" fill="#7fe3ff"/>
+    ${lab(px, py + 56, X.st.pos)}
+    <!-- entrance -->
+    <rect x="${dx - 70}" y="${H - 10}" width="140" height="10" fill="#f6efe3"/>
+    <rect x="${dx - 60}" y="${dy - 26}" width="120" height="30" rx="6" fill="#d7c39f" opacity=".7"/>
+    ${lab(dx, dy - 6, X.st.door)}
+  </svg>`;
+}
+function entityHtml() {
+  const X = t();
+  return `<div class="ent" id="eMe"><div class="person me">${figure('#e7eef9', true)}<span class="tag">${X.me}</span><span class="carry hide" id="carry"></span></div></div>
+    <div class="ent hide" id="eC"><div class="person"><span class="patience hide" id="pat"><u></u></span><span id="cFig"></span><span class="tag" id="cTag"></span></div></div>
+    <div class="marker hide" id="mk"><div class="ring"></div><div class="bang">!</div></div>`;
+}
+
+/* ============================================================
+   LAYOUT — choose landscape or portrait, scale the stage to fit
+   ============================================================ */
+function chooseLayout() {
+  const w = innerWidth, h = innerHeight;
+  return (w >= 900 && w >= h * 1.05) ? 'wide' : 'tall';
+}
+function applyLayout(keepPos) {
+  const prev = L, name = chooseLayout();
+  const game = $('game');
+  game.classList.toggle('wide', name === 'wide'); game.classList.toggle('tall', name === 'tall');
+  if (G && keepPos && prev !== LAYOUT[name]) {   // carry positions across layouts by station
+    G.me.x = G.me.x / prev.W * LAYOUT[name].W; G.me.y = G.me.y / prev.H * LAYOUT[name].H;
+    if (G.c) { G.c.x = G.c.x / prev.W * LAYOUT[name].W; G.c.y = G.c.y / prev.H * LAYOUT[name].H; }
+    G.me.tx = null; G.me.follow = false;
+  }
+  layoutName = name; L = LAYOUT[name];
+  const stage = $('stage');
+  stage.style.width = L.W + 'px'; stage.style.height = L.H + 'px';
+  stage.innerHTML = storeSvg() + entityHtml();
+  if (G && G.me.carry) $('carry').classList.remove('hide');
+  if (G && G.c) { $('eC').classList.remove('hide'); $('cFig').innerHTML = figure(G.c.color); $('cTag').textContent = t().cust[G.c.id].name; }
+  fit();
+  if (G) { G.c && G.c.dest && (G.c.tx = spot(G.c.dest)[0], G.c.ty = spot(G.c.dest)[1]); drawEntities(); updateMarker(); }
+}
+let idleH = 34;
+function fit() {
+  const wrap = $('wrap'), r = wrap.getBoundingClientRect(), side = $('side');
+  let avH = r.height;
+  if (layoutName === 'tall') {
+    if (side.classList.contains('idle')) idleH = side.getBoundingClientRect().height || idleH;
+    avH = Math.max(200, innerHeight - r.top - idleH);
+  }
+  scale = Math.min(r.width / L.W, avH / L.H);
+  const ox = (r.width - L.W * scale) / 2;
+  let oy = Math.max(0, (avH - L.H * scale) / 2);
+  // phones: when the bottom sheet is up, slide the store so the action stays in view
+  if (layoutName === 'tall' && G && G.panel) {
+    const vis = side.getBoundingClientRect().top - r.top;
+    const pts = [[G.me.x, G.me.y]]; if (G.c) pts.push([G.c.x, G.c.y]);
+    const fy = pts.reduce((a, q) => a + q[1], 0) / pts.length - 30;
+    if (vis < L.H * scale) oy = Math.min(0, Math.max(vis - L.H * scale, vis / 2 - fy * scale));
+  }
+  const st = $('stage');
+  st.style.transform = `translate(${ox}px, ${oy}px) scale(${scale})`;
+  st.dataset.ox = ox; st.dataset.oy = oy;
+}
+function spot(name) {
+  if (name === 'browse' || name === 'door' || name === 'start') return L[name];
+  const [x, y] = L[name], d = NEAR[name] || [0, 0];
+  return [x + d[0], y + d[1]];
+}
+
+/* ============================================================
+   THE DAY
+   ============================================================ */
+function openStore() {
+  G = newDay(); view = 'game';
+  render();
+  G.me.x = L.start[0]; G.me.y = L.start[1];
+  drawEntities();
+  nextCustomer();
+  loop();
+}
+function nextCustomer() {
+  G.i++;
+  if (G.i >= CUSTOMERS.length) { G.step = 'closed'; G.c = null; $('eC').classList.add('hide'); G.clock = 20 * 60; panel(); updateMarker(); return; }
+  const c = CUSTOMERS[G.i];
+  G.c = { id: c.id, color: c.color, x: L.door[0], y: L.door[1], dest: 'browse', tx: L.browse[0], ty: L.browse[1], def: c };
+  G.clock = c.time; G.step = 'greet'; G.patience = PATIENCE; G.greeted = false; G.cur = { id: c.id, stars: [0, 0, 0], tries: 0, scanned: false, approach: null, pick: null, follow: null, left: false, know: c.known ? Object.assign({}, c.known) : null };
+  $('eC').classList.remove('hide'); $('cFig').innerHTML = figure(c.color); $('cTag').textContent = t().cust[c.id].name;
+  toast(t().arrive(t().cust[c.id].name));
+  panel(); updateMarker(); drawEntities();
+}
+function objectivePos() {
+  if (!G || !G.c) return null;
+  if (G.step === 'greet') return [G.c.x, G.c.y];
+  const st = { scan: 'scan', fetch: 'stock', try: 'bench', pay: 'pos' }[G.step];
+  return st ? [L[st][0] + STAND[st][0], L[st][1] + STAND[st][1]] : null;
+}
+function objectiveText() {
+  const X = t();
+  if (!G) return '';
+  if (G.step === 'closed') return X.closeH;
+  if (!G.c) return X.objWait;
+  const nm = X.cust[G.c.id].name, d = G.c.def;
+  if (G.step === 'greet') return X.objGreet(nm);
+  if (G.step === 'scan') return X.objScan(nm);
+  if (G.step === 'fetch') { const k = G.cur.know; return X.objFetch(X.shoe[d.need.shoe], k ? k.size : '?'); }
+  if (G.step === 'try') return X.objTry(nm);
+  if (G.step === 'pay') return X.objPay(nm);
+  return X.objWait;
+}
+function goTarget() {
+  const p = objectivePos(); if (!p) return null;
+  return G.step === 'greet' ? [p[0] + (p[0] > L.W / 2 ? -46 : 46), p[1] + 12] : p;
+}
+function startGo() { if (!G || G.panel) return; const p = goTarget(); if (p) { G.me.follow = true; G.me.tx = p[0]; G.me.ty = p[1]; keys.clear(); } }
+function moveCustomerTo(dest) { G.c.dest = dest; const p = spot(dest); G.c.tx = p[0]; G.c.ty = p[1]; }
+function setStep(step) {
+  G.step = step; G.panel = null; G.clock += 10;
+  if (step === 'scan') moveCustomerTo('scan');
+  if (step === 'try') moveCustomerTo('bench');
+  if (step === 'pay') moveCustomerTo('pos');
+  panel(); updateMarker();
+}
+function arrive() {
+  if (!G || G.panel || !G.c) return;
+  const p = objectivePos(); if (!p) return;
+  if (Math.hypot(G.me.x - p[0], G.me.y - p[1]) > REACH) return;
+  // customers must have walked over too
+  if (G.step !== 'greet' && G.step !== 'fetch' && Math.hypot(G.c.x - G.c.tx, G.c.y - G.c.ty) > 8) return;
+  G.me.tx = null; G.me.follow = false; keys.clear();
+  G.panel = G.step; panel(); updateMarker();
+}
+
+/* ---------- step actions ---------- */
+function chooseApproach(k) {
+  const c = G.c.def, cur = G.cur;
+  if (cur.approach) return;
+  cur.approach = k;
+  const good = k === c.good;
+  cur.stars[0] = good && G.patience > 0 ? 1 : 0;
+  if (c.leaveOn.includes(k)) { cur.left = true; }
+  else if (good && c.scanNeeded) { cur.nextStep = 'scan'; }
+  else { cur.nextStep = 'fetch'; }
+  panel(true);
+}
+function afterApproach() {
+  const cur = G.cur;
+  if (cur.left) { customerLeaves(); return; }
+  setStep(cur.nextStep);
+}
+function doScan() {
+  const c = G.c.def; G.cur.scanned = true; G.data++;
+  G.cur.know = { size: c.scanned ? c.scanned.size : c.known.size, age: 0, arch: c.scanned ? c.scanned.arch : c.known.arch };
+  G.panel = 'scanning'; panel();
+  setTimeout(() => { if (G && G.panel === 'scanning') { G.panel = 'scanned'; panel(); } }, matchMedia('(prefers-reduced-motion:reduce)').matches ? 50 : 1300);
+}
+function pickBox(i) {
+  const c = G.c.def; G.cur.pick = c.shelf[i]; G.me.carry = c.shelf[i]; G.cur.tries++;
+  $('carry').classList.remove('hide');
+  setStep('try');
+}
+function tryOn() {
+  const c = G.c.def, p = G.cur.pick, ok = p[0] === c.need.shoe && p[1] === c.need.size;
+  G.me.carry = null; $('carry').classList.add('hide');
+  if (ok) { if (G.cur.tries === 1) G.cur.stars[1] = 1; G.cur.tryResult = 'ok'; }
+  else if (c.scanNeeded && !G.cur.scanned) G.cur.tryResult = 'stale';
+  else G.cur.tryResult = p[0] !== c.need.shoe ? 'model' : 'size';
+  G.panel = 'tried'; panel();
+}
+function afterTry() {
+  const r = G.cur.tryResult;
+  if (r === 'ok') setStep('pay');
+  else if (r === 'stale') setStep('scan');
+  else setStep('fetch');
+}
+function chooseFollow(k) {
+  const c = G.c.def, cur = G.cur;
+  if (cur.follow) return;
+  cur.follow = k; cur.stars[2] = k === c.best ? 1 : 0;
+  const price = Math.round(PRICE[c.need.shoe] * (cur.approach === 'discount' ? 0.8 : 1));
+  cur.price = price; G.sales += price;
+  cur.after = segOf(0, c.f + 1, c.m + price);
+  panel(true);
+}
+function customerLeaves() {
+  const c = G.c.def, cur = G.cur;
+  cur.after = cur.after || (cur.scanned ? segOf(0, c.f + 1, c.m) : c.seg);
+  G.res.push(cur);
+  moveCustomerTo('door');
+  G.step = 'leaving'; G.panel = null; panel(); updateMarker();
+}
+function customerGone() {
+  $('eC').classList.add('hide'); G.c = null; G.step = 'between';
+  panel(); updateMarker();
+  setTimeout(() => { if (G && view === 'game' && G.step === 'between') nextCustomer(); }, 900);
+}
+
+/* ============================================================
+   SIDE PANEL / BOTTOM SHEET
+   ============================================================ */
+function crmCard() {
+  const X = t(), c = G.c.def, k = G.cur.know, cx = X.cust[c.id];
+  return `<div class="crm"><div class="crm-h"><b>${cx.name}</b><span class="seglabel v${VALUE[c.seg]}" style="background:var(--c${VALUE[c.seg]})">${X.seg[c.seg]}</span><span class="small">${X.crmH}</span></div>
+    <div class="crm-grid"><dl><dt>R</dt><dd>${X.rDays(c.r)}</dd><dt>F</dt><dd>${X.fTimes(c.f)}</dd><dt>M</dt><dd>${X.mAmt(nf(c.m))}</dd>
+      <dt>${LANG === 'zh' ? '尺寸' : 'Size'}</dt><dd>${k ? X.sizeKnown(k.size, k.age) : X.sizeNone}</dd></dl>${mini(null, c.seg)}</div>
+    <p class="memo"><b>${X.memoH}：</b>${cx.memo}</p></div>`;
+}
+function panel(toEnd) {
+  const X = t(), side = $('side');
+  if (view !== 'game' || !G) return;
+  $('clock').textContent = clockText(G.clock);
+  const obj = objectiveText(), canGo = !!objectivePos() && !G.panel;
+  $('hudObj').innerHTML = `${esc(obj)}<small>${TOUCH ? X.hintTouch : X.hintMouse}</small>`;
+  $('hudGo').textContent = X.goto; $('hudGo').disabled = !canGo;
+  let body = '';
+  const P = G.panel, c = G.c ? G.c.def : null, cx = c ? X.cust[c.id] : null;
+  if (G.step === 'closed') {
+    body = `<h2 style="font-size:20px">${X.closeH}</h2><button type="button" class="btn" data-act="report">${X.toReport}</button>`;
+  } else if (P === 'greet') {
+    const cur = G.cur;
+    body = crmCard() + `<div class="say"><b>${cx.name}</b>${cx.say}</div>${G.patience <= 0 && !cur.approach ? `<div class="fb bad">${X.patienceGone}</div>` : ''}<p style="font-weight:800">${X.howGreet}</p>
+      <div class="opts">${c.opts.map(k => `<button type="button" class="opt ${cur.approach === k ? 'picked ' + (k === c.good ? 'good' : 'bad') : ''}" data-act="appr" data-v="${k}" ${cur.approach ? 'disabled' : ''}>${cx.opts[k]}</button>`).join('')}</div>
+      ${cur.approach ? `<div class="fb ${cur.approach === c.good ? 'good' : 'bad'}">${cx.fb[cur.approach]}</div><button type="button" class="btn" data-act="afterAppr">${cur.left ? X.bye : X.next}</button>` : ''}`;
+  } else if (P === 'scan') {
+    body = crmCard() + `<button type="button" class="btn" data-act="scan">${X.st.scan}</button>`;
+    setTimeout(() => { if (G && G.panel === 'scan') doScan(); }, 10);
+  } else if (P === 'scanning' || P === 'scanned') {
+    const k = G.cur.know;
+    body = `<div class="scanfx">${FOOT_SVG(k.arch)}<div><p style="font-weight:800">${P === 'scanning' ? X.scanH : X.scanDone(k.size, X.arch[k.arch])}</p>${P === 'scanned' ? `<p class="small" style="margin-top:6px">${cx.name}</p>` : ''}</div></div>
+      ${P === 'scanned' ? `<button type="button" class="btn" data-act="toFetch">${X.contShelf}</button>` : ''}`;
+  } else if (P === 'fetch') {
+    const k = G.cur.know;
+    body = `<h2 style="font-size:18px">${X.shelfH}</h2><div class="need">${X.needLine(X.shoe[c.need.shoe], k ? k.size : '?')}</div>
+      <div class="shelf">${c.shelf.map((b, i) => `<button type="button" class="box" data-act="box" data-v="${i}"><b>${X.shoe[b[0]]}</b><span>${b[1]}</span></button>`).join('')}</div>`;
+  } else if (P === 'try') {
+    body = `<div class="say"><b>${cx.name}</b>…</div><button type="button" class="btn" data-act="tryon">${X.st.bench}</button>`;
+    setTimeout(() => { if (G && G.panel === 'try') tryOn(); }, 10);
+  } else if (P === 'tried') {
+    const r = G.cur.tryResult;
+    const msg = { ok: X.tryOk, size: X.tryBadSize, model: X.tryBadModel, stale: X.tryStale }[r];
+    body = `<div class="fb ${r === 'ok' ? 'good' : 'bad'}">${msg}</div><button type="button" class="btn" data-act="afterTry">${r === 'ok' ? X.objPay(cx.name) : r === 'stale' ? X.rescan : X.refetch}</button>`;
+  } else if (P === 'pay') {
+    const cur = G.cur;
+    const price = Math.round(PRICE[c.need.shoe] * (cur.approach === 'discount' ? 0.8 : 1));
+    body = `<h2 style="font-size:18px">${X.payH(cx.name)}</h2><p style="font-variant-numeric:tabular-nums">${X.price(X.shoe[c.need.shoe], nf(price))}${cur.approach === 'discount' ? X.discountNote : ''}</p>
+      <p style="font-weight:800">${X.followH}</p>
+      <div class="opts">${FOLLOW.map(k => `<button type="button" class="opt ${cur.follow === k ? 'picked ' + (k === c.best ? 'good' : k === 'coupon' ? 'bad' : 'ok') : ''}" data-act="follow" data-v="${k}" ${cur.follow ? 'disabled' : ''}>${X.follow[k]}</button>`).join('')}</div>
+      ${cur.follow ? `<div class="fb ${cur.follow === c.best ? 'good' : cur.follow === 'coupon' ? 'bad' : 'ok'}">${cur.follow === c.best ? cx.followWhy : cur.follow === 'coupon' ? X.followCoupon : X.followOk}</div>
+        <div class="crm" style="display:flex;gap:12px;align-items:center">${mini(c.seg, cur.after)}<div><p style="font-size:14px">${X.crmUpd(nf(cur.price))}</p><p style="font-weight:800">${X.segMove(X.seg[c.seg], X.seg[cur.after])}</p></div></div>
+        <button type="button" class="btn" data-act="bye">${X.bye}</button>` : ''}`;
+  } else if (G.c && G.step === 'greet') {
+    body = crmCard();
+  } else if (G.c && G.step !== 'leaving') {
+    body = crmCard();
+  }
+  const idle = !P && G.step !== 'closed';
+  side.classList.toggle('idle', idle);
+  side.innerHTML = `<div class="grab"></div><div class="objbox"><div class="obj">${esc(obj)}</div><p class="ctl-hint">${TOUCH ? X.hintTouch : X.hintMouse}</p><button type="button" class="goBtn" data-act="go" ${canGo ? '' : 'disabled'}>${X.goto}</button></div><div class="sidebody stack">${body}</div>`;
+  if (toEnd) requestAnimationFrame(() => { const last = side.querySelector('.sidebody > :last-child'); if (last) last.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); });
+  if (layoutName === 'tall') requestAnimationFrame(fit);
+}
+function toast(msg) {
+  const el = document.createElement('div'); el.className = 'toast'; el.textContent = msg; el.setAttribute('role', 'status');
+  document.body.appendChild(el); setTimeout(() => el.remove(), 2200);
+}
+
+/* ============================================================
+   MOVEMENT LOOP
+   ============================================================ */
+function drawEntities() {
+  if (!G) return;
+  const me = $('eMe'); if (me) me.style.transform = `translate(${G.me.x}px, ${G.me.y}px)`;
+  const ce = $('eC'); if (ce && G.c) ce.style.transform = `translate(${G.c.x}px, ${G.c.y}px)`;
+  const pat = $('pat');
+  if (pat) {
+    const show = G.c && G.step === 'greet' && !G.cur.approach;
+    pat.classList.toggle('hide', !show);
+    if (show) { const f = Math.max(0, G.patience / PATIENCE); pat.firstChild.style.width = (f * 100) + '%'; pat.classList.toggle('low', f < 0.35); }
+  }
+}
+function updateMarker() {
+  const mk = $('mk'); if (!mk) return;
+  const p = objectivePos();
+  if (!p || G.panel) { mk.classList.add('hide'); return; }
+  mk.classList.remove('hide');
+  mk.style.transform = `translate(${p[0]}px, ${p[1] - (G.step === 'greet' ? 40 : 30)}px)`;
+}
+function step(dt) {
+  if (!G) return;
+  // keyboard
+  if (!G.panel && keys.size) {
+    let vx = 0, vy = 0;
+    if (keys.has('left')) vx -= 1; if (keys.has('right')) vx += 1; if (keys.has('up')) vy -= 1; if (keys.has('down')) vy += 1;
+    const n = Math.hypot(vx, vy) || 1;
+    G.me.x += vx / n * SPEED * dt; G.me.y += vy / n * SPEED * dt; G.me.tx = null;
+  } else if (G.me.tx != null) {
+    if (G.me.follow && !G.panel) { const p = goTarget(); if (p) { G.me.tx = p[0]; G.me.ty = p[1]; } }
+    const dx = G.me.tx - G.me.x, dy = G.me.ty - G.me.y, d = Math.hypot(dx, dy);
+    if (d < 4) { G.me.tx = null; } else { const s = Math.min(d, SPEED * dt); G.me.x += dx / d * s; G.me.y += dy / d * s; }
+  }
+  G.me.x = Math.max(24, Math.min(L.W - 24, G.me.x)); G.me.y = Math.max(70, Math.min(L.H - 14, G.me.y));
+  // customer
+  if (G.c && G.c.tx != null) {
+    const dx = G.c.tx - G.c.x, dy = G.c.ty - G.c.y, d = Math.hypot(dx, dy);
+    if (d > 2) { const s = Math.min(d, SPEED * 0.75 * dt); G.c.x += dx / d * s; G.c.y += dy / d * s; }
+    else if (G.step === 'leaving') { customerGone(); }
+  }
+  if (G.c && G.step === 'greet' && !G.cur.approach && !G.panel) G.patience = Math.max(0, G.patience - dt);
+  if (G.marker !== G.step) { G.marker = G.step; updateMarker(); }
+  if (G.step === 'greet' && !G.panel) updateMarker();
+  drawEntities();
+  arrive();
+}
+function loop() {
+  cancelAnimationFrame(raf);
+  lastT = performance.now();
+  const tick = now => { const dt = Math.min(0.05, (now - lastT) / 1000); lastT = now; if (view === 'game') { step(dt); raf = requestAnimationFrame(tick); } };
+  raf = requestAnimationFrame(tick);
+}
+
+/* ============================================================
+   RENDER + INPUT
+   ============================================================ */
+function render() {
+  const X = t();
+  document.documentElement.lang = LANG === 'zh' ? 'zh-Hant' : 'en';
+  document.title = X.app; $('appname').textContent = X.app;
+  document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === LANG)));
+  const inGame = view === 'game';
+  $('game').classList.toggle('hide', !inGame); $('page').classList.toggle('hide', inGame); $('clock').classList.toggle('hide', !inGame);
+  if (inGame) { applyLayout(true); panel(); }
+  else {
+    document.querySelectorAll('.toast').forEach(el => el.remove());
+    $('page').innerHTML = view === 'intro' ? vIntro() : view === 'ctrl' ? vControls() : view === 'report' ? vReport() : vTalk();
+    window.scrollTo(0, 0);
+    const h = document.querySelector('#page h1, #page h2'); if (h) h.focus({ preventScroll: true });
+  }
+}
+function summary() {
+  const X = t(), k = totals();
+  const lines = [`${X.app}`, `${X.kStars} ${X.starsOf(k.stars, k.max)} | ${X.kSales} NT$${nf(k.sales)} | ${X.kData} ${k.data} | ${X.kBook} ${k.booked}`];
+  for (const x of G.res) { const c = CUSTOMERS.find(y => y.id === x.id); lines.push(`${X.cust[x.id].name}: ${'★'.repeat(x.stars.reduce((a, b) => a + b, 0))}${'☆'.repeat(3 - x.stars.reduce((a, b) => a + b, 0))} ${x.left ? X.leftEarly : X.segMove(X.seg[c.seg], X.seg[x.after])}`); }
+  return lines.join('\n');
+}
+document.addEventListener('click', e => {
+  const lb = e.target.closest('[data-lang]');
+  if (lb) { LANG = lb.dataset.lang; try { localStorage.setItem('aso-store.lang', LANG); } catch (er) { /* no storage */ } render(); return; }
+  const el = e.target.closest('[data-act]'); if (!el || el.disabled) return;
+  const a = el.dataset.act, v = el.dataset.v;
+  if (a === 'slide') { slide = +v; view = 'intro'; render(); return; }
+  if (a === 'ctrl') { view = 'ctrl'; render(); return; }
+  if (a === 'open') { openStore(); return; }
+  if (a === 'report') { view = 'report'; render(); return; }
+  if (a === 'talk') { view = 'talk'; render(); return; }
+  if (a === 'again') { G = null; view = 'ctrl'; render(); return; }
+  if (a === 'copy') { const m = $('copymsg'); (navigator.clipboard ? navigator.clipboard.writeText(summary()) : Promise.reject()).then(() => { m.textContent = t().copied; }, () => { m.textContent = summary(); }); return; }
+  if (!G) return;
+  if (a === 'go') { startGo(); return; }
+  if (a === 'appr') return chooseApproach(v);
+  if (a === 'afterAppr') return afterApproach();
+  if (a === 'scan') return doScan();
+  if (a === 'toFetch') return setStep('fetch');
+  if (a === 'box') return pickBox(+v);
+  if (a === 'tryon') return tryOn();
+  if (a === 'afterTry') return afterTry();
+  if (a === 'follow') return chooseFollow(v);
+  if (a === 'bye') return customerLeaves();
+});
+$('hudGo').addEventListener('click', startGo);
+// tap or click on the floor to walk there
+$('wrap').addEventListener('pointerdown', e => {
+  if (!G || G.panel || view !== 'game') return;
+  const st = $('stage'), r = $('wrap').getBoundingClientRect();
+  const x = (e.clientX - r.left - (+st.dataset.ox || 0)) / scale, y = (e.clientY - r.top - (+st.dataset.oy || 0)) / scale;
+  if (x < 0 || y < 0 || x > L.W || y > L.H) return;
+  G.me.tx = x; G.me.ty = y; G.me.follow = false;
+  const dot = document.createElement('div'); dot.className = 'tapdot'; dot.style.left = (e.clientX - r.left) + 'px'; dot.style.top = (e.clientY - r.top) + 'px';
+  $('wrap').appendChild(dot); setTimeout(() => dot.remove(), 520);
+});
+const KEYMAP = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', a: 'left', d: 'right', w: 'up', s: 'down', A: 'left', D: 'right', W: 'up', S: 'down' };
+addEventListener('keydown', e => {
+  if (view !== 'game' || !G) return;
+  if (e.target.closest && e.target.closest('input,textarea')) return;
+  const k = KEYMAP[e.key];
+  if (k && !G.panel) { keys.add(k); e.preventDefault(); }
+  if (k) G.me.follow = false;
+  if (e.key === 'e' || e.key === 'E') startGo();
+});
+addEventListener('keyup', e => { const k = KEYMAP[e.key]; if (k) keys.delete(k); });
+addEventListener('blur', () => keys.clear());
+let rz = 0;
+addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (view === 'game') { applyLayout(true); panel(); } }, 120); });
+render();
+window.__store = { get G() { return G; }, get view() { return view; }, get layout() { return layoutName; }, CUSTOMERS, segOf };
+})();
+</script>
+</body>
+</html>

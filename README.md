@@ -18,6 +18,7 @@ This website is for teaching the Big Data & Data Science course at National Taiw
 - [直接用，還是先問為什麼？ / Apply It, or Ask Why?](https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/apply-or-ask-why/)
 - [旅人人格測驗 / Traveler Personality Quiz](https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/traveler/)
 - [最後一張優惠券 / The Last Coupon](https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/last-coupon/)
+- [店長的一天：RFM 足測鞋店 / Store Manager for a Day](https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/aso-store/)
 
 首頁提供課程首頁與各章的 QR Code；各章頁面提供該章每個活動的 QR Code，皆可下載 PNG 圖片。
 The home page carries QR Codes for the course home and each chapter; each chapter page carries the QR Codes for its own activities. All can be downloaded as PNG.
@@ -50,6 +51,8 @@ predpol 另外加上手機與小平板的版面（螢幕寬度 850px 以下，�
 - 資料存在教師自己的 Google 試算表。後端程式是 chapter-02/games/last-coupon/backend/Code.gs，貼進該試算表的 Apps Script 後部署為網頁應用程式（執行身分：我；誰可以存取：所有人）。詳細步驟寫在教師頁。
 - 部署後的網址（結尾 /exec）填在 chapter-02/games/last-coupon/config.js 的 syncUrl。留空時班級模式不啟用。
 - 修改 Code.gs 之後，要在 Apps Script 重新「管理部署作業 → 編輯 → 新版本」才會生效。
+
+店長的一天：RFM 足測鞋店位於 chapter-02/games/aso-store/（單一 index.html，無外部資源），改編自講義 p.33–37 的阿瘦個案。手機與直向螢幕使用直向門市＋底部面板、點地板走路；寬螢幕使用橫向門市＋側欄，也可用方向鍵或 WASD。右上角可切換中文與英文。約 12 分鐘，結束後有五題討論題。
 
 首頁及各章頁面支援繁體中文 / English 切換。
 

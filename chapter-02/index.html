@@ -129,6 +129,31 @@
         <button class="button secondary" type="button" data-copy="4" id="copy4">複製網址</button>
       </div>
     </article>
+
+    <article class="game">
+      <div class="num">ACTIVITY 05</div>
+      <h2 id="g5Title">店長的一天：RFM 足測鞋店</h2>
+      <p id="g5Desc">改編自阿瘦個案（講義 p.33–37）：扮演足測鞋店店長經營一天。看每位會員的 RFM 資料決定怎麼招呼、要不要足測，再親自到倉庫拿鞋、試穿、結帳，最後替顧客安排下一次回來的理由，看他在 RFM 地圖上怎麼移動。約 12 分鐘，結束後有討論題。</p>
+      <div class="game-meta">
+        <span class="tag" data-zh="RFM" data-en="RFM">RFM</span>
+        <span class="tag" data-zh="阿瘦個案・顧客體驗" data-en="A.S.O. case · Customer Experience">阿瘦個案・顧客體驗</span>
+        <span class="tag" data-zh="手機／電腦" data-en="Phone / Computer">手機／電腦</span>
+        <span class="tag" data-zh="繁體中文／English" data-en="繁體中文／English">繁體中文／English</span>
+      </div>
+      <p class="hint" id="g5Note">公開活動：學生可用手機或電腦直接開啟，或掃描 QR Code 進入，版面會依裝置自動調整。一人一台或兩人一組皆可；結算可複製貼到課程討論區。</p>
+      <div class="urlbox" id="url5"></div>
+      <div class="qr-code" data-qr-path="/chapter-02/games/aso-store/">
+        <img class="qr-image" src="../assets/qr/aso-store.png" width="192" height="192" alt="店長的一天 QR Code" data-qr-zh="店長的一天 QR Code" data-qr-en="Store Manager for a Day QR Code">
+        <div>
+          <div data-qr-zh="掃描後直接進入遊戲" data-qr-en="Scan to open the game directly" class="qr-help">掃描後直接進入遊戲</div>
+          <a data-qr-zh="下載 PNG 圖片" data-qr-en="Download PNG" class="button secondary qr-download" href="../assets/qr/aso-store.png" download="big-data-aso-store-qr.png">下載 PNG 圖片</a>
+        </div>
+      </div>
+      <div class="actions">
+        <a class="button" href="games/aso-store/" target="_blank" id="open5">開啟遊戲</a>
+        <button class="button secondary" type="button" data-copy="5" id="copy5">複製網址</button>
+      </div>
+    </article>
   </div>
 
   <section class="card teacher-panel">
@@ -144,12 +169,13 @@
 <footer id="footer">Chapter 2｜大數據行銷</footer>
 
 <script>
-const COUNT=4;
+const COUNT=5;
 const paths=[
  "games/dynamic-labels/",
  "games/apply-or-ask-why/",
  "games/traveler/",
- "games/last-coupon/"
+ "games/last-coupon/",
+ "games/aso-store/"
 ];
 function gameUrl(i){ return new URL(paths[i-1], window.location.href).href; }
 function refreshUrls(){for(let i=1;i<=COUNT;i++)document.getElementById("url"+i).textContent=gameUrl(i)}
@@ -172,11 +198,13 @@ zh:{
  g3Note:"活動答案與操作紀錄只留在自己的瀏覽器，不傳給教師或此課程總站。",
  g4Title:"最後一張優惠券",g4Desc:"扮演咖啡品牌的 CRM 團隊：先親手替 6 位會員做 RFM 分群，再經營四個季度，決定把有限預算花在哪些分群、要發折價券還是寄體驗禮，觀察下單比例、真正多出的購買者與長期顧客資產。",
  g4Note:"公開活動：學生可直接開啟遊戲，或掃描 QR Code 進入。建議每組共用一台裝置；同樣的決定一定得到同樣的結果，方便各組比較。",
+ g5Title:"店長的一天：RFM 足測鞋店",g5Desc:"改編自阿瘦個案（講義 p.33–37）：扮演足測鞋店店長經營一天。看每位會員的 RFM 資料決定怎麼招呼、要不要足測，再親自到倉庫拿鞋、試穿、結帳，最後替顧客安排下一次回來的理由，看他在 RFM 地圖上怎麼移動。約 12 分鐘，結束後有討論題。",
+ g5Note:"公開活動：學生可用手機或電腦直接開啟，或掃描 QR Code 進入，版面會依裝置自動調整。一人一台或兩人一組皆可；結算可複製貼到課程討論區。",
  g1Title:"動態標籤實戰",g1Desc:"扮演咖啡品牌的會員行銷經理：系統每週依最新的購買行為替會員重新貼標籤，你要替每一種標籤選擇活動、經營八週，體驗標籤如何跟著行為改變。",
  g1Note:"公開活動：學生可直接開啟遊戲，或掃描 QR Code 進入。同樣的決定一定得到同樣的結果，方便全班比較做法。",
  g2Title:"直接用，還是先問為什麼？",g2Desc:"扮演連鎖超商的行銷數據小組：資料系統丟出三個「發現」，每次都要決定直接套用還是先查原因，而調查只夠做兩次；最後用流向圖與顧客訪談替新門市選地點。約 10 分鐘。",
  g2Note:"公開活動：學生可直接開啟遊戲，或掃描 QR Code 進入。同樣的選擇一定得到同樣的結果，方便全班比較做法。",
- open3:"開啟活動",open4:"開啟遊戲",open1:"開啟遊戲",open2:"開啟遊戲",copy:"複製網址",qrTitle:"QR Code 圖片下載",
+ open3:"開啟活動",open4:"開啟遊戲",open5:"開啟遊戲",open1:"開啟遊戲",open2:"開啟遊戲",copy:"複製網址",qrTitle:"QR Code 圖片下載",
  qrText:"每個活動的 QR Code 已自動建立，掃描後可直接進入活動。按「下載 PNG 圖片」即可保存圖片；課程首頁另提供本章的 QR Code。",
  homeBtn:"返回課程首頁",footer:"Chapter 2｜大數據行銷"
 },
@@ -187,18 +215,20 @@ en:{
  g3Note:"Answers and activity records stay in your own browser. They are not sent to the instructor or to this course site.",
  g4Title:"The Last Coupon",g4Desc:"Play the CRM team of a coffee brand: sort six members into RFM segments by hand, then run four quarters, deciding which segments get the limited budget and whether they get a coupon or a sample box, while watching the share who order, the buyers each offer really adds, and long-term customer equity.",
  g4Note:"Public activity: students can open the game directly or scan the QR code. One device per team works best; the same decisions always give the same result, so teams can compare.",
+ g5Title:"Store Manager for a Day",g5Desc:"Adapted from the A.S.O. case (handout p.33–37): run a shoe store with a foot scanner for a day. Read each member’s RFM record to decide how to greet them and whether to scan their feet, then fetch the pair from the stockroom yourself, fit it, ring it up, and give them a reason to return, watching how they move on the RFM map. About 12 minutes, with discussion questions at the end.",
+ g5Note:"Public activity: students can open it on a phone or computer, or scan the QR code; the layout adapts to the device. Play alone or in pairs, and paste the copied results into the class forum.",
  g1Title:"Dynamic Labels in Action",g1Desc:"Play the membership marketing manager of a coffee brand: every week the system re-labels members from their latest purchase behavior. Choose a campaign for each label, run eight weeks, and see how labels move with behavior.",
  g1Note:"Public activity: students can open the game directly or scan the QR code. The same decisions always give the same result, so the class can compare approaches.",
  g2Title:"Apply It, or Ask Why?",g2Desc:"Play the marketing data team of a convenience-store chain: the data system hands you three findings, and each time you decide whether to apply it directly or ask why first, with only two investigations to spend. The last round picks a site for a new store from a flow map and customer interviews. About 10 minutes.",
  g2Note:"Public activity: students can open the game directly or scan the QR code. The same choices always give the same result, so the class can compare approaches.",
- open3:"Open Activity",open4:"Open Game",open1:"Open Game",open2:"Open Game",copy:"Copy URL",qrTitle:"Download QR Code Images",
+ open3:"Open Activity",open4:"Open Game",open5:"Open Game",open1:"Open Game",open2:"Open Game",copy:"Copy URL",qrTitle:"Download QR Code Images",
  qrText:"Each activity has an automatically generated QR Code that opens it directly. Select Download PNG to save the image. A QR Code for this chapter is also available on the course home page.",
  homeBtn:"Back to Course Home",footer:"Chapter 2 | Big Data in Marketing"
 }};
 let current="zh";
 function setLang(l){
  current=l; document.documentElement.lang=l==="zh"?"zh-Hant":"en"; const t=lang[l];
- ["title","subtitle","langLabel","teacherNote","g3Title","g3Desc","g3Note","g4Title","g4Desc","g4Note","g1Title","g1Desc","g1Note","g2Title","g2Desc","g2Note","open3","open4","open1","open2","qrTitle","qrText","homeBtn","footer"].forEach(k=>{
+ ["title","subtitle","langLabel","teacherNote","g3Title","g3Desc","g3Note","g4Title","g4Desc","g4Note","g5Title","g5Desc","g5Note","g1Title","g1Desc","g1Note","g2Title","g2Desc","g2Note","open3","open4","open5","open1","open2","qrTitle","qrText","homeBtn","footer"].forEach(k=>{
    const e=document.getElementById(k); if(e)e.textContent=t[k];
  });
  for(let i=1;i<=COUNT;i++)document.getElementById("copy"+i).textContent=t.copy;
