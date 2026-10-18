@@ -21,6 +21,7 @@ This website is for teaching the Big Data & Data Science course at National Taiw
 - [店長的一天：RFM 足測鞋店 / Store Manager for a Day](https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/aso-store/)
 - [第三章｜金融大數據 / Chapter 3 | Financial Big Data](https://reagan-cheng.github.io/big-data-data-science/chapter-03/)
 - [刷卡被拒：信用額度不足 / Card Declined: Credit Limit Too Low](https://reagan-cheng.github.io/big-data-data-science/chapter-03/cases/card-declined/)
+- [個案：ABC衛浴生活館 / ABC Bath & Living](https://reagan-cheng.github.io/big-data-data-science/chapter-03/cases/abc-bath-living/)
 
 首頁提供課程首頁與各章的 QR Code；各章頁面提供該章每個活動的 QR Code，皆可下載 PNG 圖片。
 The home page carries QR Codes for the course home and each chapter; each chapter page carries the QR Codes for its own activities. All can be downloaded as PNG.
@@ -57,6 +58,8 @@ predpol 另外加上手機與小平板的版面（螢幕寬度 850px 以下，�
 店長的一天：RFM 足測鞋店位於 chapter-02/games/aso-store/（單一 index.html，無外部資源），改編自講義 p.34–37 的阿瘦個案。經營 10～12 月一季，右上角倒數 5 分鐘（第一位客人進店開始計時，對話框開著也不停；時間到立刻結算），10 位會員每次隨機 1～3 位進店、各來 1～3 次；上方顯示日期、倒數、營業額／目標（NT$30,000）與每位會員的忠誠度條。網址加 ?sec=180 可改成 3 分鐘，業績目標會等比例調整。目標是達成業績並讓忠誠客戶（忠誠度 70 以上）多於開店時的 3 位。客人頭上有滿意度，等太久或服務錯誤會下降，歸零即生氣離開、忠誠度 −35；忠誠度低於 30 就不再來。手機與直向螢幕使用直向門市＋底部面板、點地板走路；寬螢幕使用橫向門市＋側欄，也可用方向鍵或 WASD。右上角可切換中文與英文。結束後有結算與五題討論題。
 
 第三章有一個個案閱讀頁：刷卡被拒：信用額度不足位於 chapter-03/cases/card-declined/（單一 index.html，無外部資源），呈現講義 p.10–14 國泰世華個案的英文全文（逐字照講義，不摘要），最後附 p.9 的兩題討論題。每一句是一個 <span class="s" data-st="N">，讀到第幾句，旁邊的示意圖就畫到第 N 步；手機上示意圖固定在上方、原文在下方捲動。預設英文，右上角可切換中文（中文為英文個案的逐句翻譯，存在程式內的 ZH_S 陣列，插圖文字放在各元素的 data-zh）；網址加 ?lang=zh 或 ?lang=en 指定語言。投影時可用簡報筆（PageDown）或 ↓／Space 逐句前進，Spotlight／聚焦會淡化其他句子，A−／A+ 調整字體。
+
+第三章的第二個個案：個案：ABC衛浴生活館位於 chapter-03/cases/abc-bath-living/（單一 index.html，無外部資源），是虛構的教學個案，呈現講義 p.2–10 的中文原文全文（逐字照講義，不摘要），英文版為逐段翻譯；兩者都放在程式開頭的 CASE 資料，每段為 [第幾步, 中文原文, 英文, 中文螢光標示, 英文螢光標示]。每一段驅動旁邊示意圖的第 N 步。預設英文，右上角可切換中文；?lang=zh 或 ?lang=en 指定語言。最後是 p.11–13 的顧客旅程地圖活動：五個階段各選心情（2 到 −2）並寫原因，頁面畫出情緒曲線、加總體驗分數，接著是 p.12 的討論題；答案只存在學生自己的瀏覽器（localStorage），不會上傳。p.12 的「機會／命運」卡未放進網頁，由教師在課堂上進行。
 
 首頁及各章頁面支援繁體中文 / English 切換。
 

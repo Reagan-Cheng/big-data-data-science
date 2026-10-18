@@ -1,0 +1,1070 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#102a56">
+<title>ABC Bath &amp; Living | Case Reading</title>
+<meta name="description" content="Case reading: ABC Bath & Living (fictional). Full case text in English and Chinese with paragraph-by-paragraph animated illustrations, plus a customer journey map activity.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%23102a56%22/%3E%3Cpath%20d%3D%22M8%2024V17h4v7zm6%200V11h4v13zm6%200V6h4v18z%22%20fill%3D%22%23ffffff%22/%3E%3C/svg%3E">
+<!-- ============================================================
+     個案：ABC衛浴生活館 · ABC Bath & Living — case reading (lecture 03 Financial Big Data)
+     One file, no external resources.
+     The Chinese case text is the original, reproduced in full and unchanged (slides p.2–10);
+     the English text is a paragraph-by-paragraph translation. Both live in CASE below.
+     Each paragraph (<span class="s" data-st="N">) drives stage N of the illustration beside it.
+     The customer journey map activity (p.11–13) is at the end; answers stay in this browser only.
+     Navigation: scroll, or ↓ / → / Space / PageDown (presentation clicker) for the next paragraph.
+     ?lang=zh or ?lang=en picks the language.
+     ============================================================ -->
+<style>
+:root{
+  --bg:#f4f2ed; --panel:#fff; --ink:#1b2433; --ink2:#4d5869; --ink3:#7a8494; --line:#dcd8cf; --line2:#ebe8e1;
+  --navy:#102a56; --blue:#1f5fb8; --blue2:#3f84d6; --blue-wash:#e8f0fc;
+  --good:#127a3d; --good-wash:#e3f4e9; --bad:#c0282f; --bad-wash:#fcebeb; --gold:#e8a317; --mark:#ffe58a;
+  --teal:#0f766e; --dcard:#e07a1f;
+  --k:1;
+  --fs:calc(clamp(17px, 0.5vw + 13.5px, 21px) * var(--k));
+  --bar:52px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC",Arial,sans-serif;line-height:1.6}
+button,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px;border-radius:6px}
+
+/* ---------- top bar ---------- */
+.top{position:fixed;inset:0 0 auto 0;z-index:50;height:calc(var(--bar) + env(safe-area-inset-top));padding:env(safe-area-inset-top) 12px 0;background:var(--navy);color:#fff;display:flex;align-items:center;gap:10px}
+.top a.home{color:#fff;text-decoration:none;font-weight:700;font-size:14px;opacity:.85;white-space:nowrap}
+.top .ttl{flex:1;min-width:0;font-weight:800;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tools{display:flex;gap:6px;align-items:center}
+.tools button{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:9px;height:34px;min-width:34px;padding:0 10px;font-weight:800;font-size:14px;cursor:pointer}
+.tools button[aria-pressed="true"]{background:#fff;color:var(--navy)}
+.langsw{display:flex;border:1px solid rgba(255,255,255,.35);border-radius:9px;overflow:hidden}
+.tools .langsw button{border:0;border-radius:0;background:transparent;min-width:40px}
+.tools .langsw button[aria-pressed="true"]{background:#fff;color:var(--navy)}
+.progress{position:absolute;left:0;bottom:0;height:3px;background:var(--gold);width:0}
+
+/* ---------- hero ---------- */
+.hero{min-height:100svh;display:flex;align-items:center;padding:calc(var(--bar) + 40px) 20px 60px;background:radial-gradient(1100px 600px at 85% 15%,#1f5fb8 0,transparent 60%),linear-gradient(160deg,#0c2148,#102a56 55%,#163a75);color:#fff;position:relative;overflow:hidden}
+.hero .in{max-width:1100px;margin:0 auto;width:100%;display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center}
+.kicker{display:inline-block;font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);padding:5px 12px;border-radius:999px}
+.hero h1{font-family:Georgia,"Iowan Old Style","Times New Roman",serif;font-size:clamp(38px,6vw,70px);line-height:1.05;margin:18px 0 14px;letter-spacing:-.01em}
+.hero p.sub{font-size:17px;opacity:.88;margin:0 0 26px;max-width:34em}
+.hero .meta{display:flex;flex-wrap:wrap;gap:10px;font-size:14px;opacity:.9;margin-bottom:28px}
+.hero .meta span{border-left:3px solid var(--gold);padding-left:9px}
+.btn{display:inline-flex;align-items:center;gap:10px;background:var(--gold);color:#1b2433;font-weight:900;border:0;border-radius:12px;padding:14px 22px;font-size:17px;cursor:pointer;text-decoration:none}
+.btn.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.45);margin-left:8px}
+.keys{margin-top:18px;font-size:13px;opacity:.75}
+.keys kbd{display:inline-block;border:1px solid rgba(255,255,255,.45);border-radius:5px;padding:0 6px;font-family:inherit;font-size:12px;margin:0 2px}
+.hero-art{width:100%;max-width:420px;justify-self:center}
+.hero-art .bob{animation:bob 4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes bob{50%{transform:translateY(-8px)}}
+
+/* ---------- parts ---------- */
+.part{max-width:1180px;margin:0 auto;padding:0 20px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:56px;position:relative}
+.part + .part{border-top:1px dashed var(--line)}
+.figwrap{position:sticky;top:calc(var(--bar) + 20px);height:calc(100svh - var(--bar) - 40px);display:flex;flex-direction:column;justify-content:center;gap:10px}
+.fig{position:relative;width:100%;aspect-ratio:4/3;background:var(--panel);border:1px solid var(--line);border-radius:22px;box-shadow:0 18px 40px -22px rgba(16,42,86,.35);overflow:hidden}
+.fig svg{display:block;width:100%;height:100%}
+.chip{position:absolute;top:10px;right:12px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);background:#f6f5f1;border:1px solid var(--line2);border-radius:999px;padding:2px 9px}
+.pips{display:flex;gap:6px;justify-content:center}
+.pips i{width:8px;height:8px;border-radius:50%;background:var(--line);transition:background .3s,transform .3s}
+.pips i.on{background:var(--blue)}
+.pips i.cur{transform:scale(1.35);background:var(--navy)}
+.text{padding:34svh 0 44svh}
+.plabel{display:flex;align-items:baseline;gap:12px;margin-bottom:14px;color:var(--blue);font-weight:900;letter-spacing:.05em;text-transform:uppercase;font-size:13px}
+.plabel b{font-family:Georgia,serif;font-size:44px;line-height:1;color:var(--navy);letter-spacing:0}
+.plabel span{color:var(--ink3)}
+.plabel em{font-style:normal}
+.case-title{font-family:Georgia,"Iowan Old Style",serif;font-size:calc(var(--fs) * 1.25);color:var(--navy);margin:0 0 18px;font-weight:700}
+.text p{font-family:Georgia,"Iowan Old Style","Times New Roman",serif;font-size:var(--fs);line-height:1.75;margin:0 0 1.1em;color:var(--ink)}
+.s{transition:opacity .35s,background-color .35s;border-radius:4px;-webkit-box-decoration-break:clone;box-decoration-break:clone;padding:1px 2px;margin:0 -2px;cursor:pointer}
+.s.cur{background-color:rgba(31,95,184,.08)}
+body.spot .s{opacity:.25}
+body.spot .s.cur{opacity:1;background-color:transparent}
+mark{background:linear-gradient(transparent 58%,var(--mark) 58%) no-repeat 0 0/0% 100%;color:inherit;transition:background-size .9s cubic-bezier(.3,.7,.2,1) .15s;padding:0 1px}
+.s.seen mark{background-size:100% 100%}
+html[lang="zh-Hant"] body{font-family:system-ui,-apple-system,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
+html[lang="zh-Hant"] .text p,html[lang="zh-Hant"] .jr-intro p,html[lang="zh-Hant"] .disc li{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;line-height:1.95;letter-spacing:.02em}
+html[lang="zh-Hant"] .hero h1,html[lang="zh-Hant"] .case-title,html[lang="zh-Hant"] .sec-title{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;font-weight:900;letter-spacing:.02em}
+html[lang="zh-Hant"] .hero h1{line-height:1.18}
+
+/* ---------- journey map activity ---------- */
+.journey{max-width:1120px;margin:0 auto;padding:14svh 20px 8svh;border-top:1px dashed var(--line)}
+.sec-title{font-family:Georgia,serif;font-size:clamp(28px,3.4vw,40px);color:var(--navy);margin:8px 0 16px}
+.jr-intro{max-width:820px}
+.jr-intro p{font-family:Georgia,"Iowan Old Style",serif;font-size:var(--fs);line-height:1.7;margin:0 0 .8em}
+.jr-how{background:#fff;border:1px solid var(--line);border-left:5px solid var(--gold);border-radius:12px;padding:12px 16px;margin:18px 0 22px;font-size:15px;color:var(--ink2)}
+.jr-board{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;position:relative}
+.stage{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 14px 12px;display:flex;flex-direction:column;gap:10px;position:relative}
+.stage .no{width:30px;height:30px;border-radius:8px;background:var(--navy);color:#fff;font-weight:900;display:grid;place-items:center}
+.stage h3{margin:0;font-size:16px;line-height:1.35;color:var(--navy)}
+.stage ol{margin:0;padding-left:20px;font-size:13.5px;color:var(--ink2)}
+.faces{display:flex;justify-content:space-between;gap:2px}
+.faces button{flex:1;min-width:0;border:1px solid var(--line);background:#faf9f6;border-radius:10px;padding:6px 0 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;transition:transform .15s,background .15s,border-color .15s}
+.faces button .e{font-size:22px;line-height:1.1;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.faces button .v{font-size:11px;font-weight:800;color:var(--ink3)}
+.faces button[aria-pressed="true"]{background:var(--blue-wash);border-color:var(--blue);transform:translateY(-2px)}
+.faces button[aria-pressed="true"] .v{color:var(--blue)}
+.stage .lbl{font-size:12.5px;color:var(--ink3);min-height:1.2em}
+.stage textarea{width:100%;min-height:62px;resize:vertical;border:1px solid var(--line);border-radius:10px;padding:8px;font-size:14px;background:#fcfbf8}
+.jr-result{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,.6fr);gap:16px;margin-top:18px}
+.curve,.score{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px}
+.curve svg{width:100%;height:auto;display:block}
+.score .big{font-size:56px;font-weight:950;color:var(--navy);line-height:1;margin:8px 0}
+.score .scale{list-style:none;padding:0;margin:10px 0 0;font-size:14px;color:var(--ink2)}
+.score .scale li{display:flex;justify-content:space-between;border-bottom:1px dashed var(--line2);padding:3px 0}
+.score .reset{margin-top:12px;border:1px solid var(--line);background:#faf9f6;border-radius:10px;padding:8px 12px;cursor:pointer;font-weight:700}
+.disc{max-width:900px;margin:0 auto;padding:6svh 20px 16svh}
+.disc ol{margin:0;padding:0;list-style:none;counter-reset:q}
+.disc li{counter-increment:q;background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px 22px 20px 70px;margin-bottom:14px;position:relative;font-size:var(--fs);line-height:1.6}
+.disc li::before{content:counter(q);position:absolute;left:20px;top:18px;width:34px;height:34px;border-radius:50%;background:var(--navy);color:#fff;font-weight:900;display:grid;place-items:center;font-size:16px}
+.disc li .s{cursor:default}
+.disc li b{color:var(--blue)}
+footer{border-top:1px solid var(--line);padding:22px 20px 40px;text-align:center;font-size:13px;color:var(--ink3)}
+footer p{margin:4px 0}
+
+/* ---------- floating step controls ---------- */
+.step{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:45;display:flex;flex-direction:column;gap:8px}
+.step button{width:48px;height:48px;border-radius:50%;border:0;background:var(--navy);color:#fff;font-size:20px;font-weight:900;box-shadow:0 8px 20px rgba(16,42,86,.35);cursor:pointer}
+.step button:disabled{opacity:.35;cursor:default}
+
+/* ---------- SVG animation system ----------
+   [data-s="a"] visible from stage a;  [data-s="a-b"] visible for stages a..b;  [data-m="a"] gets .mv from stage a
+   .d1–.d4 delay on entering */
+.fig [data-s]{opacity:0;transition:opacity .55s ease,transform .8s cubic-bezier(.2,.8,.2,1);transition-delay:0s}
+.fig [data-s].on{opacity:1}
+.fig .on.d1{transition-delay:.6s}.fig .on.d2{transition-delay:1.3s}.fig .on.d3{transition-delay:2.1s}.fig .on.d4{transition-delay:2.9s}
+.fig *{transform-box:fill-box}
+.up{transform:translateY(14px)} .up.on{transform:none}
+.pop{transform:scale(.6);transform-origin:center} .pop.on{transform:scale(1)}
+.slide-l{transform:translateX(-30px)} .slide-l.on{transform:none}
+.slide-r{transform:translateX(30px)} .slide-r.on{transform:none}
+/* children without their own data-s animate in with their parent */
+.fig .up:not([data-s]),.fig .pop:not([data-s]),.fig .slide-l:not([data-s]),.fig .slide-r:not([data-s]){transition:transform .8s cubic-bezier(.2,.8,.2,1)}
+.fig .on > .up:not([data-s]),.fig .on > .pop:not([data-s]),.fig .on > .slide-l:not([data-s]),.fig .on > .slide-r:not([data-s]){transform:none}
+.fig .on > .d1:not([data-s]){transition-delay:.6s}.fig .on > .d2:not([data-s]){transition-delay:1.3s}.fig .on > .d3:not([data-s]){transition-delay:2.1s}
+.gx{transform:scaleX(0);transform-origin:left center;transition:transform 1.1s cubic-bezier(.3,.7,.2,1)!important}
+.on .gx{transform:scaleX(1)}
+.on .gx.d1{transition-delay:.7s!important}
+.dot{opacity:0;transform:scale(.3);transform-origin:center;transition:opacity .3s,transform .45s cubic-bezier(.3,1.6,.5,1)}
+.on .dot{opacity:1;transform:scale(1)}
+.fade-mv{transition:opacity .8s}.fade-mv.mv{opacity:.25}
+.expire{transition:opacity 2.4s ease 2.2s}.on .expire{opacity:.15}
+.slide-mv{transition:transform 1.4s cubic-bezier(.45,.05,.3,1)}
+.hand.mv{transform:translateX(120px)}
+.spin{animation:spin 7s linear infinite;transform-origin:center}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ring{animation:ring 1s ease-in-out infinite;transform-origin:center}
+@keyframes ring{0%,40%,100%{transform:rotate(0)}10%,30%{transform:rotate(-14deg)}20%{transform:rotate(14deg)}}
+.flow{animation:flow 1.2s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-24}}
+.blink{animation:blink 1.2s steps(2) infinite}
+@keyframes blink{50%{opacity:.25}}
+.pulse{animation:pulse 1.8s ease-in-out infinite;transform-origin:center}
+@keyframes pulse{50%{transform:scale(1.08)}}
+.shake{animation:shake .5s ease-in-out infinite;transform-origin:center}
+@keyframes shake{25%{transform:translateX(-2px)}75%{transform:translateX(2px)}}
+.drain{animation:drain 6s linear infinite;transform-origin:left center}
+@keyframes drain{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+.stamp{transform:scale(1.6) rotate(-12deg);transform-origin:center;opacity:0;transition:transform .35s cubic-bezier(.3,1.5,.5,1),opacity .2s!important}
+.on .stamp,.stamp.on{transform:scale(1) rotate(-12deg);opacity:1}
+.on .stamp.d2,.stamp.on.d2{transition-delay:1.3s!important}
+.travel{animation:travel 3.2s ease-in-out infinite}
+@keyframes travel{0%{transform:translateX(0);opacity:0}15%{opacity:1}80%{opacity:1}100%{transform:translateX(34px);opacity:0}}
+
+@media (max-width:860px){
+  :root{--bar:50px}
+  .top a.home span{display:none}
+  .top .ttl{visibility:hidden}
+  .tools{gap:4px}
+  .tools button{padding:0 8px}
+  .hero .in{grid-template-columns:1fr;gap:18px}
+  .hero-art{max-width:250px;order:-1}
+  .btn.ghost{margin:10px 0 0}
+  .part{grid-template-columns:1fr;gap:0;padding:0 16px}
+  .figwrap{top:calc(var(--bar) + env(safe-area-inset-top));height:auto;z-index:5;background:linear-gradient(var(--bg) 88%,rgba(244,242,237,0));padding:10px 16px 16px;margin:0 -16px}
+  .fig{width:min(100%,calc(38svh * 4 / 3));margin:0 auto;border-radius:16px}
+  .text{padding:24svh 0 34svh}
+  .plabel b{font-size:34px}
+  .step{right:12px}
+  .step button{width:44px;height:44px}
+  .jr-board{grid-template-columns:1fr}
+  .jr-result{grid-template-columns:1fr}
+  .disc li{padding:16px 16px 16px 60px}
+  .disc li::before{left:14px;top:15px}
+}
+@media (min-width:861px) and (max-width:1100px){.jr-board{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+@media print{
+  .top,.step,.figwrap,.hero-art{display:none}
+  .part{display:block}.text{padding:20px 0}
+  body.spot .s{opacity:1}
+}
+</style>
+</head>
+<body>
+
+<!-- shared drawing parts -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="man" viewBox="0 0 20 30"><circle cx="10" cy="6.5" r="5.8"/><path d="M0.5 29.5c0-8 4.2-13 9.5-13s9.5 5 9.5 13z"/></symbol>
+    <symbol id="agent" viewBox="0 0 24 30"><circle cx="12" cy="7" r="5.8"/><path d="M2.5 29.5c0-8 4.2-13 9.5-13s9.5 5 9.5 13z"/><path d="M5 8a7 7 0 0 1 14 0" fill="none" stroke="#102a56" stroke-width="1.8"/><rect x="3.5" y="7" width="3" height="5" rx="1.5" fill="#102a56"/><path d="M5 12q2 3 5 3" fill="none" stroke="#102a56" stroke-width="1.3"/></symbol>
+    <symbol id="exec" viewBox="0 0 20 30"><circle cx="10" cy="6.5" r="5.8"/><path d="M0.5 29.5c0-8 4.2-13 9.5-13s9.5 5 9.5 13z"/><path d="M10 17l-2 3 2 8 2-8z" fill="#c0282f"/></symbol>
+    <symbol id="handset" viewBox="0 0 30 30"><path d="M6 3c-4 4-4 10 2 17l3 3c7 6 13 6 17 2l1-1c1-1 1-3 0-4l-4-4c-1-1-3-1-4 0l-2 2c-3-1-6-4-7-7l2-2c1-1 1-3 0-4L10 1C9 0 7 0 6 1z"/></symbol>
+    <symbol id="bank" viewBox="0 0 80 70"><path d="M40 2 78 20H2z"/><rect x="4" y="22" width="72" height="5"/><rect x="10" y="30" width="8" height="28"/><rect x="26" y="30" width="8" height="28"/><rect x="46" y="30" width="8" height="28"/><rect x="62" y="30" width="8" height="28"/><rect x="2" y="60" width="76" height="8"/></symbol>
+    <symbol id="mail" viewBox="0 0 40 28"><rect x="1" y="1" width="38" height="26" rx="3" fill="#fff" stroke="currentColor" stroke-width="2"/><path d="M2 3l18 13L38 3" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="doc" viewBox="0 0 30 38"><path d="M2 2h18l8 8v26H2z" fill="#fff" stroke="currentColor" stroke-width="2"/><path d="M20 2v8h8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 17h16M7 23h16M7 29h10" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="cardS" viewBox="0 0 60 38"><rect width="60" height="38" rx="5"/><rect x="7" y="10" width="11" height="8" rx="2" fill="#e8a317"/><rect x="7" y="27" width="30" height="4" rx="2" fill="#fff" opacity=".6"/></symbol>
+    <symbol id="laptop" viewBox="0 0 60 40"><rect x="7" y="1" width="46" height="30" rx="3" fill="#1b2433"/><rect x="10" y="4" width="40" height="24" rx="1" fill="#e8f0fc"/><path d="M0 33h60l-4 6H4z" fill="#3a4659"/></symbol>
+    <symbol id="cloud" viewBox="0 0 60 36"><path d="M14 34h34a12 12 0 0 0 2-24A16 16 0 0 0 20 8a12 12 0 0 0-6 26z"/></symbol>
+    <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#7a8494"/></marker>
+    <marker id="arB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#1f5fb8"/></marker>
+    <marker id="arR" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#c0282f"/></marker>
+  </defs>
+</svg>
+
+<header class="top">
+  <a class="home" href="../../index.html" aria-label="Chapter 3">← <span data-zh="第三章">Chapter 3</span></a>
+  <div class="ttl" data-zh="個案：ABC衛浴生活館">ABC Bath &amp; Living</div>
+  <div class="tools">
+    <div class="langsw" role="group" aria-label="Language"><button id="lEn" type="button" aria-pressed="true">EN</button><button id="lZh" type="button" aria-pressed="false">中文</button></div>
+    <button id="spot" type="button" aria-pressed="false" data-zh="聚焦">Spotlight</button>
+    <button id="aMinus" type="button" aria-label="Smaller text">A−</button>
+    <button id="aPlus" type="button" aria-label="Larger text">A+</button>
+  </div>
+  <div class="progress" id="progress"></div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="hero" id="top">
+  <div class="in">
+    <div>
+      <span class="kicker" data-zh="個案研讀・金融大數據">Case Study · Financial Big Data</span>
+      <h1 data-zh="個案：<br>ABC衛浴生活館">ABC Bath &amp; Living</h1>
+      <p class="sub" data-zh="本個案的企業與故事皆為虛構，個案內容僅作為教學目的使用">The company and story in this case are fictional; the case is for teaching purposes only.</p>
+      <div class="meta"><span data-zh="個案全文">Full case text</span><span data-zh="共 9 段">9 parts</span><span data-zh="讀到哪，圖就畫到哪">Pictures build as you read</span><span data-zh="顧客旅程地圖">Customer journey map</span></div>
+      <button class="btn" id="start" type="button" data-zh="開始閱讀 ↓">Start reading ↓</button><a class="btn ghost" href="#journey" data-zh="直接到旅程地圖">Go to the journey map</a>
+      <div class="keys" data-zh="捲動畫面、點一下段落，或按 <kbd>↓</kbd> <kbd>Space</kbd> <kbd>PgDn</kbd> 前往下一段">Scroll, tap a paragraph, or press <kbd>↓</kbd> <kbd>Space</kbd> <kbd>PgDn</kbd> for the next paragraph</div>
+    </div>
+    <svg class="hero-art" viewBox="0 0 320 240" role="img" aria-label="A bathroom upgrade order with a card payment">
+      <g class="bob">
+        <rect x="56" y="34" width="208" height="150" rx="16" fill="#f6f8fd"/>
+        <rect x="56" y="34" width="208" height="30" rx="16" fill="#1f5fb8"/><rect x="56" y="50" width="208" height="14" fill="#1f5fb8"/>
+        <text x="160" y="55" text-anchor="middle" font-size="13" font-weight="800" fill="#fff" font-family="system-ui,sans-serif">ABC Bath &amp; Living</text>
+        <path d="M96 150v-34h36v-10h22v10c0 14-10 24-24 24h-8v10z" fill="#c9d3e3"/><rect x="92" y="150" width="46" height="8" rx="3" fill="#9db5d8"/>
+        <rect x="176" y="96" width="66" height="10" rx="5" fill="#c9d3e3"/><rect x="176" y="114" width="48" height="10" rx="5" fill="#c9d3e3"/>
+        <text x="176" y="150" font-size="17" font-weight="900" fill="#127a3d" font-family="system-ui,sans-serif">NT$49,900</text>
+      </g>
+      <g transform="translate(196 166) rotate(-8)"><rect width="96" height="60" rx="8" fill="#1f5fb8"/><rect x="11" y="16" width="18" height="13" rx="3" fill="#e8a317"/><text x="84" y="50" text-anchor="end" font-size="13" font-weight="900" fill="#fff" font-family="system-ui,sans-serif">VISA</text></g>
+      <g transform="translate(18 150)"><circle cx="30" cy="30" r="30" fill="#e8a317"/><text x="30" y="40" text-anchor="middle" font-size="30" font-weight="900" fill="#102a56" font-family="system-ui,sans-serif">?</text></g>
+    </svg>
+  </div>
+</section>
+
+<!-- ============ PART 1 · p.2 ============ -->
+<section class="part" data-part="1">
+  <div class="figwrap"><div class="fig" role="img" aria-label="Illustration for part 1"><span class="chip" data-zh="示意圖">Illustration</span>
+    <svg viewBox="0 0 480 360" font-family="system-ui,-apple-system,Segoe UI,sans-serif">
+      <!-- s1: comparing; the ABC offer -->
+      <g data-s="1-1">
+        <g transform="translate(24 46)">
+          <rect width="250" height="176" rx="12" fill="#1b2433"/><rect x="10" y="10" width="230" height="156" rx="6" fill="#f4f6fa"/>
+          <g font-size="12" fill="#1b2433">
+            <g class="dot" style="transition-delay:.1s"><rect x="22" y="22" width="206" height="22" rx="6" fill="#fff" stroke="#dce5f0"/><text x="32" y="37" data-zh="品牌官網與經銷門市">Brand websites &amp; dealer stores</text></g>
+            <g class="dot" style="transition-delay:.35s"><rect x="22" y="50" width="206" height="22" rx="6" fill="#fff" stroke="#dce5f0"/><text x="32" y="65" data-zh="展示中心預約">Showroom booking</text></g>
+            <g class="dot" style="transition-delay:.6s"><rect x="22" y="78" width="206" height="22" rx="6" fill="#fff" stroke="#dce5f0"/><text x="32" y="93" data-zh="到府丈量・安裝服務">In-home measurement · installation</text></g>
+            <g class="dot" style="transition-delay:.85s"><rect x="22" y="106" width="206" height="22" rx="6" fill="#fff" stroke="#dce5f0"/><text x="32" y="121" data-zh="保固年限">Warranty period</text></g>
+            <g class="dot" style="transition-delay:1.1s"><rect x="22" y="134" width="206" height="22" rx="6" fill="#fff" stroke="#dce5f0"/><text x="32" y="149" data-zh="信用卡優惠">Credit card offers</text></g>
+          </g>
+          <path d="M-6 176h262l-10 14H4z" fill="#3a4659"/>
+        </g>
+        <use href="#man" x="120" y="258" width="34" height="51" fill="#1f5fb8"/>
+        <text x="137" y="330" text-anchor="middle" font-size="12" font-weight="700" fill="#4d5869" data-zh="陳先生">Mr. Chen</text>
+        <g data-s="1" class="d3 pop">
+          <rect x="292" y="62" width="168" height="196" rx="14" fill="#fff" stroke="#e8a317" stroke-width="3"/>
+          <rect x="304" y="74" width="92" height="20" rx="10" fill="#c0282f"/><text x="350" y="88" text-anchor="middle" font-size="10.5" font-weight="900" fill="#fff" data-zh="限時方案">LIMITED TIME</text>
+          <text x="376" y="118" text-anchor="middle" font-size="12" font-weight="800" fill="#102a56" data-zh="ABC衛浴生活館">ABC Bath &amp; Living</text>
+          <path d="M346 182v-30h26v-8h18v8c0 12-8 20-20 20h-6v10z" fill="#9db5d8"/><rect x="342" y="182" width="40" height="7" rx="3" fill="#1f5fb8"/>
+          <text x="376" y="208" text-anchor="middle" font-size="11.5" fill="#1b2433" data-zh="智慧馬桶座＋基本安裝">Smart toilet seat</text>
+          <text x="376" y="222" text-anchor="middle" font-size="11.5" fill="#1b2433" data-zh=" ">+ basic installation</text>
+          <text x="376" y="246" text-anchor="middle" font-size="17" font-weight="900" fill="#127a3d" data-zh="總額不到 5 萬元">&lt; NT$50,000</text>
+        </g>
+      </g>
+      <!-- s2: order placed, pay in 3 days -->
+      <g data-s="2-2">
+        <g class="up">
+          <rect x="30" y="40" width="230" height="270" rx="16" fill="#fff" stroke="#dce5f0" stroke-width="2"/>
+          <rect x="30" y="40" width="230" height="34" rx="16" fill="#1f5fb8"/><rect x="30" y="58" width="230" height="16" fill="#1f5fb8"/>
+          <text x="145" y="63" text-anchor="middle" font-size="12" font-weight="800" fill="#fff" data-zh="ABC衛浴生活館">ABC Bath &amp; Living</text>
+          <circle cx="145" cy="118" r="26" fill="#127a3d"/><path d="M133 118l9 9 16-18" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <text x="145" y="168" text-anchor="middle" font-size="16" font-weight="900" fill="#102a56" data-zh="訂單成立">Order placed</text>
+          <text x="145" y="196" text-anchor="middle" font-size="12" fill="#c0282f" font-weight="700" data-zh="需在 3 天內完成付款">Pay within 3 days</text>
+          <text x="145" y="212" text-anchor="middle" font-size="10.5" fill="#7a8494" data-zh="否則名額與優惠價取消">or the slot and price are canceled</text>
+          <rect x="56" y="234" width="178" height="14" rx="7" fill="#ebe8e1"/><rect x="56" y="234" width="178" height="14" rx="7" fill="#e8a317" class="drain"/>
+          <g font-size="10" fill="#7a8494" text-anchor="middle"><text x="56" y="266" data-zh="第 1 天">Day 1</text><text x="145" y="266" data-zh="第 2 天">Day 2</text><text x="234" y="266" data-zh="第 3 天">Day 3</text></g>
+        </g>
+        <g data-s="2" class="d2 slide-r">
+          <use href="#man" x="372" y="214" width="44" height="66" fill="#1f5fb8"/>
+          <use href="#cloud" x="292" y="90" width="176" height="104" fill="#eef3fb"/>
+          <text x="382" y="140" text-anchor="middle" font-size="13" font-weight="700" fill="#102a56" data-zh="再比較看看？">Compare a bit more?</text>
+          <text x="382" y="160" text-anchor="middle" font-size="11" fill="#4d5869" data-zh="說不定別家更優惠">Maybe someone's cheaper</text>
+          <circle cx="360" cy="204" r="6" fill="#eef3fb"/><circle cx="372" cy="216" r="4" fill="#eef3fb"/>
+        </g>
+      </g>
+      <!-- s3: ABC is the best; log in -->
+      <g data-s="3-3">
+        <g class="dot" style="transition-delay:.1s"><rect x="30" y="80" width="110" height="130" rx="12" fill="#f4f2ed" stroke="#dcd8cf"/><text x="85" y="140" text-anchor="middle" font-size="12" fill="#7a8494" data-zh="其他平台">Other platform</text><text x="85" y="166" text-anchor="middle" font-size="22" fill="#b4ad9f">✕</text></g>
+        <g class="dot" style="transition-delay:.4s"><rect x="340" y="80" width="110" height="130" rx="12" fill="#f4f2ed" stroke="#dcd8cf"/><text x="395" y="140" text-anchor="middle" font-size="12" fill="#7a8494" data-zh="其他平台">Other platform</text><text x="395" y="166" text-anchor="middle" font-size="22" fill="#b4ad9f">✕</text></g>
+        <g class="dot" style="transition-delay:.8s"><rect x="160" y="56" width="160" height="176" rx="14" fill="#fff" stroke="#127a3d" stroke-width="3"/>
+          <text x="240" y="94" text-anchor="middle" font-size="13" font-weight="800" fill="#102a56" data-zh="ABC衛浴生活館">ABC Bath &amp; Living</text>
+          <circle cx="240" cy="140" r="24" fill="#127a3d"/><path d="M229 140l8 8 15-17" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <text x="240" y="190" text-anchor="middle" font-size="12" font-weight="700" fill="#127a3d" data-zh="最完整・最實惠">Most complete</text>
+          <text x="240" y="206" text-anchor="middle" font-size="12" font-weight="700" fill="#127a3d" data-zh=" ">· best value</text></g>
+        <g data-s="3" class="d3 up">
+          <rect x="120" y="254" width="240" height="70" rx="12" fill="#102a56"/>
+          <text x="240" y="282" text-anchor="middle" font-size="13" font-weight="800" fill="#fff" data-zh="登入帳號 → 準備刷卡付款">Log in → ready to pay by card</text>
+          <rect x="150" y="294" width="120" height="16" rx="5" fill="#fff" opacity=".9"/><rect x="278" y="294" width="54" height="16" rx="5" fill="#e8a317"/>
+        </g>
+      </g>
+      <!-- s4: need the order date to find the order -->
+      <g data-s="4">
+        <g class="up">
+          <rect x="24" y="40" width="250" height="250" rx="14" fill="#fff" stroke="#dce5f0" stroke-width="2"/>
+          <text x="44" y="70" font-size="13" font-weight="800" fill="#102a56" data-zh="查詢訂單">Find my order</text>
+          <text x="44" y="96" font-size="11.5" fill="#4d5869" data-zh="請先指定「訂單成立日期」">First choose the "order date"</text>
+          <rect x="44" y="106" width="210" height="26" rx="6" fill="#f4f6fa" stroke="#1f5fb8" stroke-width="2"/>
+          <text x="56" y="124" font-size="12" fill="#7a8494" class="blink">____ / __ / __</text>
+          <g data-gen="cal" data-x="52" data-y="146"></g>
+        </g>
+        <g data-s="4" class="d2 slide-r">
+          <use href="#man" x="372" y="226" width="44" height="66" fill="#1f5fb8"/>
+          <use href="#cloud" x="286" y="64" width="190" height="130" fill="#fff4d6"/>
+          <text x="382" y="116" text-anchor="middle" font-size="12" font-weight="700" fill="#a15c00" data-zh="過了幾天、忘了下單日期">Come back days later,</text>
+          <text x="382" y="134" text-anchor="middle" font-size="12" font-weight="700" fill="#a15c00" data-zh="不就找不到訂單了？">forget the date…</text>
+          <text x="382" y="152" text-anchor="middle" font-size="12" font-weight="700" fill="#a15c00" data-zh=" ">order not found?</text>
+          <circle cx="366" cy="208" r="6" fill="#fff4d6"/><circle cx="376" cy="220" r="4" fill="#fff4d6"/>
+        </g>
+      </g>
+    </svg></div><div class="pips"></div></div>
+  <div class="text"><div class="plabel"><b>1</b><em data-zh="第 1 段，共 9 段">Part 1 of 9</em> <span>· p.2</span></div><h2 class="case-title"></h2><div class="paras"></div></div>
+</section>
+
+<!-- ============ PART 2 · p.3 ============ -->
+<section class="part" data-part="2">
+  <div class="figwrap"><div class="fig" role="img" aria-label="Illustration for part 2"><span class="chip" data-zh="示意圖">Illustration</span>
+    <svg viewBox="0 0 480 360" font-family="system-ui,-apple-system,Segoe UI,sans-serif">
+      <!-- s1–2: pay by VISA, authorized; confirmation email -->
+      <g data-s="1-2">
+        <g class="up">
+          <rect x="24" y="40" width="230" height="270" rx="14" fill="#fff" stroke="#dce5f0" stroke-width="2"/>
+          <text x="139" y="70" text-anchor="middle" font-size="13" font-weight="800" fill="#102a56" data-zh="線上刷卡">Online card payment</text>
+          <use href="#cardS" x="79" y="86" width="120" height="76" fill="#1f5fb8"/>
+          <text x="186" y="152" text-anchor="end" font-size="13" font-weight="900" fill="#fff">VISA</text>
+          <text x="92" y="108" font-size="10" font-weight="800" fill="#fff" data-zh="EFG 銀行">EFG Bank</text>
+          <rect x="54" y="176" width="170" height="24" rx="6" fill="#f4f6fa" stroke="#dce5f0"/><text x="64" y="192" font-size="11" fill="#7a8494">•••• •••• •••• ••••</text>
+          <rect x="84" y="210" width="110" height="28" rx="8" fill="#1f5fb8"/><text x="139" y="229" text-anchor="middle" font-size="12" font-weight="800" fill="#fff" data-zh="確定">Confirm</text>
+          <g data-s="1" class="d2 pop"><rect x="44" y="256" width="190" height="36" rx="18" fill="#e3f4e9"/><text x="139" y="279" text-anchor="middle" font-size="13" font-weight="900" fill="#127a3d" data-zh="付款狀態：授權成功 ✓">Payment: Authorized ✓</text></g>
+        </g>
+        <g data-s="2" class="slide-r">
+          <use href="#mail" x="296" y="46" width="70" height="49" style="color:#1f5fb8"/>
+          <rect x="280" y="104" width="180" height="200" rx="12" fill="#fff" stroke="#dce5f0" stroke-width="2"/>
+          <text x="296" y="130" font-size="12.5" font-weight="800" fill="#102a56" data-zh="訂單確認信">Order confirmation</text>
+          <g font-size="11.5" fill="#4d5869">
+            <g class="dot" style="transition-delay:.5s"><circle cx="300" cy="158" r="4" fill="#1f5fb8"/><text x="312" y="162" data-zh="產品組合">Product bundle</text></g>
+            <g class="dot" style="transition-delay:.8s"><circle cx="300" cy="186" r="4" fill="#1f5fb8"/><text x="312" y="190" data-zh="施工服務">Installation service</text></g>
+            <g class="dot" style="transition-delay:1.1s"><circle cx="300" cy="214" r="4" fill="#1f5fb8"/><text x="312" y="218" data-zh="預計丈量區間">Measurement window</text></g>
+            <g class="dot" style="transition-delay:1.4s"><circle cx="300" cy="242" r="4" fill="#1f5fb8"/><text x="312" y="246" data-zh="價格">Price</text></g>
+          </g>
+          <text x="370" y="286" text-anchor="middle" font-size="11" fill="#127a3d" font-weight="700" data-zh="短短幾分鐘完成">Done in a few minutes</text>
+        </g>
+      </g>
+      <!-- s3–4: what he thinks -->
+      <g data-s="3-4">
+        <use href="#man" x="30" y="216" width="56" height="84" fill="#1f5fb8"/>
+        <circle cx="94" cy="200" r="7" fill="#eef3fb"/><circle cx="110" cy="184" r="10" fill="#eef3fb"/>
+        <rect x="120" y="36" width="340" height="270" rx="26" fill="#eef3fb"/>
+        <text data-s="3-3" x="290" y="186" text-anchor="middle" font-size="44" font-weight="900" fill="#9db5d8" class="blink">…</text>
+        <g data-s="4">
+          <text x="290" y="66" text-anchor="middle" font-size="12" font-weight="800" fill="#7a8494" data-zh="以前">Before</text>
+          <g font-size="11" text-anchor="middle" fill="#4d5869">
+            <g class="dot" style="transition-delay:.2s"><rect x="138" y="80" width="66" height="40" rx="8" fill="#fff"/><text x="171" y="104" data-zh="跑展示中心">Showroom</text></g>
+            <g class="dot" style="transition-delay:.5s"><rect x="218" y="80" width="66" height="40" rx="8" fill="#fff"/><text x="251" y="104" data-zh="問門市">Ask stores</text></g>
+            <g class="dot" style="transition-delay:.8s"><rect x="298" y="80" width="66" height="40" rx="8" fill="#fff"/><text x="331" y="104" data-zh="等報價">Wait for quotes</text></g>
+            <g class="dot" style="transition-delay:1.1s"><rect x="378" y="80" width="70" height="40" rx="8" fill="#fff"/><text x="413" y="98" data-zh="來回確認">Confirm</text><text x="413" y="112" data-zh="安裝細節">installation</text></g>
+          </g>
+          <path d="M204 100h14M284 100h14M364 100h14" stroke="#7a8494" stroke-width="2"/>
+          <path d="M413 124 C 400 150, 180 140, 171 126" stroke="#c0282f" stroke-width="2" stroke-dasharray="5 5" fill="none" class="flow" marker-end="url(#arR)"/>
+          <text x="290" y="164" text-anchor="middle" font-size="11" fill="#c0282f" data-zh="來來回回">back and forth</text>
+          <g data-s="4" class="d2 up">
+            <text x="290" y="196" text-anchor="middle" font-size="12" font-weight="800" fill="#127a3d" data-zh="現在">Now</text>
+            <use href="#laptop" x="196" y="206" width="78" height="52"/>
+            <text x="330" y="232" font-size="14" font-weight="900" fill="#127a3d" data-zh="網路真方便！">So convenient!</text>
+            <text x="290" y="286" text-anchor="middle" font-size="11.5" fill="#4d5869" data-zh="企業數位化帶來便利">Digitalization = convenience</text>
+          </g>
+        </g>
+      </g>
+      <!-- s5–7: the bank calls to confirm -->
+      <g data-s="5">
+        <use href="#man" x="40" y="150" width="60" height="90" fill="#1f5fb8"/>
+        <g class="ring"><use href="#handset" x="96" y="138" width="34" height="34" fill="#1b2433"/></g>
+        <text x="70" y="262" text-anchor="middle" font-size="12" font-weight="700" fill="#4d5869" data-zh="陳先生">Mr. Chen</text>
+        <g data-s="6" class="slide-r">
+          <use href="#bank" x="352" y="140" width="96" height="84" fill="#102a56"/>
+          <text x="400" y="244" text-anchor="middle" font-size="11" font-weight="700" fill="#102a56" data-zh="EFG 銀行">EFG Bank</text>
+          <text x="400" y="258" text-anchor="middle" font-size="11" font-weight="700" fill="#102a56" data-zh="信用卡中心">card center</text>
+          <path d="M140 170 C 220 140, 280 140, 344 170" stroke="#1f5fb8" stroke-width="2.5" stroke-dasharray="6 6" class="flow" fill="none"/>
+          <rect x="250" y="44" width="210" height="58" rx="14" fill="#102a56"/><text x="355" y="68" text-anchor="middle" font-size="12" fill="#fff" data-zh="今天有一筆">Did you make a card purchase</text><text x="355" y="88" text-anchor="middle" font-size="12" fill="#fff" data-zh="49,900 元的刷卡消費嗎？">of NT$49,900 today?</text>
+          <g data-s="6" class="d2 pop"><rect x="40" y="62" width="150" height="40" rx="14" fill="#e8f0fc"/><text x="115" y="87" text-anchor="middle" font-size="13" font-weight="800" fill="#1f5fb8" data-zh="有，剛剛買的。">Yes, just now.</text></g>
+        </g>
+        <g data-s="7" class="d1 up">
+          <g transform="translate(240 280)"><circle r="34" fill="#fff" stroke="#127a3d" stroke-width="4"/><path d="M0 0V-22M0 0l14 8" stroke="#127a3d" stroke-width="4" stroke-linecap="round"/></g>
+          <text x="290" y="276" font-size="22" font-weight="900" fill="#127a3d" data-zh="3 分鐘">3 min</text>
+          <text x="290" y="298" font-size="11.5" fill="#4d5869" data-zh="銀行風控就來電確認">risk control already called</text>
+        </g>
+      </g>
+    </svg></div><div class="pips"></div></div>
+  <div class="text"><div class="plabel"><b>2</b><em data-zh="第 2 段，共 9 段">Part 2 of 9</em> <span>· p.3</span></div><h2 class="case-title"></h2><div class="paras"></div></div>
+</section>
+
+<!-- ============ PART 3 · p.4 ============ -->
+<section class="part" data-part="3">
+  <div class="figwrap"><div class="fig" role="img" aria-label="Illustration for part 3"><span class="chip" data-zh="示意圖">Illustration</span>
+    <svg viewBox="0 0 480 360" font-family="system-ui,-apple-system,Segoe UI,sans-serif">
+      <g data-s="1">
+        <text x="30" y="42" font-size="13" font-weight="800" fill="#7a8494" data-zh="隔天下午">The next afternoon</text>
+        <rect x="20" y="276" width="150" height="10" rx="3" fill="#c9c4b8"/>
+        <use href="#man" x="46" y="200" width="52" height="78" fill="#1f5fb8"/>
+        <use href="#laptop" x="104" y="242" width="54" height="36"/>
+        <text x="72" y="306" text-anchor="middle" font-size="12" font-weight="700" fill="#4d5869" data-zh="陳志明">Chen Chih-ming</text>
+        <g data-s="1-1" class="ring"><use href="#handset" x="104" y="196" width="30" height="30" fill="#1b2433"/></g>
+      </g>
+      <g data-s="2" class="slide-r">
+        <use href="#agent" x="388" y="196" width="56" height="70" fill="#0f766e"/>
+        <text x="416" y="290" text-anchor="middle" font-size="11" font-weight="700" fill="#0f766e" data-zh="ABC衛浴生活館">ABC Bath &amp; Living</text>
+        <path d="M164 230 C 240 196, 300 196, 380 230" stroke="#0f766e" stroke-width="2.5" stroke-dasharray="6 6" class="flow" fill="none"/>
+      </g>
+      <g data-s="2-2">
+        <g data-s="2" class="d1 pop">
+          <rect x="150" y="60" width="200" height="56" rx="12" fill="#fff4d6" stroke="#e8a317" stroke-width="2"/>
+          <text x="250" y="84" text-anchor="middle" font-size="12" font-weight="800" fill="#a15c00" data-zh="特價優惠限定">Promo price only with</text>
+          <text x="250" y="102" text-anchor="middle" font-size="12" font-weight="800" fill="#a15c00" data-zh="刷 D 銀行信用卡">a D Bank credit card</text>
+        </g>
+        <g data-s="2" class="d2 up">
+          <use href="#cardS" x="196" y="128" width="90" height="57" fill="#1f5fb8"/><text x="276" y="178" text-anchor="end" font-size="11" font-weight="900" fill="#fff">VISA</text>
+          <g class="stamp d2"><circle cx="300" cy="140" r="18" fill="#c0282f"/><path d="M292 132l16 16M308 132l-16 16" stroke="#fff" stroke-width="4" stroke-linecap="round"/></g>
+          <text x="240" y="204" text-anchor="middle" font-size="11" fill="#c0282f" font-weight="700" data-zh="EFG VISA 不符活動規定">EFG VISA: not eligible</text>
+        </g>
+      </g>
+      <g data-s="3-3" class="up">
+        <rect x="16" y="54" width="260" height="104" rx="14" fill="#e8f0fc"/>
+        <path d="M60 158l-6 20 22-20z" fill="#e8f0fc"/>
+        <text x="146" y="82" text-anchor="middle" font-size="12.5" font-weight="800" fill="#102a56" data-zh="網站沒有任何提示！">The website gave no warning!</text>
+        <rect x="34" y="96" width="106" height="24" rx="12" fill="#e3f4e9"/><text x="87" y="112" text-anchor="middle" font-size="11" font-weight="800" fill="#127a3d" data-zh="已授權成功">Authorized ✓</text>
+        <rect x="150" y="96" width="112" height="24" rx="12" fill="#e3f4e9"/><text x="206" y="112" text-anchor="middle" font-size="11" font-weight="800" fill="#127a3d" data-zh="銀行也來電確認">Bank called ✓</text>
+        <text x="146" y="144" text-anchor="middle" font-size="11" fill="#4d5869" data-zh="那現在怎麼辦？">So what now?</text>
+      </g>
+      <g data-s="4-5">
+        <g class="up">
+          <use href="#cardS" x="190" y="66" width="100" height="63" fill="#e07a1f"/><text x="280" y="122" text-anchor="end" font-size="11" font-weight="900" fill="#fff" data-zh="D 卡">D Bank</text>
+          <text x="240" y="152" text-anchor="middle" font-size="12" font-weight="800" fill="#102a56" data-zh="用 D 卡重新刷">Pay again with the D card</text>
+          <text x="240" y="170" text-anchor="middle" font-size="11" fill="#127a3d" data-zh="一樣特價・不影響丈量與安裝排程">same price · schedule unchanged</text>
+        </g>
+      </g>
+      <g data-s="5-5">
+        <g class="pop"><rect x="16" y="22" width="200" height="40" rx="14" fill="#e8f0fc"/><text x="116" y="47" text-anchor="middle" font-size="12" font-weight="800" fill="#1f5fb8" data-zh="先幫我把 VISA 刷退？">Refund my VISA first?</text></g>
+        <g class="pop d2"><rect x="290" y="22" width="174" height="40" rx="14" fill="#ccebe7"/><text x="377" y="47" text-anchor="middle" font-size="12" font-weight="800" fill="#0f766e" data-zh="好的，沒問題。">Sure, no problem.</text></g>
+      </g>
+      <g data-s="6" class="up">
+        <use href="#cloud" x="24" y="96" width="120" height="72" fill="#7a8494"/>
+        <path d="M74 168l-8 16h10l-6 16 18-22H76l6-10z" fill="#e8a317"/>
+        <rect x="170" y="74" width="280" height="76" rx="14" fill="#f4f2ed"/>
+        <text x="310" y="104" text-anchor="middle" font-size="13" font-weight="800" fill="#4d5869" data-zh="多花時間重新處理">Extra time to sort it out</text>
+        <text x="310" y="128" text-anchor="middle" font-size="13" font-weight="800" fill="#4d5869" data-zh="心情有點煩悶">feeling irritated</text>
+      </g>
+    </svg></div><div class="pips"></div></div>
+  <div class="text"><div class="plabel"><b>3</b><em data-zh="第 3 段，共 9 段">Part 3 of 9</em> <span>· p.4</span></div><h2 class="case-title"></h2><div class="paras"></div></div>
+</section>
+
+<!-- ============ PART 4 · p.5 ============ -->
+<section class="part" data-part="4">
+  <div class="figwrap"><div class="fig" role="img" aria-label="Illustration for part 4"><span class="chip" data-zh="示意圖">Illustration</span>
+    <svg viewBox="0 0 480 360" font-family="system-ui,-apple-system,Segoe UI,sans-serif">
+      <g data-s="1-1">
+        <g class="up">
+          <rect x="24" y="40" width="300" height="270" rx="14" fill="#fff" stroke="#dce5f0" stroke-width="2"/>
+          <text x="44" y="70" font-size="13" font-weight="800" fill="#102a56" data-zh="方案頁面">Package page</text>
+          <rect x="44" y="84" width="260" height="10" rx="5" fill="#ebe8e1"/><rect x="44" y="102" width="200" height="10" rx="5" fill="#ebe8e1"/>
+          <text x="44" y="138" font-size="13" font-weight="800" fill="#1f5fb8" text-decoration="underline" data-zh="活動詳情 ▸">Promotion Details ▸</text>
+          <g data-s="1" class="d2 up">
+            <rect x="44" y="154" width="260" height="128" rx="10" fill="#fff4d6" stroke="#e8a317"/>
+            <text x="60" y="184" font-size="12.5" font-weight="800" fill="#a15c00" data-zh="與 D 銀行合作的促銷方案">Promotion with D Bank</text>
+            <text x="60" y="210" font-size="12" fill="#4d5869" data-zh="需使用 D 卡付款">Pay with a D Bank card</text>
+            <text x="60" y="230" font-size="12" fill="#4d5869" data-zh="才可享有優惠">to get the offer</text>
+            <use href="#cardS" x="228" y="226" width="60" height="38" fill="#e07a1f"/>
+          </g>
+        </g>
+        <g data-s="1" class="d1 pop">
+          <circle cx="398" cy="150" r="46" fill="none" stroke="#102a56" stroke-width="10"/>
+          <circle cx="398" cy="150" r="40" fill="#e8f0fc" opacity=".6"/>
+          <path d="M430 184l34 34" stroke="#102a56" stroke-width="14" stroke-linecap="round"/>
+          <text x="398" y="256" text-anchor="middle" font-size="12" font-weight="700" fill="#4d5869" data-zh="回家仔細閱讀">Reading carefully</text>
+          <text x="398" y="272" text-anchor="middle" font-size="12" font-weight="700" fill="#4d5869" data-zh="果然有註明">— it was there</text>
+        </g>
+      </g>
+      <g data-s="2">
+        <g class="up">
+          <rect x="24" y="40" width="270" height="270" rx="14" fill="#fff" stroke="#dce5f0" stroke-width="2"/>
+          <use href="#mail" x="40" y="54" width="40" height="28" style="color:#0f766e"/>
+          <text x="90" y="66" font-size="11.5" font-weight="800" fill="#0f766e" data-zh="ABC衛浴生活館">ABC Bath &amp; Living</text>
+          <text x="90" y="82" font-size="10.5" fill="#7a8494" data-zh="通知">Notice</text>
+          <rect x="40" y="96" width="238" height="40" rx="10" fill="#f4f6fa" stroke="#dce5f0"/>
+          <text x="54" y="121" font-size="12" font-weight="700" fill="#102a56" data-zh="📎 信用卡授權書（需手寫回傳）">📎 Card authorization form</text>
+          <use href="#doc" x="64" y="148" width="72" height="91" style="color:#7a8494"/>
+          <path d="M150 226l40-34 8 8-40 34-12 4z" fill="#e8a317"/>
+          <text x="214" y="190" font-size="10.5" fill="#7a8494" data-zh="手寫填好">fill in by hand</text>
+          <text x="214" y="204" font-size="10.5" fill="#7a8494" data-zh="再回傳">and send back</text>
+          <rect x="40" y="252" width="238" height="44" rx="10" fill="none" stroke="#c0282f" stroke-width="2" stroke-dasharray="6 5"/>
+          <text x="159" y="272" text-anchor="middle" font-size="11.5" font-weight="800" fill="#c0282f" data-zh="原先那筆 VISA 授權呢？">The earlier VISA authorization?</text>
+          <text x="159" y="288" text-anchor="middle" font-size="10.5" fill="#c0282f" data-zh="沒有說明">not mentioned</text>
+        </g>
+        <g data-s="2" class="d2 slide-r">
+          <use href="#man" x="370" y="214" width="48" height="72" fill="#1f5fb8"/>
+          <use href="#cloud" x="300" y="70" width="176" height="120" fill="#eef3fb"/>
+          <text x="388" y="120" text-anchor="middle" font-size="12" font-weight="700" fill="#102a56" data-zh="先等刷退通知或">Wait for the refund</text>
+          <text x="388" y="138" text-anchor="middle" font-size="12" font-weight="700" fill="#102a56" data-zh="取消授權證明">or cancellation proof</text>
+          <text x="388" y="156" text-anchor="middle" font-size="12" font-weight="700" fill="#102a56" data-zh="再回傳比較保險">before sending it</text>
+          <g transform="translate(330 214)"><g class="pulse"><path d="M0 0h22M0 32h22M3 0c0 10 16 10 16 16S3 22 3 32M19 0c0 10-16 10-16 16s16 6 16 16" stroke="#a15c00" stroke-width="2.5" fill="none"/></g></g>
+        </g>
+      </g>
+    </svg></div><div class="pips"></div></div>
+  <div class="text"><div class="plabel"><b>4</b><em data-zh="第 4 段，共 9 段">Part 4 of 9</em> <span>· p.5</span></div><h2 class="case-title"></h2><div class="paras"></div></div>
+</section>
+
+<!-- ============ PART 5 · p.6 ============ -->
+<section class="part" data-part="5">
+  <div class="figwrap"><div class="fig" role="img" aria-label="Illustration for part 5"><span class="chip" data-zh="示意圖">Illustration</span>
+    <svg viewBox="0 0 480 360" font-family="system-ui,-apple-system,Segoe UI,sans-serif">
+      <g data-s="1-3">
+        <rect x="20" y="36" width="290" height="300" rx="14" fill="#fff" stroke="#dce5f0" stroke-width="2"/>
+        <text x="38" y="64" font-size="13" font-weight="800" fill="#102a56" data-zh="陳先生的收件匣">Mr. Chen's inbox</text>
+        <g font-size="11">
+          <g class="dot" style="transition-delay:.1s"><rect x="34" y="78" width="262" height="44" rx="8" fill="#f4f6fa"/><text x="46" y="96" font-weight="800" fill="#0f766e" data-zh="ABC衛浴生活館">ABC Bath &amp; Living</text><text x="46" y="113" fill="#4d5869" data-zh="📎 刷卡授權書">📎 Authorization form</text></g>
+          <g class="dot" style="transition-delay:.6s"><rect x="34" y="128" width="262" height="44" rx="8" fill="#f4f6fa"/><text x="46" y="146" font-weight="800" fill="#0f766e" data-zh="李心妤（客服專員）">Li Hsin-yu (customer service)</text><text x="46" y="163" fill="#4d5869" data-zh="方案資訊 ＋ 📎 刷卡授權書">Package info + 📎 the same form</text></g>
+        </g>
+        <g data-s="2" class="up" font-size="11">
+          <rect x="34" y="178" width="262" height="44" rx="8" fill="#e8f0fc" stroke="#1f5fb8"/><text x="46" y="196" font-weight="800" fill="#1f5fb8" data-zh="寄件者：陳先生">Sent by Mr. Chen</text><text x="46" y="213" fill="#4d5869" data-zh="請提供 VISA 刷退證明或取消授權通知">Please send the VISA refund / cancellation proof</text>
+        </g>
+        <g data-s="3" class="up" font-size="11">
+          <rect x="34" y="228" width="262" height="44" rx="8" fill="#f4f6fa"/><text x="46" y="246" font-weight="800" fill="#0f766e" data-zh="李心妤（次日早上）">Li Hsin-yu (next morning)</text><text x="46" y="263" fill="#4d5869" data-zh="📎 刷卡授權書（又一次）">📎 the same form, again</text>
+          <g class="stamp d1"><circle cx="268" cy="292" r="24" fill="#c0282f"/><text x="268" y="300" text-anchor="middle" font-size="18" font-weight="900" fill="#fff">×3</text></g>
+        </g>
+        <rect x="330" y="40" width="130" height="92" rx="12" fill="#fcebeb"/>
+        <text x="395" y="66" text-anchor="middle" font-size="11.5" font-weight="800" fill="#c0282f" data-zh="刷退通知">Refund notice</text>
+        <text x="395" y="102" text-anchor="middle" font-size="26" fill="#c0282f">∅</text>
+        <text x="395" y="124" text-anchor="middle" font-size="10.5" fill="#c0282f" data-zh="四萬多元：一字未提">NT$40,000+: not a word</text>
+        <g data-s="2">
+          <g transform="translate(336 150)">
+            <g class="dot" style="transition-delay:.2s"><use href="#handset" x="0" y="0" width="22" height="22" fill="#1b2433"/><text x="30" y="16" font-size="11" fill="#7a8494" data-zh="→ 語音信箱">→ voicemail</text></g>
+            <g class="dot" style="transition-delay:.6s"><use href="#handset" x="0" y="30" width="22" height="22" fill="#1b2433"/><text x="30" y="46" font-size="11" fill="#7a8494" data-zh="→ 語音信箱">→ voicemail</text></g>
+            <g class="dot" style="transition-delay:1s"><use href="#handset" x="0" y="60" width="22" height="22" fill="#1b2433"/><text x="30" y="76" font-size="11" fill="#7a8494" data-zh="→ 語音信箱">→ voicemail</text></g>
+          </g>
+          <text x="395" y="258" text-anchor="middle" font-size="10.5" fill="#7a8494" data-zh="下班後打給客服">after-work calls</text>
+        </g>
+      </g>
+      <g data-s="4-5">
+        <use href="#man" x="40" y="170" width="50" height="75" fill="#1f5fb8"/>
+        <use href="#agent" x="392" y="170" width="54" height="68" fill="#0f766e"/>
+        <text x="65" y="264" text-anchor="middle" font-size="11" font-weight="700" fill="#4d5869" data-zh="陳志明">Chen Chih-ming</text>
+        <text x="419" y="258" text-anchor="middle" font-size="11" font-weight="700" fill="#0f766e" data-zh="李心妤">Li Hsin-yu</text>
+        <path d="M96 200 C 200 176, 280 176, 384 200" stroke="#0f766e" stroke-width="2.5" stroke-dasharray="6 6" class="flow" fill="none"/>
+        <g data-s="4-4" class="pop"><rect x="226" y="62" width="236" height="56" rx="14" fill="#ccebe7"/><text x="344" y="86" text-anchor="middle" font-size="12" font-weight="800" fill="#0f766e" data-zh="您只要將表單填好">Just fill in the form</text><text x="344" y="104" text-anchor="middle" font-size="12" font-weight="800" fill="#0f766e" data-zh="回傳就可以了喔！">and send it back!</text></g>
+        <g data-s="5" class="up">
+          <rect x="110" y="32" width="260" height="120" rx="14" fill="#fff" stroke="#dce5f0" stroke-width="2"/>
+          <use href="#cardS" x="128" y="48" width="56" height="35" fill="#1f5fb8"/><text x="196" y="72" font-size="13" font-weight="800" fill="#1b2433">VISA  NT$49,900</text>
+          <text x="196" y="96" font-size="15" font-weight="900" fill="#7a8494">+</text>
+          <use href="#cardS" x="128" y="102" width="56" height="35" fill="#e07a1f"/><text x="196" y="126" font-size="13" font-weight="800" fill="#1b2433" data-zh="D 卡  NT$49,900">D card  NT$49,900</text>
+          <g class="stamp d2"><rect x="150" y="270" width="180" height="46" rx="10" fill="#c0282f"/><text x="240" y="300" text-anchor="middle" font-size="16" font-weight="900" fill="#fff" data-zh="付了兩次錢？">Paid twice?</text></g>
+        </g>
+      </g>
+    </svg></div><div class="pips"></div></div>
+  <div class="text"><div class="plabel"><b>5</b><em data-zh="第 5 段，共 9 段">Part 5 of 9</em> <span>· p.6</span></div><h2 class="case-title"></h2><div class="paras"></div></div>
+</section>
+
+<!-- ============ PART 6 · p.7 ============ -->
+<section class="part" data-part="6">
+  <div class="figwrap"><div class="fig" role="img" aria-label="Illustration for part 6"><span class="chip" data-zh="示意圖">Illustration</span>
+    <svg viewBox="0 0 480 360" font-family="system-ui,-apple-system,Segoe UI,sans-serif">
+      <g data-s="1-2">
+        <text x="30" y="46" font-size="12" font-weight="800" fill="#0f766e" data-zh="客服專員的說法">What the representative says</text>
+        <g font-size="11.5" text-anchor="middle" font-weight="800">
+          <g class="dot" style="transition-delay:.1s"><rect x="24" y="70" width="128" height="74" rx="12" fill="#e3f4e9"/><text x="88" y="100" fill="#127a3d" data-zh="刷卡授權">Card</text><text x="88" y="116" fill="#127a3d" data-zh=" ">authorization</text><text x="88" y="136" fill="#127a3d">✓</text></g>
+          <g class="dot" style="transition-delay:.6s"><rect x="176" y="70" width="128" height="74" rx="12" fill="#fff" stroke="#c0282f" stroke-width="2" stroke-dasharray="6 5"/><text x="240" y="100" fill="#c0282f" data-zh="向銀行送出請款">Payment request</text><text x="240" y="116" fill="#c0282f" data-zh=" ">to the bank</text><text x="240" y="136" fill="#c0282f" data-zh="✕ 不送出">✕ not sent</text></g>
+          <g class="dot" style="transition-delay:1.1s"><rect x="328" y="70" width="128" height="74" rx="12" fill="#f4f2ed"/><text x="392" y="100" fill="#7a8494" data-zh="向持卡人扣款">Charge to</text><text x="392" y="116" fill="#7a8494" data-zh=" ">the cardholder</text><text x="392" y="136" fill="#7a8494" data-zh="✕ 不會扣款">✕ none</text></g>
+        </g>
+        <path d="M152 107h22" stroke="#7a8494" stroke-width="2.5" marker-end="url(#ar)"/><path d="M304 107h22" stroke="#7a8494" stroke-width="2.5" marker-end="url(#ar)"/>
+        <use href="#agent" x="60" y="190" width="54" height="68" fill="#0f766e"/>
+        <rect x="128" y="196" width="190" height="44" rx="12" fill="#ccebe7"/><text x="223" y="223" text-anchor="middle" font-size="12" font-weight="800" fill="#0f766e" data-zh="直接再授權 D 卡就好">Just authorize the D card</text>
+        <g data-s="2" class="pop"><use href="#man" x="380" y="200" width="50" height="75" fill="#1f5fb8"/><text x="405" y="190" text-anchor="middle" font-size="22" font-weight="900" fill="#c0282f">?!</text><text x="405" y="296" text-anchor="middle" font-size="11" fill="#4d5869" data-zh="不合乎常規">against normal practice</text></g>
+      </g>
+      <g data-s="3-3">
+        <text x="30" y="46" font-size="12" font-weight="800" fill="#1f5fb8" data-zh="陳先生熟悉的門市退貨">An in-store return, as Mr. Chen knows it</text>
+        <g class="up">
+          <rect x="30" y="196" width="200" height="90" rx="8" fill="#c9c4b8"/><rect x="60" y="150" width="90" height="50" rx="6" fill="#1b2433"/><rect x="68" y="158" width="74" height="26" rx="3" fill="#e3f4e9"/>
+          <use href="#cardS" x="160" y="160" width="56" height="35" fill="#1f5fb8"/>
+          <text x="130" y="310" text-anchor="middle" font-size="11" fill="#4d5869" data-zh="同一張卡刷退">refund to the same card</text>
+        </g>
+        <g class="d1 up" data-s="3">
+          <use href="#doc" x="270" y="80" width="80" height="101" style="color:#127a3d"/>
+          <text x="310" y="200" text-anchor="middle" font-size="11.5" font-weight="800" fill="#127a3d" data-zh="刷退／取消交易證明">Refund / cancellation proof</text>
+        </g>
+        <g class="d2 up" data-s="3">
+          <use href="#bank" x="370" y="208" width="80" height="70" fill="#102a56"/>
+          <text x="410" y="298" text-anchor="middle" font-size="10.5" fill="#102a56" data-zh="銀行已有交易紀錄">bank already has a record</text>
+        </g>
+      </g>
+      <g data-s="4-4">
+        <g class="up">
+          <rect x="30" y="64" width="190" height="200" rx="14" fill="#fff" stroke="#dce5f0" stroke-width="2"/>
+          <text x="125" y="96" text-anchor="middle" font-size="13" font-weight="800" fill="#102a56" data-zh="實體刷卡">In-store card payment</text>
+          <use href="#doc" x="96" y="116" width="58" height="73" style="color:#7a8494"/>
+          <text x="125" y="214" text-anchor="middle" font-size="11.5" fill="#4d5869" data-zh="有刷退流程">has a refund procedure</text>
+          <rect x="260" y="64" width="190" height="200" rx="14" fill="#fff" stroke="#0f766e" stroke-width="2"/>
+          <text x="355" y="96" text-anchor="middle" font-size="13" font-weight="800" fill="#0f766e" data-zh="線上平台授權">Online authorization</text>
+          <use href="#laptop" x="316" y="118" width="78" height="52"/>
+          <text x="355" y="206" text-anchor="middle" font-size="11.5" fill="#4d5869" data-zh="沒送出請款">no payment request</text>
+          <text x="355" y="222" text-anchor="middle" font-size="11.5" fill="#4d5869" data-zh="→ 不會扣款">→ no charge</text>
+          <circle cx="240" cy="164" r="20" fill="#0f766e"/><text x="240" y="172" text-anchor="middle" font-size="22" font-weight="900" fill="#fff">≠</text>
+        </g>
+        <text x="240" y="300" text-anchor="middle" font-size="12" fill="#0f766e" font-weight="700" data-s="4" class="d2" data-zh="客服專員：線上和門市不一樣">Representative: online is different</text>
+      </g>
+      <g data-s="5">
+        <g class="up">
+          <rect x="60" y="44" width="250" height="250" rx="12" fill="#fff" stroke="#dce5f0" stroke-width="2"/>
+          <text x="80" y="74" font-size="13" font-weight="800" fill="#102a56" data-zh="信用卡帳單">Credit card statement</text>
+          <text x="80" y="92" font-size="11" fill="#7a8494" data-zh="一個月後">one month later</text>
+          <rect x="80" y="110" width="210" height="10" rx="5" fill="#ebe8e1"/><rect x="80" y="130" width="180" height="10" rx="5" fill="#ebe8e1"/>
+          <rect x="74" y="150" width="222" height="34" rx="8" fill="#fcebeb" stroke="#c0282f" stroke-width="2"/>
+          <text x="84" y="172" font-size="11" font-weight="800" fill="#c0282f" data-zh="ABC衛浴生活館">ABC Bath &amp; Living</text><text x="288" y="172" text-anchor="end" font-size="11" font-weight="800" fill="#c0282f">49,900 ?</text>
+          <rect x="80" y="200" width="200" height="10" rx="5" fill="#ebe8e1"/><rect x="80" y="220" width="150" height="10" rx="5" fill="#ebe8e1"/>
+        </g>
+        <g data-s="5" class="d2 pop">
+          <rect x="250" y="236" width="210" height="80" rx="14" fill="#102a56"/>
+          <text x="355" y="266" text-anchor="middle" font-size="12.5" font-weight="800" fill="#fff" data-zh="我怎麼知道你們沒去請款？">How do I know you didn't?</text>
+          <text x="355" y="290" text-anchor="middle" font-size="12.5" font-weight="800" fill="#e8a317" data-zh="你們會負責嗎？">Will you take responsibility?</text>
+        </g>
+      </g>
+    </svg></div><div class="pips"></div></div>
+  <div class="text"><div class="plabel"><b>6</b><em data-zh="第 6 段，共 9 段">Part 6 of 9</em> <span>· p.7</span></div><h2 class="case-title"></h2><div class="paras"></div></div>
+</section>
+
+<!-- ============ PART 7 · p.8 ============ -->
+<section class="part" data-part="7">
+  <div class="figwrap"><div class="fig" role="img" aria-label="Illustration for part 7"><span class="chip" data-zh="示意圖">Illustration</span>
+    <svg viewBox="0 0 480 360" font-family="system-ui,-apple-system,Segoe UI,sans-serif">
+      <g data-s="1-3">
+        <text x="30" y="46" font-size="12" font-weight="800" fill="#1f5fb8" data-zh="陳先生要的證明">The proof Mr. Chen asks for</text>
+        <g class="dot" style="transition-delay:.1s"><use href="#doc" x="30" y="62" width="70" height="88" style="color:#7a8494"/><path d="M28 60l76 92" stroke="#c0282f" stroke-width="3"/><text x="65" y="168" text-anchor="middle" font-size="10.5" fill="#7a8494" data-zh="刷退單">Refund slip</text><text x="65" y="182" text-anchor="middle" font-size="10" fill="#7a8494" data-zh="（僅門市）">(in-store only)</text></g>
+        <g class="dot" style="transition-delay:.6s"><rect x="140" y="60" width="140" height="96" rx="10" fill="#fff" stroke="#1f5fb8" stroke-width="2" stroke-dasharray="6 5"/><text x="210" y="96" text-anchor="middle" font-size="12" font-weight="800" fill="#1f5fb8" data-zh="授權取消碼">Authorization</text><text x="210" y="112" text-anchor="middle" font-size="12" font-weight="800" fill="#1f5fb8" data-zh=" ">cancellation code</text><text x="210" y="140" text-anchor="middle" font-size="16" fill="#1f5fb8" letter-spacing="2">#######</text></g>
+        <g class="dot" style="transition-delay:1s"><rect x="300" y="60" width="150" height="96" rx="10" fill="#fff" stroke="#1f5fb8" stroke-width="2" stroke-dasharray="6 5"/><text x="375" y="96" text-anchor="middle" font-size="12" font-weight="800" fill="#1f5fb8" data-zh="取消請款通知">Payment request</text><text x="375" y="112" text-anchor="middle" font-size="12" font-weight="800" fill="#1f5fb8" data-zh=" ">cancellation notice</text></g>
+        <text x="300" y="186" text-anchor="middle" font-size="11" fill="#4d5869" data-zh="才能跟信用卡銀行確認帳已消除">so he can check with his bank</text>
+        <g data-s="2"><use href="#agent" x="370" y="210" width="60" height="76" fill="#0f766e"/><path d="M424 218q4 8 0 12q-4-4 0-12z" fill="#3f84d6"/><text x="400" y="306" text-anchor="middle" font-size="11" fill="#0f766e" font-weight="700" data-zh="萬般無奈">utterly helpless</text></g>
+        <g data-s="3">
+          <g class="stamp"><rect x="152" y="86" width="296" height="48" rx="8" fill="none" stroke="#c0282f" stroke-width="4"/><text x="300" y="118" text-anchor="middle" font-size="19" font-weight="900" fill="#c0282f" data-zh="我們沒有這個程序">NO SUCH PROCEDURE</text></g>
+          <g class="d2 up" data-s="3">
+            <rect x="24" y="214" width="320" height="86" rx="12" fill="#ccebe7"/>
+            <text x="40" y="240" font-size="11.5" font-weight="800" fill="#0f766e" data-zh="公司的流程：">The company's process:</text>
+            <text x="40" y="262" font-size="11.5" fill="#0f766e" data-zh="付款方式不成立 → 不送出請款">Payment method invalid → no payment request</text>
+            <text x="40" y="282" font-size="11.5" fill="#0f766e" data-zh="→ 客人一定不會被扣款">→ the customer will not be charged</text>
+          </g>
+        </g>
+      </g>
+      <g data-s="4" class="up">
+        <use href="#man" x="70" y="120" width="70" height="105" fill="#1f5fb8"/>
+        <g transform="translate(190 150) rotate(150 25 25)"><use href="#handset" width="50" height="50" fill="#7a8494"/></g>
+        <text x="300" y="168" font-size="16" font-weight="900" fill="#102a56" data-zh="草草掛上電話">Hangs up</text>
+        <text x="300" y="194" font-size="12" fill="#4d5869" data-zh="跟第一線客服爭論">Arguing with frontline</text>
+        <text x="300" y="212" font-size="12" fill="#4d5869" data-zh="也無法解決問題">service won't fix it</text>
+      </g>
+    </svg></div><div class="pips"></div></div>
+  <div class="text"><div class="plabel"><b>7</b><em data-zh="第 7 段，共 9 段">Part 7 of 9</em> <span>· p.8</span></div><h2 class="case-title"></h2><div class="paras"></div></div>
+</section>
+
+<!-- ============ PART 8 · p.9 ============ -->
+<section class="part" data-part="8">
+  <div class="figwrap"><div class="fig" role="img" aria-label="Illustration for part 8"><span class="chip" data-zh="示意圖">Illustration</span>
+    <svg viewBox="0 0 480 360" font-family="system-ui,-apple-system,Segoe UI,sans-serif">
+      <g data-s="1-1">
+        <text x="30" y="46" font-size="12" font-weight="800" fill="#102a56" data-zh="ABC 過去大量投入">What ABC has invested in</text>
+        <g font-size="11.5" font-weight="800" text-anchor="middle">
+          <g class="dot" style="transition-delay:.1s"><rect x="24" y="64" width="134" height="64" rx="12" fill="#e8f0fc"/><text x="91" y="92" fill="#1f5fb8" data-zh="展示中心數位化">Digitized</text><text x="91" y="110" fill="#1f5fb8" data-zh=" ">showrooms</text></g>
+          <g class="dot" style="transition-delay:.4s"><rect x="173" y="64" width="134" height="64" rx="12" fill="#e8f0fc"/><text x="240" y="101" fill="#1f5fb8" data-zh="線上預約">Online booking</text></g>
+          <g class="dot" style="transition-delay:.7s"><rect x="322" y="64" width="134" height="64" rx="12" fill="#e8f0fc"/><text x="389" y="101" fill="#1f5fb8" data-zh="會員行銷">Member marketing</text></g>
+        </g>
+        <g data-s="1" class="d2 pop"><rect x="120" y="146" width="240" height="44" rx="12" fill="#fcebeb" stroke="#c0282f" stroke-width="2"/><text x="240" y="174" text-anchor="middle" font-size="12.5" font-weight="800" fill="#c0282f" data-zh="線上刷卡買方案 → 不合常理？">Paying online → this mess?</text></g>
+        <g data-s="1" class="d3 up">
+          <use href="#man" x="60" y="220" width="50" height="75" fill="#1f5fb8"/><use href="#handset" x="112" y="226" width="26" height="26" fill="#1b2433" class="ring"/>
+          <path d="M146 258h170" stroke="#1f5fb8" stroke-width="2.5" stroke-dasharray="6 6" class="flow" marker-end="url(#arB)"/>
+          <use href="#exec" x="350" y="216" width="52" height="78" fill="#102a56"/>
+          <text x="376" y="314" text-anchor="middle" font-size="11" font-weight="700" fill="#102a56" data-zh="大學同學（高階主管）">classmate · senior executive</text>
+        </g>
+      </g>
+      <g data-s="2-4">
+        <use href="#man" x="40" y="170" width="54" height="81" fill="#1f5fb8"/>
+        <text x="67" y="272" text-anchor="middle" font-size="11" font-weight="700" fill="#4d5869" data-zh="志明">Chih-ming</text>
+        <use href="#exec" x="230" y="166" width="56" height="84" fill="#102a56"/>
+        <text x="258" y="272" text-anchor="middle" font-size="11" font-weight="700" fill="#102a56" data-zh="老吳">Wu</text>
+        <path d="M100 210h120" stroke="#1f5fb8" stroke-width="2.5" stroke-dasharray="6 6" class="flow"/>
+        <g data-s="2-2" class="pop"><rect x="190" y="70" width="140" height="52" rx="14" fill="#102a56"/><text x="260" y="103" text-anchor="middle" font-size="17" font-weight="900" fill="#fff" data-zh="有問題？！">A problem?!</text></g>
+        <g data-s="3-3" class="pop"><text x="258" y="130" text-anchor="middle" font-size="40" font-weight="900" fill="#7a8494">? ? ?</text><text x="258" y="152" text-anchor="middle" font-size="11" fill="#7a8494" data-zh="聽得一頭霧水">completely baffled</text></g>
+        <g data-s="4">
+          <rect x="150" y="56" width="200" height="56" rx="14" fill="#102a56"/><text x="250" y="80" text-anchor="middle" font-size="12" font-weight="800" fill="#fff" data-zh="你這個方案我來處理">I'll take care of it —</text><text x="250" y="98" text-anchor="middle" font-size="12" font-weight="800" fill="#e8a317" data-zh="絕對不會有問題">no problem at all</text>
+          <g class="d1 slide-r" data-s="4"><use href="#man" x="382" y="168" width="52" height="78" fill="#a15c00"/><text x="408" y="272" text-anchor="middle" font-size="11" font-weight="700" fill="#a15c00" data-zh="財務部同事">finance colleague</text>
+          <path d="M292 214h80" stroke="#a15c00" stroke-width="2.5" marker-end="url(#ar)"/><text x="332" y="204" text-anchor="middle" font-size="10" fill="#a15c00" data-zh="轉接">hands over</text></g>
+        </g>
+      </g>
+      <g data-s="5">
+        <text x="240" y="44" text-anchor="middle" font-size="13" font-weight="800" fill="#102a56" data-zh="ABC衛浴生活館的內部分工">How ABC is organized inside</text>
+        <g class="slide-l">
+          <rect x="24" y="62" width="250" height="250" rx="14" fill="#e8f0fc" stroke="#1f5fb8" stroke-width="2"/>
+          <text x="149" y="92" text-anchor="middle" font-size="13.5" font-weight="900" fill="#1f5fb8" data-zh="門市營運部">Store Operations Dept.</text>
+          <g font-size="12" fill="#102a56">
+            <g class="dot" style="transition-delay:.4s"><rect x="44" y="110" width="210" height="36" rx="8" fill="#fff"/><text x="60" y="133" data-zh="① 方案銷售">① Package sales</text></g>
+            <g class="dot" style="transition-delay:.7s"><rect x="44" y="154" width="210" height="36" rx="8" fill="#fff"/><text x="60" y="177" data-zh="② 訂單成立">② Order placement</text></g>
+            <g class="dot" style="transition-delay:1s"><rect x="44" y="198" width="210" height="36" rx="8" fill="#fff"/><text x="60" y="221" data-zh="③ 丈量預約">③ Measurement booking</text></g>
+            <g class="dot" style="transition-delay:1.3s"><rect x="44" y="242" width="210" height="36" rx="8" fill="#fff"/><text x="60" y="265" data-zh="④ 安裝排程">④ Installation scheduling</text></g>
+          </g>
+        </g>
+        <line x1="296" y1="62" x2="296" y2="312" stroke="#7a8494" stroke-width="3" stroke-dasharray="8 6"/>
+        <g class="slide-r">
+          <rect x="318" y="62" width="138" height="250" rx="14" fill="#fff4d6" stroke="#a15c00" stroke-width="2"/>
+          <text x="387" y="92" text-anchor="middle" font-size="13.5" font-weight="900" fill="#a15c00" data-zh="財務部">Finance Dept.</text>
+          <text x="387" y="190" text-anchor="middle" font-size="34" font-weight="900" fill="#e8c27a">?</text>
+        </g>
+        <text x="296" y="334" text-anchor="middle" font-size="11" fill="#7a8494" data-zh="分屬不同單位">separate units</text>
+      </g>
+    </svg></div><div class="pips"></div></div>
+  <div class="text"><div class="plabel"><b>8</b><em data-zh="第 8 段，共 9 段">Part 8 of 9</em> <span>· p.9</span></div><h2 class="case-title"></h2><div class="paras"></div></div>
+</section>
+
+<!-- ============ PART 9 · p.10 ============ -->
+<section class="part" data-part="9">
+  <div class="figwrap"><div class="fig" role="img" aria-label="Illustration for part 9"><span class="chip" data-zh="示意圖">Illustration</span>
+    <svg viewBox="0 0 480 360" font-family="system-ui,-apple-system,Segoe UI,sans-serif">
+      <g data-s="1-1">
+        <text x="24" y="40" font-size="12.5" font-weight="800" fill="#102a56" data-zh="每天的請款流程">The daily payment-request flow</text>
+        <rect x="16" y="54" width="140" height="196" rx="12" fill="#e8f0fc"/>
+        <text x="86" y="76" text-anchor="middle" font-size="11.5" font-weight="900" fill="#1f5fb8" data-zh="門市營運部">Store Operations</text>
+        <g font-size="10.5" fill="#102a56">
+          <g class="dot" style="transition-delay:.2s"><rect x="28" y="88" width="116" height="26" rx="6" fill="#fff"/><text x="38" y="105" data-zh="訂單 ✓ 有效成立">Order ✓ valid</text></g>
+          <g class="dot" style="transition-delay:.4s"><rect x="28" y="120" width="116" height="26" rx="6" fill="#fff"/><text x="38" y="137" data-zh="訂單 ✓ 有效成立">Order ✓ valid</text></g>
+          <g class="dot" style="transition-delay:.6s"><rect x="28" y="152" width="116" height="26" rx="6" fill="#fcebeb" stroke="#c0282f"/><text x="36" y="169" fill="#c0282f" font-weight="800" font-size="10" data-zh="陳先生 ✕ 不符資格">Chen ✕ not eligible</text></g>
+          <g class="dot" style="transition-delay:.8s"><rect x="28" y="184" width="116" height="26" rx="6" fill="#fff"/><text x="38" y="201" data-zh="訂單 ✓ 有效成立">Order ✓ valid</text></g>
+        </g>
+        <text x="86" y="234" text-anchor="middle" font-size="10" fill="#4d5869" data-zh="每天清算">cleared daily</text>
+        <g class="d1" data-s="1">
+          <path d="M158 120h52" stroke="#1f5fb8" stroke-width="3" marker-end="url(#arB)"/>
+          <g class="travel"><rect x="160" y="104" width="34" height="14" rx="4" fill="#1f5fb8"/><text x="177" y="115" text-anchor="middle" font-size="8" fill="#fff">#No.</text></g>
+          <text x="186" y="146" text-anchor="middle" font-size="10" fill="#1f5fb8" data-zh="訂單編號">order numbers</text>
+        </g>
+        <g class="d2" data-s="1">
+          <rect x="214" y="80" width="112" height="84" rx="12" fill="#fff4d6" stroke="#a15c00"/>
+          <text x="270" y="112" text-anchor="middle" font-size="11.5" font-weight="900" fill="#a15c00" data-zh="財務部">Finance</text>
+          <text x="270" y="132" text-anchor="middle" font-size="10" fill="#a15c00" data-zh="統一請款">batch payment</text>
+          <text x="270" y="146" text-anchor="middle" font-size="10" fill="#a15c00" data-zh=" ">requests</text>
+          <path d="M328 122h50" stroke="#a15c00" stroke-width="3" marker-end="url(#ar)"/>
+          <use href="#bank" x="384" y="88" width="80" height="70" fill="#102a56"/>
+          <text x="424" y="176" text-anchor="middle" font-size="10.5" font-weight="700" fill="#102a56" data-zh="銀行">Bank</text>
+        </g>
+        <g class="d3" data-s="1">
+          <path d="M144 166 C 170 200, 180 250, 200 268" stroke="#c0282f" stroke-width="2" stroke-dasharray="5 5" fill="none" marker-end="url(#arR)"/>
+          <rect x="200" y="252" width="264" height="74" rx="12" fill="#fcebeb"/>
+          <text x="214" y="276" font-size="11.5" font-weight="800" fill="#c0282f" data-zh="沒送交 → 財務部不請款">Not passed on → no payment request</text>
+          <g><use href="#cardS" x="214" y="286" width="46" height="29" fill="#1f5fb8" class="expire"/></g>
+          <text x="270" y="300" font-size="11" fill="#c0282f" data-zh="授權記錄最終自動失效">authorization expires on its own</text>
+          <text x="270" y="316" font-size="11" font-weight="800" fill="#127a3d" data-zh="→ 持卡人不會被扣款">→ the cardholder is not charged</text>
+        </g>
+      </g>
+      <g data-s="2-3">
+        <rect x="150" y="60" width="180" height="170" rx="14" fill="#1b2433"/>
+        <text x="240" y="134" text-anchor="middle" font-size="14" font-weight="900" fill="#fff" data-zh="ABC 內部">Inside ABC</text>
+        <text x="240" y="156" text-anchor="middle" font-size="11" fill="#9aa4b2" data-zh="（外面看不到）">(not visible from outside)</text>
+        <use href="#man" x="44" y="134" width="54" height="81" fill="#1f5fb8"/>
+        <text x="71" y="236" text-anchor="middle" font-size="11" font-weight="700" fill="#4d5869" data-zh="消費者">The consumer</text>
+        <use href="#bank" x="380" y="120" width="80" height="70" fill="#102a56"/>
+        <text x="420" y="208" text-anchor="middle" font-size="11" fill="#102a56" data-zh="銀行">Bank</text>
+        <path d="M330 150h46" stroke="#7a8494" stroke-width="2.5" stroke-dasharray="4 6" marker-end="url(#ar)"/>
+        <g data-s="3" class="pop">
+          <rect x="24" y="260" width="432" height="70" rx="14" fill="#e8f0fc"/>
+          <text x="240" y="288" text-anchor="middle" font-size="12.5" font-weight="800" fill="#102a56" data-zh="跟銀行的作業一致嗎？">Is this consistent with how banks work?</text>
+          <text x="240" y="310" text-anchor="middle" font-size="12.5" font-weight="800" fill="#1f5fb8" data-zh="消費者怎麼確認有沒有送出請款？">How can a consumer check?</text>
+          <text x="120" y="120" text-anchor="middle" font-size="26" font-weight="900" fill="#1f5fb8">?</text>
+        </g>
+      </g>
+      <g data-s="4">
+        <g data-s="4-4" class="up">
+          <rect x="40" y="56" width="400" height="74" rx="14" fill="#fff4d6"/>
+          <text x="240" y="86" text-anchor="middle" font-size="12.5" font-weight="800" fill="#a15c00" data-zh="只要我們沒有送出，銀行真的不會扣款">As long as we don't send it, the bank won't charge you</text>
+          <text x="240" y="110" text-anchor="middle" font-size="12" fill="#a15c00" data-zh="我們公司的作業流程一直都是這樣">This is how we've always operated</text>
+          <g font-size="11.5" font-weight="800" fill="#127a3d">
+            <text x="80" y="176" data-zh="✓ 衛浴方案">✓ Bathroom package</text><text x="80" y="200" data-zh="✓ 丈量預約">✓ Measurement booking</text><text x="80" y="224" data-zh="✓ 後續安裝">✓ Installation</text>
+          </g>
+          <text x="300" y="200" font-size="12" fill="#102a56" font-weight="700" data-zh="我親自來處理！">"I'll handle it personally!"</text>
+        </g>
+        <g data-s="5">
+          <use href="#man" x="60" y="150" width="60" height="90" fill="#1f5fb8"/>
+          <use href="#exec" x="200" y="150" width="60" height="90" fill="#102a56"/>
+          <text x="90" y="262" text-anchor="middle" font-size="11" font-weight="700" fill="#4d5869" data-zh="陳先生">Mr. Chen</text>
+          <text x="230" y="262" text-anchor="middle" font-size="11" font-weight="700" fill="#102a56" data-zh="老同學">old classmate</text>
+          <text x="160" y="140" text-anchor="middle" font-size="12" font-weight="800" fill="#127a3d" data-zh="選擇相信">chooses to trust</text>
+          <path d="M120 196h80" stroke="#127a3d" stroke-width="4" stroke-linecap="round"/>
+          <g class="d1 pop" data-s="5"><use href="#cloud" x="286" y="96" width="170" height="100" fill="#e6e3dc"/><text x="370" y="150" text-anchor="middle" font-size="22" font-weight="900" fill="#7a8494">? ?</text><text x="370" y="214" text-anchor="middle" font-size="11" fill="#7a8494" data-zh="疑惑沒有完全解開">doubts not fully resolved</text></g>
+        </g>
+        <g data-s="6" class="up">
+          <rect x="24" y="282" width="432" height="58" rx="12" fill="#102a56"/>
+          <text x="240" y="306" text-anchor="middle" font-size="12" font-weight="800" fill="#fff" data-zh="第一次買高單價衛浴設備的消費者">First-time buyers of expensive fixtures</text>
+          <text x="240" y="326" text-anchor="middle" font-size="12" font-weight="800" fill="#e8a317" data-zh="不容易感到安心">won't easily feel at ease</text>
+        </g>
+      </g>
+    </svg></div><div class="pips"></div></div>
+  <div class="text"><div class="plabel"><b>9</b><em data-zh="第 9 段，共 9 段">Part 9 of 9</em> <span>· p.10</span></div><h2 class="case-title"></h2><div class="paras"></div></div>
+</section>
+
+<!-- ============ JOURNEY MAP · p.11–13 ============ -->
+<section class="journey" id="journey">
+  <div class="plabel"><b>✎</b><em data-zh="活動">Activity</em> <span>· p.11–13</span></div>
+  <h2 class="sec-title" data-zh="顧客旅程地圖">Customer Journey Map</h2>
+  <div class="jr-intro" id="jrIntro"></div>
+  <div class="jr-how" data-zh="替陳先生走過的五個階段各選一個心情（2 到 −2），也可以寫下原因。下方會畫出他的情緒曲線並加總體驗分數。答案只存在這台裝置的瀏覽器裡，不會上傳。">For each of the five stages Mr. Chen went through, pick how he felt (2 to −2) and note why. His emotion curve and total experience score appear below. Answers stay in this browser only and are never uploaded.</div>
+  <div class="jr-board" id="jrBoard"></div>
+  <div class="jr-result">
+    <div class="curve"><svg id="jrCurve" viewBox="0 0 600 240" role="img" aria-label="Emotion curve"></svg></div>
+    <div class="score">
+      <div class="plabel" style="margin:0"><em data-zh="體驗分數">Experience score</em></div>
+      <div class="big" id="jrTotal">–</div>
+      <div class="small" id="jrDone" style="font-size:13px;color:var(--ink3)"></div>
+      <ul class="scale" id="jrScale"></ul>
+      <button class="reset" id="jrReset" type="button" data-zh="清除重填">Clear and start over</button>
+    </div>
+  </div>
+</section>
+
+<section class="disc" id="discussion">
+  <div class="plabel"><b>?</b><em data-zh="計分與討論">Scoring &amp; Discussion</em> <span>· p.12</span></div>
+  <ol id="discList"></ol>
+</section>
+
+<footer>
+  <p data-zh="本個案的企業與故事皆為虛構，個案內容僅作為教學目的使用。英文版為中文原文的翻譯。">The company and story in this case are fictional; the case is for teaching purposes only. The English version is a translation of the original Chinese case.</p>
+  <p data-zh="僅供國立臺灣科技大學「大數據與資料科學」課程教學使用。插圖為示意。">For teaching use in the Big Data &amp; Data Science course, National Taiwan University of Science and Technology. Illustrations are schematic.</p>
+</footer>
+
+<div class="step" aria-label="Paragraph navigation">
+  <button id="prev" type="button" aria-label="Previous paragraph">↑</button>
+  <button id="next" type="button" aria-label="Next paragraph">↓</button>
+</div>
+
+<script>
+/* ============ CASE TEXT ============
+   zh: the original case text (slides p.2–10), unchanged.  en: translation.
+   Each paragraph: [stage, zh, en, zhHighlights, enHighlights] */
+const CASE = [{"title": ["一套划算的衛浴更新方案", "A Great-Value Bathroom Upgrade"], "page": 2, "paras": [[1, "一個悠閒的週末午後，住在舊公寓的陳先生上網搜尋，準備更新家中老舊的馬桶、洗臉盆與龍頭。他瀏覽了幾家知名衛浴品牌官網與經銷門市，也比較展示中心預約、到府丈量、安裝服務、保固年限與信用卡優惠。在一番搜尋比較後，陳先生在「ABC衛浴生活館」的網站上發現一款「智慧馬桶座＋基本安裝」的限時更新方案，雖然是期間促銷，但價格非常吸引人，整個方案加上標準施工與平台服務費，總額不到5萬元，相當划算。", "One leisurely weekend afternoon, Mr. Chen, who lives in an old apartment, went online to look into replacing the aging toilet, washbasin, and faucets in his home. He browsed the official websites and dealer stores of several well-known bathroom brands, and compared showroom bookings, in-home measurement, installation services, warranty periods, and credit card offers. After much searching and comparing, Mr. Chen found a limited-time upgrade package, \"smart toilet seat + basic installation,\" on the website of \"ABC Bath & Living.\" Although it was a time-limited promotion, the price was very attractive: the whole package, including standard installation and the platform service fee, came to less than NT$50,000, which was quite a bargain.", ["「智慧馬桶座＋基本安裝」的限時更新方案", "總額不到5萬元"], ["smart toilet seat + basic installation", "less than NT$50,000"]], [2, "他迅速地在網站上輸入個人資料，並選定了該衛浴更新方案。網頁上顯示訂單成功成立，但需在3天內完成付款，否則保留名額與優惠價格將被取消。接著他想到，或許應該再比較看看，可能有其他平台會提供更優惠的組合。", "He quickly entered his personal details on the website and selected the upgrade package. The page showed that the order had been placed successfully, but payment had to be completed within 3 days, or the reserved slot and the promotional price would be canceled. Then it occurred to him that perhaps he should compare a bit more; other platforms might offer an even better deal.", ["需在3天內完成付款"], ["payment had to be completed within 3 days"]], [3, "經過一番搜尋後，陳先生確定剛剛在ABC衛浴生活館訂購的方案已經是最完整且實惠的。他再次回到ABC衛浴生活館，登入自己的帳號，準備刷卡付款。", "After some more searching, Mr. Chen was sure that the package he had just ordered from ABC Bath & Living was already the most complete and the best value. He went back to ABC Bath & Living, logged into his account, and got ready to pay by credit card.", ["最完整且實惠的"], ["the most complete and the best value"]], [4, "網站首先提示需要指定「訂單成立日期」才能查詢到資料。陳先生一面選擇日期，一面想：「幸好我是當天就回來付款，如果過了幾天才要處理，萬一忘了下單日期，那不就找不到訂單了？」", "The website first asked him to specify the \"order date\" before it could look up the order. As he picked the date, Mr. Chen thought: \"Good thing I came back to pay on the same day. If I had come back a few days later and forgotten the order date, wouldn't I have been unable to find my order?\"", ["指定「訂單成立日期」才能查詢到資料"], ["specify the \"order date\" before it could look up the order"]]]}, {"title": ["一套划算的衛浴更新方案", "A Great-Value Bathroom Upgrade"], "page": 3, "paras": [[1, "陳先生點選了「付款」選項，進入線上刷卡頁面，輸入了一組EFG銀行的 VISA 信用卡號碼，按下確定後，訂單畫面上的「付款」狀態便更新為「授權成功」。", "Mr. Chen clicked the \"Pay\" option, went to the online card payment page, and entered the number of a VISA credit card issued by EFG Bank. When he pressed confirm, the \"Payment\" status on the order page changed to \"Authorized.\"", ["EFG銀行的 VISA 信用卡", "「授權成功」"], ["a VISA credit card issued by EFG Bank", "\"Authorized.\""]], [2, "整個訂購流程在短短幾分鐘內就完成了，他也立刻收到一封由ABC衛浴生活館系統寄出的訂單確認信，信中列出了產品組合、施工服務、預計丈量區間與價格等詳細資訊。", "The whole ordering process was done in just a few minutes, and he immediately received an order confirmation email sent by ABC Bath & Living's system, listing the details: the product bundle, the installation service, the expected measurement window, the price, and so on.", ["訂單確認信"], ["order confirmation email"]], [3, "陳先生心想", "Mr. Chen thought to himself:", [], []], [4, "「網路真是方便，以前如果要買衛浴設備，可能要跑展示中心、問門市、等報價，還要來回確認安裝細節。企業數位化真是給消費者帶來不少便利！」", "\"The internet really is convenient. In the past, buying bathroom fixtures might have meant going to showrooms, asking stores, waiting for quotes, and going back and forth to confirm the installation details. Digitalization really has brought consumers a lot of convenience!\"", ["企業數位化真是給消費者帶來不少便利"], ["Digitalization really has brought consumers a lot of convenience"]], [5, "此時，他的手機響起。", "Just then, his phone rang.", [], []], [6, "「您好，我們這裡是EFG銀行信用卡中心，請問是陳先生嗎？」「是的。」「陳先生您好，這通電話是向您確認，您是否在今天有一筆49,900元的刷卡消費呢？」「有，我剛剛線上購買了一套衛浴更新方案。」「好的，謝謝您，不好意思打擾了。」", "\"Hello, this is the EFG Bank credit card center. Am I speaking with Mr. Chen?\" \"Yes.\" \"Hello, Mr. Chen. We are calling to confirm whether you made a card purchase of NT$49,900 today.\" \"Yes, I just bought a bathroom upgrade package online.\" \"All right, thank you. Sorry to bother you.\"", ["49,900元的刷卡消費"], ["a card purchase of NT$49,900"]], [7, "陳先生看時間，完成訂購才3分鐘，信用卡銀行的風控就來電確認，效率真高。", "Mr. Chen checked the time: only 3 minutes after he finished ordering, the card issuer's risk control team had already called to confirm. Impressively efficient.", ["完成訂購才3分鐘"], ["only 3 minutes after he finished ordering"]]]}, {"title": ["不符合資格的優惠-1", "An Offer He Did Not Qualify For (1)"], "page": 4, "paras": [[1, "隔天下午，陳先生正在埋首工作時，手機突然響起。他接起電話：", "The next afternoon, while Mr. Chen was buried in work, his phone suddenly rang. He picked up:", [], []], [2, "「您好，我這裡是ABC衛浴生活館，請問是陳志明先生嗎？」「是。」「陳先生您好，是這樣的，您昨天向我們訂購了一套有特價優惠的衛浴更新方案，不過，因為那個優惠價是限定必須刷D銀行的信用卡才可以享有的，您刷的是EFG銀行的 VISA 卡，不符合我們的活動規定。」", "\"Hello, this is ABC Bath & Living. Am I speaking with Mr. Chen Chih-ming?\" \"Yes.\" \"Hello, Mr. Chen. The thing is, yesterday you ordered a bathroom upgrade package from us at a special promotional price. However, that promotional price is only available when paying with a D Bank credit card. You paid with an EFG Bank VISA card, which doesn't meet the terms of our promotion.\"", ["限定必須刷D銀行的信用卡才可以享有的"], ["only available when paying with a D Bank credit card"]], [3, "「啊？怎麼會這樣？我昨天線上刷卡的時候，網站沒有任何提示說不能刷 VISA ，而且我已經授權成功，我的信用卡銀行也打電話來跟我確認過了。」", "\"What? How can that be? When I paid by card online yesterday, the website gave no warning that VISA couldn't be used. And the payment was already authorized; my card issuer even called me to confirm it.\"", ["網站沒有任何提示說不能刷 VISA"], ["the website gave no warning that VISA couldn't be used"]], [4, "「那現在怎麼辦？」「陳先生，沒有關係，請問您有D銀行的信用卡嗎？」「有。」「那您用D卡重新刷這筆消費，就一樣可以享有這個特價優惠，也不會影響後續的到府丈量與安裝排程。」", "\"So what now?\" \"Mr. Chen, it's not a problem. Do you have a D Bank credit card?\" \"Yes.\" \"Then if you pay for this purchase again with your D Bank card, you'll still get the special price, and it won't affect the scheduling of the in-home measurement and installation.\"", ["用D卡重新刷這筆消費"], ["pay for this purchase again with your D Bank card"]], [5, "「喔，好吧。那小姐，你能不能先幫我把已經刷的 VISA 卡做刷退的動作？這樣我才能安心地用D銀行的信用卡重新刷一次啊！」「好的，沒問題。」", "\"Oh, fine. Then, miss, could you first refund the charge on my VISA card? That way I can feel at ease paying again with my D Bank card!\" \"Sure, no problem.\"", ["先幫我把已經刷的 VISA 卡做刷退的動作"], ["first refund the charge on my VISA card"]], [6, "掛上電話，陳先生覺得原本是很方便的衛浴更新體驗，現在因為這烏龍還要多花時間重新處理，心情有點煩悶。", "After hanging up, Mr. Chen felt that what had been a very convenient bathroom upgrade experience now needed extra time to sort out because of this mix-up, and he felt a bit irritated.", ["心情有點煩悶"], ["he felt a bit irritated"]]]}, {"title": ["不符合資格的優惠-2", "An Offer He Did Not Qualify For (2)"], "page": 5, "paras": [[1, "回到家後，陳先生進入ABC衛浴生活館的方案頁面仔細閱讀，果然在該更新方案的「活動詳情」超連結中，有註明這是與D銀行合作的促銷方案，需使用D卡付款才可享有優惠。", "When he got home, Mr. Chen went to the package page on ABC Bath & Living's website and read it carefully. Sure enough, the \"Promotion Details\" hyperlink for the upgrade package stated that this was a promotion run with D Bank and that payment with a D Bank card was required to get the offer.", ["「活動詳情」超連結"], ["\"Promotion Details\" hyperlink"]], [2, "他接著打開電子郵件，果然收到一封由ABC衛浴生活館寄來的通知，但郵件裡僅附上一張需要手寫資料再回傳的信用卡授權書，並沒有其他相關說明，也沒有提到原先那筆 VISA 授權會如何處理。陳先生覺得有些奇怪，認為應該等收到先前那筆款項的刷退通知或取消授權證明後，再回傳這張授權書比較保險。", "He then opened his email and, sure enough, found a notice from ABC Bath & Living. But the email only attached a credit card authorization form to be filled out by hand and sent back. There was no other explanation, and no mention of what would happen to the earlier VISA authorization. Mr. Chen found this a bit odd and felt it would be safer to wait until he received a refund notice or proof of cancellation for the earlier payment before sending back the authorization form.", ["需要手寫資料再回傳的信用卡授權書", "也沒有提到原先那筆 VISA 授權會如何處理"], ["a credit card authorization form to be filled out by hand and sent back", "no mention of what would happen to the earlier VISA authorization"]]]}, {"title": ["令人不安的溝通", "Unsettling Communication"], "page": 6, "paras": [[1, "又過了一天，陳先生還是沒收到任何刷退通知，但是ABC衛浴生活館的客服專員李心妤又寄了一封電子郵件給他，信中仍然只有方案資訊與那份制式的刷卡授權書，對於之前已在網站刷卡的四萬多元後續如何處理，一字未提。", "Another day passed, and Mr. Chen still had not received any refund notice. But Li Hsin-yu, a customer service representative at ABC Bath & Living, sent him another email. Once again it contained only the package information and the standard card authorization form, with not a single word about what would be done with the forty-odd thousand dollars already charged on the website.", ["一字未提"], ["not a single word"]], [2, "由於白天工作繁忙，陳先生在下班後打了幾通電話到ABC衛浴生活館的客服部門，但都只轉接至語音信箱。他忍不住寫了一封電子郵件給李心妤，提醒她尚未將 VISA 卡的刷退證明或取消授權通知提供給他。", "Busy with work during the day, Mr. Chen called ABC Bath & Living's customer service department several times after work, but every call went to voicemail. He couldn't help writing an email to Li Hsin-yu, reminding her that she had not yet provided him with proof of the VISA refund or a notice that the authorization had been canceled.", ["都只轉接至語音信箱"], ["every call went to voicemail"]], [3, "次日早上，陳先生又收到一封由李心妤寄來的郵件，內容依然是那個刷卡授權書的附加檔案。陳先生終於按捺不住，直接拿起電話撥了過去。", "The next morning, Mr. Chen received yet another email from Li Hsin-yu, again with nothing but the card authorization form attached. Finally losing patience, Mr. Chen picked up the phone and called her directly.", ["內容依然是那個刷卡授權書的附加檔案"], ["nothing but the card authorization form attached"]], [4, "「ABC衛浴生活館您好，敝姓李，很高興為您服務。」「李小姐嗎？我是陳志明，妳跟我聯絡關於衛浴方案要改刷D卡的事，我收到妳寄來的授權書了。」「陳先生您好，您只要將那張表單填好回傳就可以了喔！」", "\"ABC Bath & Living, hello. This is Li speaking, happy to help.\" \"Miss Li? This is Chen Chih-ming. You contacted me about switching the payment for the bathroom package to a D Bank card. I received the authorization form you sent.\" \"Hello, Mr. Chen. You just need to fill in that form and send it back!\"", ["您只要將那張表單填好回傳就可以了喔"], ["You just need to fill in that form and send it back"]], [5, "「我知道，相同的檔案妳已經寄了三次給我了。不過，我已經在網路上用 VISA 卡刷過了，妳應該要先幫我刷退，我才能再用D卡刷一次啊！妳到現在還沒給我任何刷退證明。如果我現在填了這張授權書，到時候 VISA 又扣款，我不是付了兩次錢嗎？」", "\"I know. You've sent me the same file three times already. But I've already paid with my VISA card online. You should refund that first, and then I can pay again with the D Bank card! You still haven't given me any proof of the refund. If I fill in this authorization form now and then the VISA card gets charged as well, won't I have paid twice?\"", ["相同的檔案妳已經寄了三次給我了", "我不是付了兩次錢嗎"], ["You've sent me the same file three times already", "won't I have paid twice"]]]}, {"title": ["無法理解的作業流程-1", "An Incomprehensible Procedure (1)"], "page": 7, "paras": [[1, "「陳先生，這一點您不用擔心，那一筆 VISA 的刷卡，我們系統後台不會送出請款，所以銀行不會向您扣款的，您只要直接再授權D卡就可以了。」", "\"Mr. Chen, you don't need to worry about that. For that VISA payment, our back-end system won't send a payment request, so the bank won't charge you. You just need to authorize the D Bank card directly.\"", ["我們系統後台不會送出請款"], ["our back-end system won't send a payment request"]], [2, "陳先生認為這位客服專員的說法完全不合乎常規，忍不住說道：", "Mr. Chen felt that what the representative said went completely against normal practice, and couldn't help saying:", ["完全不合乎常規"], ["completely against normal practice"]], [3, "「怎麼可能？我刷卡當天，信用卡銀行馬上就來電跟我確認了，那表示這筆交易他們已經有紀錄了啊。妳沒有在門市退換過高單價商品嗎？如果是刷卡買的，通常要用同一張信用卡進行退貨刷退，店家也要給我一張刷退或取消交易的證明，表示這筆款項已經取消了，才能再做後續的消費嘛！」", "\"How is that possible? On the day I paid, my card issuer called me right away to confirm, which means they already have a record of this transaction. Haven't you ever handled a return of an expensive item in a store? If it was paid by card, the refund usually has to go back to the same card, and the store has to give me a refund slip or proof that the transaction was canceled, showing that the payment has been canceled, before any further purchase can be made!\"", ["那表示這筆交易他們已經有紀錄了啊", "一張刷退或取消交易的證明"], ["they already have a record of this transaction", "a refund slip or proof that the transaction was canceled"]], [4, "「陳先生，我了解您的擔心，也知道實體門市的刷退流程。不過那是實體刷卡，我們這種線上平台的授權不一樣，只要我們公司沒有向銀行送出請款要求，銀行就不會向您扣款。」", "\"Mr. Chen, I understand your concern, and I know how refunds work in physical stores. But that's for in-store card payments. Authorization on an online platform like ours is different. As long as our company doesn't send a payment request to the bank, the bank won't charge you.\"", ["只要我們公司沒有向銀行送出請款要求，銀行就不會向您扣款"], ["As long as our company doesn't send a payment request to the bank, the bank won't charge you"]], [5, "「那我怎麼知道妳們公司沒有去請款？如果一個月後，我收到信用卡帳單，上面有這筆費用，妳們會負責嗎？還是我又要再花更多時間來處理這些帳務問題？」", "\"Then how do I know your company hasn't requested payment? If I get my credit card statement a month from now and this charge is on it, will you take responsibility? Or will I have to spend even more time dealing with these billing problems?\"", ["那我怎麼知道妳們公司沒有去請款"], ["how do I know your company hasn't requested payment"]]]}, {"title": ["無法理解的作業流程-2", "An Incomprehensible Procedure (2)"], "page": 8, "paras": [[1, "「陳先生，不好意思，我向您解釋過，我們線上的交易沒有『刷退』這個程序，門市刷卡才會有刷退單。所以…」陳先生忍不住打斷她：「好吧，就算妳們沒有刷退單，那妳至少要給我一個『授權取消碼』或『取消請款通知』之類的證明吧？這樣我才可以跟我的信用卡銀行確認，這一筆帳是真的已經消除了啊！」", "\"Mr. Chen, I'm sorry, but as I've explained, our online transactions have no 'refund' procedure. Only in-store card payments have refund slips. So...\" Mr. Chen couldn't help cutting her off: \"Fine. Even if you don't have refund slips, you should at least give me some kind of proof, like an 'authorization cancellation code' or a 'payment request cancellation notice,' right? Then I can check with my card issuer that this charge has really been cleared!\"", ["『授權取消碼』或『取消請款通知』"], ["'authorization cancellation code' or a 'payment request cancellation notice,'"]], [2, "電話另一端的李心妤萬般無奈地說：", "On the other end of the line, Li Hsin-yu said, utterly helpless:", [], []], [3, "「可是，我們沒有這個程序。我們公司的流程就是，如果這筆訂單的付款方式不成立，我們就不會送出請款，客人就一定不會被扣到款項，所以沒有授權取消碼之類的東西。我們公司的程序就是這樣...您真的不用擔心，我們不送出請款，銀行絕對不會扣款的。」「怎麼這樣？妳們公司的流程也未免太奇怪。」", "\"But we don't have that procedure. Our company's process is that if the payment method for an order isn't valid, we don't send a payment request, so the customer definitely won't be charged. That's why there's no authorization cancellation code or anything like that. That's just our company's procedure... You really don't need to worry. If we don't send the payment request, the bank will definitely not charge you.\" \"How can that be? Your company's process is just too strange.\"", ["我們沒有這個程序", "如果這筆訂單的付款方式不成立，我們就不會送出請款"], ["we don't have that procedure", "if the payment method for an order isn't valid, we don't send a payment request"]], [4, "陳先生覺得再向第一線的客服人員反映也無法解決問題，便不願再多花時間爭論，草草掛上了電話。", "Feeling that raising the issue further with frontline customer service would not solve the problem, and unwilling to spend more time arguing, Mr. Chen hung up abruptly.", ["草草掛上了電話"], ["hung up abruptly"]]]}, {"title": ["內部流程的真相-1", "The Truth About the Internal Process (1)"], "page": 9, "paras": [[1, "陳先生坐在電腦前，看著ABC衛浴生活館的網站，想到他們公司過去投入大量資源進行展示中心數位化、線上預約與會員行銷，怎麼一個線上刷卡購買衛浴方案，會出現如此不合常理的流程與處理方式？他忍不住又拿起電話，撥給在ABC衛浴生活館擔任高階主管的大學同學。", "Mr. Chen sat at his computer, looking at ABC Bath & Living's website. He thought about how the company had invested heavily over the years in digitizing its showrooms, online booking, and member marketing. How could buying a bathroom package online by credit card lead to such an unreasonable process and way of handling things? He couldn't help picking up the phone again and calling a college classmate who was a senior executive at ABC Bath & Living.", ["展示中心數位化、線上預約與會員行銷"], ["digitizing its showrooms, online booking, and member marketing"]], [2, "「喂，老吳，我是志明。在忙嗎？」 「喔！志明，稀客啊，有何指教？」「是這樣的，我發現你們公司的線上交易流程有點問題耶！」「有問題？」電話另一頭的老吳忍不住提高了音量。", "\"Hello, Wu, it's Chih-ming. Busy?\" \"Oh! Chih-ming, long time no hear. What can I do for you?\" \"Well, I've found a problem with your company's online transaction process!\" \"A problem?\" On the other end of the line, Wu couldn't help raising his voice.", ["你們公司的線上交易流程有點問題耶"], ["I've found a problem with your company's online transaction process"]], [3, "陳先生將這幾天的經過敘述了一遍，電話另一端的老吳聽得一頭霧水，連忙說：", "Mr. Chen recounted what had happened over the past few days. On the other end, Wu listened, completely baffled, and quickly said:", ["聽得一頭霧水"], ["completely baffled"]], [4, "「志明，等等，我旁邊有財務部的同事，我請她跟你說明，這樣應該會比較清楚。不過你放心啦，你這個衛浴方案我來幫你處理，絕對不會有問題的。」", "\"Chih-ming, hold on. I have a colleague from the finance department next to me. I'll ask her to explain it to you; that should make things clearer. But don't worry, I'll take care of your bathroom package myself. There definitely won't be any problem.\"", ["財務部的同事"], ["a colleague from the finance department"]], [5, "電話隨後轉由另一位財務部人員接聽，陳先生又將他遇到的情況與疑問重複了一遍。該位財務部同仁解釋，因為公司的門市營運部與財務部分屬不同單位，他們內部的流程是，方案銷售、訂單成立、丈量預約與安裝排程，都由門市營運部門負責。", "The call was then passed to a member of the finance department, and Mr. Chen once again described the situation and his questions. The finance staff member explained that the company's store operations department and finance department are separate units. Under their internal process, package sales, order placement, measurement booking, and installation scheduling are all handled by the store operations department.", ["門市營運部與財務部分屬不同單位", "方案銷售、訂單成立、丈量預約與安裝排程，都由門市營運部門負責"], ["store operations department and finance department are separate units", "package sales, order placement, measurement booking, and installation scheduling are all handled by the store operations department"]]]}, {"title": ["內部流程的真相-2", "The Truth About the Internal Process (2)"], "page": 10, "paras": [[1, "每天門市營運部門會清算所有「有效成立」的訂單，再將需要請款的訂單編號轉交給財務部門，由財務部門統一向銀行提出請款。如果門市營運部沒有將某筆訂單號送交過來（例如像陳先生這種不符活動資格的），財務部就不會向銀行請款，這筆刷卡授權記錄最終會自動失效，因此持卡人也就不會被扣款。", "Every day, the store operations department clears all orders that have been \"validly placed,\" and then passes the order numbers that need payment requests to the finance department, which submits payment requests to the bank in one batch. If the store operations department does not pass along an order number (for example, one like Mr. Chen's, which did not qualify for the promotion), the finance department will not request payment from the bank. The card authorization record will eventually expire on its own, so the cardholder will not be charged.", ["將需要請款的訂單編號轉交給財務部門", "這筆刷卡授權記錄最終會自動失效"], ["passes the order numbers that need payment requests to the finance department", "The card authorization record will eventually expire on its own"]], [2, "陳先生還是忍不住質疑：", "Mr. Chen still couldn't help questioning this:", [], []], [3, "「你們這樣的流程跟銀行的作業是一致的嗎？消費者從外部要怎麼確認你們到底有沒有送出請款？」", "\"Is this process of yours consistent with how banks operate? How can a consumer, from the outside, confirm whether you have actually sent a payment request?\"", ["消費者從外部要怎麼確認你們到底有沒有送出請款"], ["How can a consumer, from the outside, confirm whether you have actually sent a payment request"]], [4, "「陳先生您放心，只要我們沒有送出，銀行真的不會扣款，我們公司的作業流程一直都是這樣。您的衛浴方案、丈量預約與後續安裝我們一定會幫您處理好。請問之前為您服務的客服專員叫什麼名字？我親自來處理您的案子吧！」", "\"Mr. Chen, please don't worry. As long as we don't send it, the bank really won't charge you. This is how our company has always operated. We'll definitely take good care of your bathroom package, measurement booking, and the installation that follows. May I ask the name of the customer service representative who served you earlier? I'll handle your case personally!\"", ["我們公司的作業流程一直都是這樣"], ["This is how our company has always operated"]], [5, "陳先生心裡的疑惑還是沒有完全解開，不過他選擇相信老同學：", "Mr. Chen's doubts were still not fully resolved, but he chose to trust his old classmate:", ["他選擇相信老同學"], ["he chose to trust his old classmate"]], [6, "「喔，謝謝，那位小姐叫李心妤。不過，你們這個作業流程，真的不容易讓第一次購買高單價衛浴設備的消費者感到安心呢。」", "\"Oh, thank you. Her name is Li Hsin-yu. But this process of yours really doesn't make it easy for a first-time buyer of expensive bathroom fixtures to feel at ease.\"", ["真的不容易讓第一次購買高單價衛浴設備的消費者感到安心呢"], ["really doesn't make it easy for a first-time buyer of expensive bathroom fixtures to feel at ease"]]]}];
+const JOURNEY = {"intro": [["顧客旅程地圖是結合顧客思考、情緒、行動、興趣等主觀感受隨著時間改變產生變化的視覺整理圖。", "A customer journey map is a visual summary of how customers' subjective experiences, such as their thoughts, emotions, actions, and interests, change over time."], ["這張圖可以讓企業站在顧客的角度，思考顧客如何看待企業的服務，進而檢討其中的缺失並進行改善。", "It lets a company stand in the customer's shoes, think about how customers see its service, and then review its shortcomings and make improvements."]], "stages": [{"title": ["比價與方案比較", "Comparing prices and packages"], "q": [["如何比價?", "How did he compare prices?"], ["目前的心情? 原因?", "How does he feel now? Why?"]]}, {"title": ["刷卡付款並收到訂單確認信", "Paying by card and receiving the order confirmation email"], "q": [["如何聯繫?", "How did they communicate?"], ["目前的心情?原因?", "How does he feel now? Why?"]]}, {"title": ["被通知需改刷指定信用卡", "Told to pay again with the designated credit card"], "q": [["如何聯繫?", "How did they communicate?"], ["目前的心情?原因?", "How does he feel now? Why?"]]}, {"title": ["追蹤授權取消/退款進度", "Following up on the authorization cancellation / refund"], "q": [["如何聯繫?", "How did they communicate?"], ["目前的心情?原因?", "How does he feel now? Why?"]]}, {"title": ["透過主管協助", "Getting help through an executive"], "q": [["如何聯繫?", "How did they communicate?"], ["目前的心情?原因?", "How does he feel now? Why?"]]}], "scale": [["非常開心", "Very happy", 2], ["還算滿足", "Fairly satisfied", 1], ["有點疑惑", "A bit confused", 0], ["有點不滿意", "Somewhat dissatisfied", -1], ["非常生氣", "Very angry", -2]], "questions": [["請計算消費者的體驗分數", "Calculate the consumer's experience score."], ["消費者<b>最不滿意</b>的階段是三個?", "Which three stages was the consumer <b>most dissatisfied</b> with?"], ["如何以數位轉型工具改善呢?", "How could digital transformation tools improve them?"]]};
+(function(){
+  "use strict";
+  var NS="http://www.w3.org/2000/svg";
+  function el(tag,attrs,parent){var e=document.createElementNS(NS,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+  function esc(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+  function marked(text,marks){
+    var h=esc(text);
+    (marks||[]).forEach(function(m){var e=esc(m),i=h.indexOf(e);if(i>=0)h=h.slice(0,i)+"<mark>"+e+"</mark>"+h.slice(i+e.length);});
+    return h;
+  }
+
+  /* ---------- build the text column ---------- */
+  var sections=[].slice.call(document.querySelectorAll(".part"));
+  sections.forEach(function(sec,i){
+    var P=CASE[i],box=sec.querySelector(".paras"),h2=sec.querySelector(".case-title");
+    h2.setAttribute("data-zh",P.title[0]);h2.textContent=P.title[1];
+    P.paras.forEach(function(q){
+      var p=document.createElement("p"),s=document.createElement("span");
+      s.className="s";s.dataset.st=q[0];s._zh=marked(q[1],q[3]);s._en=marked(q[2],q[4]);s.innerHTML=s._en;
+      p.appendChild(s);box.appendChild(p);
+    });
+  });
+  var intro=document.getElementById("jrIntro");
+  JOURNEY.intro.forEach(function(q){var p=document.createElement("p"),s=document.createElement("span");s.className="s";s._zh=esc(q[0]);s._en=esc(q[1]);s.innerHTML=s._en;p.appendChild(s);intro.appendChild(p);});
+  var dl=document.getElementById("discList");
+  JOURNEY.questions.forEach(function(q){var li=document.createElement("li"),s=document.createElement("span");s.className="s";s._zh=q[0];s._en=q[1];s.innerHTML=s._en;li.appendChild(s);dl.appendChild(li);});
+
+  /* ---------- generated SVG bits ---------- */
+  document.querySelectorAll('[data-gen="cal"]').forEach(function(g){
+    var x=+g.dataset.x,y=+g.dataset.y;
+    for(var i=0;i<28;i++){
+      var c=el("rect",{x:x+(i%7)*28,y:y+Math.floor(i/7)*28,width:22,height:22,rx:5,fill:i===17?"#1f5fb8":"#eef3fb","class":"dot"},g);
+      c.style.transitionDelay=(i*25)+"ms";
+    }
+  });
+
+  /* ---------- stage engine ---------- */
+  function range(v){var a=v.split("-");return [+a[0],a.length>1?+a[1]:Infinity];}
+  function setStage(fig,n){
+    if(fig._st===n)return;fig._st=n;
+    fig.querySelectorAll("[data-s]").forEach(function(e){
+      var r=range(e.dataset.s),on=n>=r[0]&&n<=r[1];
+      e.classList.toggle("on",on);
+    });
+    fig.querySelectorAll("[data-m]").forEach(function(e){e.classList.toggle("mv",n>=+e.dataset.m);});
+  }
+  var parts=sections.map(function(p){
+    var ss=[].slice.call(p.querySelectorAll(".s")),pips=p.querySelector(".pips");
+    ss.forEach(function(){pips.appendChild(document.createElement("i"));});
+    return {el:p,fig:p.querySelector(".fig"),ss:ss,pips:[].slice.call(pips.children)};
+  });
+  var allS=[].slice.call(document.querySelectorAll(".s"));
+
+  /* reading position: top of the first line plus how far along that line the paragraph starts */
+  function pos(s){
+    var r=s.getClientRects()[0];if(!r)return Infinity;
+    var p=s.parentElement.getBoundingClientRect();
+    return r.top+(r.left-p.left)/Math.max(1,p.width)*r.height;
+  }
+  function trigger(){return window.innerHeight*(window.innerWidth<=860?0.70:0.52);}
+  var curEl=null;
+  function update(){
+    var T=trigger(),last=null;
+    allS.forEach(function(s){if(pos(s)<T){last=s;s.classList.add("seen");}});
+    if(last!==curEl){if(curEl)curEl.classList.remove("cur");curEl=last;if(curEl)curEl.classList.add("cur");}
+    parts.forEach(function(P){
+      var idx=-1;P.ss.forEach(function(s,i){if(pos(s)<T)idx=i;});
+      setStage(P.fig,idx<0?0:+P.ss[idx].dataset.st);
+      P.pips.forEach(function(d,i){d.classList.toggle("on",i<=idx);d.classList.toggle("cur",i===idx);});
+    });
+    var h=document.documentElement.scrollHeight-window.innerHeight;
+    document.getElementById("progress").style.width=(h>0?window.scrollY/h*100:0)+"%";
+    document.getElementById("prev").disabled=!curEl;
+    document.getElementById("next").disabled=curEl===allS[allS.length-1];
+  }
+  var ticking=false;
+  function onScroll(){if(!ticking){ticking=true;requestAnimationFrame(function(){ticking=false;update();});}}
+  window.addEventListener("scroll",onScroll,{passive:true});
+  window.addEventListener("resize",onScroll);
+  function goTo(s){
+    if(!s){window.scrollTo({top:0});return;}
+    window.scrollTo({top:Math.max(0,window.scrollY+pos(s)-(trigger()-3))});
+  }
+  function move(d){var i=curEl?allS.indexOf(curEl):-1,j=Math.max(-1,Math.min(allS.length-1,i+d));goTo(j<0?null:allS[j]);}
+  document.getElementById("next").onclick=function(){move(1);};
+  document.getElementById("prev").onclick=function(){move(-1);};
+  document.getElementById("start").onclick=function(){goTo(allS[0]);};
+  allS.forEach(function(s){s.addEventListener("click",function(){if(!s.closest(".disc"))goTo(s);});});
+  document.addEventListener("keydown",function(e){
+    if(e.altKey||e.ctrlKey||e.metaKey)return;
+    var t=e.target;if(t&&(t.tagName==="TEXTAREA"||t.tagName==="INPUT"))return;
+    var k=e.key;
+    if(k==="ArrowDown"||k==="ArrowRight"||k==="PageDown"||(k===" "&&!e.shiftKey)){e.preventDefault();move(1);}
+    else if(k==="ArrowUp"||k==="ArrowLeft"||k==="PageUp"||(k===" "&&e.shiftKey)){e.preventDefault();move(-1);}
+    else if(k==="Home"){e.preventDefault();goTo(null);}
+    else if(k==="s"||k==="S"){toggleSpot();}
+  });
+
+  /* ---------- reader tools ---------- */
+  var store={get:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},set:function(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
+  var spotBtn=document.getElementById("spot");
+  function toggleSpot(force){
+    var on=typeof force==="boolean"?force:!document.body.classList.contains("spot");
+    document.body.classList.toggle("spot",on);spotBtn.setAttribute("aria-pressed",on);store.set("abc-spot",on?"1":"0");
+  }
+  spotBtn.onclick=function(){toggleSpot();};
+  if(store.get("abc-spot")==="1")toggleSpot(true);
+  var k=parseFloat(store.get("abc-k"))||1;
+  function setK(v){k=Math.max(.85,Math.min(1.6,Math.round(v*100)/100));document.documentElement.style.setProperty("--k",k);store.set("abc-k",k);onScroll();}
+  document.getElementById("aPlus").onclick=function(){setK(k+.1);};
+  document.getElementById("aMinus").onclick=function(){setK(k-.1);};
+  setK(k);
+
+  /* ---------- journey map activity ---------- */
+  var FACES=[["😀",2],["🙂",1],["😕",0],["😟",-1],["😠",-2]];
+  var ans={};try{ans=JSON.parse(store.get("abc-journey")||"{}")||{};}catch(e){ans={};}
+  function save(){store.set("abc-journey",JSON.stringify(ans));}
+  var board=document.getElementById("jrBoard");
+  function L(pair){return langNow==="zh"?pair[0]:pair[1];}
+  function scaleLabel(v){var r=JOURNEY.scale.filter(function(x){return x[2]===v;})[0];return r?L(r):"";}
+  function buildBoard(){
+    board.innerHTML="";
+    JOURNEY.stages.forEach(function(st,i){
+      var a=ans[i]||{},c=document.createElement("div");c.className="stage";
+      c.innerHTML='<div class="no">'+(i+1)+'</div><h3>'+esc(L(st.title))+'</h3><ol>'+st.q.map(function(q){return "<li>"+esc(L(q))+"</li>";}).join("")+'</ol>';
+      var f=document.createElement("div");f.className="faces";f.setAttribute("role","group");
+      FACES.forEach(function(F){
+        var b=document.createElement("button");b.type="button";b.setAttribute("aria-pressed",a.v===F[1]);
+        b.innerHTML='<span class="e">'+F[0]+'</span><span class="v">'+(F[1]>0?"+":"")+F[1]+'</span>';
+        b.title=scaleLabel(F[1]);
+        b.onclick=function(){
+          ans[i]=ans[i]||{};ans[i].v=(ans[i].v===F[1]?undefined:F[1]);save();
+          [].forEach.call(f.children,function(x,j){x.setAttribute("aria-pressed",ans[i].v===FACES[j][1]);});
+          c.querySelector(".lbl").textContent=ans[i].v===undefined?"":scaleLabel(ans[i].v);
+          drawCurve();
+        };
+        f.appendChild(b);
+      });
+      c.appendChild(f);
+      var lb=document.createElement("div");lb.className="lbl";lb.textContent=a.v===undefined?"":scaleLabel(a.v);c.appendChild(lb);
+      var ta=document.createElement("textarea");ta.placeholder=langNow==="zh"?"原因／怎麼聯繫？":"Why? How did they communicate?";ta.value=a.t||"";
+      ta.oninput=function(){ans[i]=ans[i]||{};ans[i].t=ta.value;save();};
+      c.appendChild(ta);board.appendChild(c);
+    });
+    var sc=document.getElementById("jrScale");sc.innerHTML="";
+    JOURNEY.scale.forEach(function(r,j){var li=document.createElement("li");li.innerHTML="<span>"+FACES[j][0]+" "+esc(L(r))+"</span><b>"+(r[2]>0?"+":"")+r[2]+"</b>";sc.appendChild(li);});
+  }
+  function drawCurve(){
+    var svg=document.getElementById("jrCurve");svg.innerHTML="";
+    var X=function(i){return 70+i*115;},Y=function(v){return 120-v*45;};
+    for(var v=-2;v<=2;v++){el("line",{x1:50,x2:590,y1:Y(v),y2:Y(v),stroke:v===0?"#b4ad9f":"#ebe8e1","stroke-width":v===0?2:1,"stroke-dasharray":v===0?"":"4 4"},svg);var t=el("text",{x:38,y:Y(v)+4,"text-anchor":"end","font-size":12,fill:"#7a8494","font-family":"system-ui,sans-serif"},svg);t.textContent=(v>0?"+":"")+v;}
+    var pts=[],total=0,n=0;
+    JOURNEY.stages.forEach(function(st,i){
+      var t=el("text",{x:X(i),y:232,"text-anchor":"middle","font-size":13,"font-weight":800,fill:"#102a56","font-family":"system-ui,sans-serif"},svg);t.textContent=i+1;
+      var a=ans[i];if(a&&a.v!==undefined){pts.push([X(i),Y(a.v),a.v]);total+=a.v;n++;}
+    });
+    if(pts.length>1)el("polyline",{points:pts.map(function(p){return p[0]+","+p[1];}).join(" "),fill:"none",stroke:"#1f5fb8","stroke-width":4,"stroke-linejoin":"round","stroke-linecap":"round"},svg);
+    pts.forEach(function(p){el("circle",{cx:p[0],cy:p[1],r:17,fill:"#fff",stroke:p[2]<0?"#c0282f":p[2]>0?"#127a3d":"#7a8494","stroke-width":3},svg);var e=el("text",{x:p[0],y:p[1]+7,"text-anchor":"middle","font-size":19},svg);e.textContent=FACES[2-p[2]][0];});
+    document.getElementById("jrTotal").textContent=n?((total>0?"+":"")+total):"–";
+    document.getElementById("jrDone").textContent=langNow==="zh"?("已完成 "+n+" / 5 個階段"):(n+" of 5 stages scored");
+  }
+  document.getElementById("jrReset").onclick=function(){ans={};save();buildBoard();drawCurve();};
+
+  /* ---------- language: English (default) / 中文 ---------- */
+  var langNow="en";
+  var i18n=[].slice.call(document.querySelectorAll("[data-zh]"));
+  i18n.forEach(function(e){e._en=(e instanceof SVGElement)?e.textContent:e.innerHTML;});
+  function setLang(l){
+    langNow=l==="zh"?"zh":"en";var zh=langNow==="zh";
+    document.documentElement.lang=zh?"zh-Hant":"en";
+    document.title=zh?"個案：ABC衛浴生活館｜個案閱讀":"ABC Bath & Living | Case Reading";
+    allS.forEach(function(s){s.innerHTML=zh?s._zh:s._en;});
+    i18n.forEach(function(e){var v=zh?e.getAttribute("data-zh"):e._en;if(e instanceof SVGElement)e.textContent=v;else e.innerHTML=v;});
+    document.getElementById("lEn").setAttribute("aria-pressed",!zh);
+    document.getElementById("lZh").setAttribute("aria-pressed",zh);
+    spotBtn.title=zh?"聚焦：只亮出目前這一段":"Spotlight: dim everything except the current paragraph";
+    document.getElementById("next").setAttribute("aria-label",zh?"下一段":"Next paragraph");
+    document.getElementById("prev").setAttribute("aria-label",zh?"上一段":"Previous paragraph");
+    store.set("abc-lang",langNow);
+    buildBoard();drawCurve();onScroll();
+  }
+  function switchLang(l){
+    var keep=curEl;setLang(l);
+    if(keep){window.scrollTo({top:Math.max(0,window.scrollY+pos(keep)-(trigger()-3)),behavior:"instant"});}
+  }
+  document.getElementById("lEn").onclick=function(){switchLang("en");};
+  document.getElementById("lZh").onclick=function(){switchLang("zh");};
+  var qLang=(new URLSearchParams(location.search).get("lang")||"").toLowerCase();
+  setLang(qLang==="zh"||qLang==="en"?qLang:(store.get("abc-lang")||"en"));
+  update();
+})();
+</script>
+</body>
+</html>

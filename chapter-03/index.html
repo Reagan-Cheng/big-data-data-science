@@ -58,6 +58,31 @@
         <button class="button secondary" type="button" data-copy="1" id="copy1">複製網址</button>
       </div>
     </article>
+
+    <article class="game">
+      <div class="num">CASE 02</div>
+      <h2 id="g2Title">個案：ABC衛浴生活館</h2>
+      <p id="g2Desc">陳先生線上刷卡買衛浴更新方案，卻因不符信用卡優惠資格被要求改刷 D 卡，刷退與請款流程讓他越來越不安（虛構個案）。全文一段一段讀，示意圖跟著動；最後是顧客旅程地圖：替五個階段選心情、畫出情緒曲線並計算體驗分數，再進行 p.12 的討論。</p>
+      <div class="game-meta">
+        <span class="tag" data-zh="個案閱讀" data-en="Case Reading">個案閱讀</span>
+        <span class="tag" data-zh="顧客旅程地圖" data-en="Customer Journey Map">顧客旅程地圖</span>
+        <span class="tag" data-zh="授權與請款" data-en="Authorization & Capture">授權與請款</span>
+        <span class="tag" data-zh="English／繁體中文" data-en="English／繁體中文">English／繁體中文</span>
+      </div>
+      <p class="hint" id="g2Note">預設英文（中文原文的翻譯），右上角可切換中文原文；網址加 ?lang=zh 直接開啟中文版。投影時可用簡報筆或鍵盤 ↓ 逐段前進。旅程地圖的答案只存在學生自己的瀏覽器，不會上傳。</p>
+      <div class="urlbox" id="url2"></div>
+      <div class="qr-code" data-qr-path="/chapter-03/cases/abc-bath-living/">
+        <img class="qr-image" src="../assets/qr/abc-bath-living.png" width="192" height="192" alt="個案：ABC衛浴生活館 QR Code" data-qr-zh="個案：ABC衛浴生活館 QR Code" data-qr-en="ABC Bath &amp; Living QR Code">
+        <div>
+          <div data-qr-zh="掃描後直接進入個案" data-qr-en="Scan to open the case directly" class="qr-help">掃描後直接進入個案</div>
+          <a data-qr-zh="下載 PNG 圖片" data-qr-en="Download PNG" class="button secondary qr-download" href="../assets/qr/abc-bath-living.png" download="big-data-abc-bath-living-qr.png">下載 PNG 圖片</a>
+        </div>
+      </div>
+      <div class="actions">
+        <a class="button" href="cases/abc-bath-living/" target="_blank" id="open2">開啟個案</a>
+        <button class="button secondary" type="button" data-copy="2" id="copy2">複製網址</button>
+      </div>
+    </article>
   </div>
 
   <section class="card teacher-panel">
@@ -73,8 +98,8 @@
 <footer id="footer">Chapter 3｜金融大數據</footer>
 
 <script>
-const COUNT=1;
-const paths=["cases/card-declined/"];
+const COUNT=2;
+const paths=["cases/card-declined/","cases/abc-bath-living/"];
 function gameUrl(i){ return new URL(paths[i-1], window.location.href).href; }
 function refreshUrls(){for(let i=1;i<=COUNT;i++)document.getElementById("url"+i).textContent=gameUrl(i)}
 async function copyUrl(i){
@@ -95,7 +120,10 @@ zh:{
  g1Title:"刷卡被拒：信用額度不足",
  g1Desc:"國泰世華銀行「一鍵調高信用卡額度」個案全文（講義 p.10–14），一句一句讀，旁邊的示意圖跟著動起來；最後是 p.9 的兩題討論題。",
  g1Note:"預設為英文原文，右上角可切換中文。投影時可用簡報筆或鍵盤 ↓ 逐句前進，按「Spotlight／聚焦」只亮出目前這一句。網址加 ?lang=zh 可直接開啟中文版。",
- open1:"開啟個案",copy:"複製網址",qrTitle:"QR Code 圖片下載",
+ g2Title:"個案：ABC衛浴生活館",
+ g2Desc:"陳先生線上刷卡買衛浴更新方案，卻因不符信用卡優惠資格被要求改刷 D 卡，刷退與請款流程讓他越來越不安（虛構個案）。全文一段一段讀，示意圖跟著動；最後是顧客旅程地圖：替五個階段選心情、畫出情緒曲線並計算體驗分數，再進行 p.12 的討論。",
+ g2Note:"預設英文（中文原文的翻譯），右上角可切換中文原文；網址加 ?lang=zh 直接開啟中文版。投影時可用簡報筆或鍵盤 ↓ 逐段前進。旅程地圖的答案只存在學生自己的瀏覽器，不會上傳。",
+ open1:"開啟個案",open2:"開啟個案",copy:"複製網址",qrTitle:"QR Code 圖片下載",
  qrText:"每個活動的 QR Code 已自動建立，掃描後可直接進入活動。按「下載 PNG 圖片」即可保存圖片；課程首頁另提供本章的 QR Code。",
  homeBtn:"返回課程首頁",footer:"Chapter 3｜金融大數據"
 },
@@ -105,14 +133,17 @@ en:{
  g1Title:"Card Declined: Credit Limit Too Low",
  g1Desc:"The full Cathay United Bank one-key credit limit case (handout p.10–14). Read it sentence by sentence while the illustration beside it builds up; the two discussion questions from p.9 come at the end.",
  g1Note:"Opens in the original English; switch to Chinese at the top right. When projecting, use a presentation clicker or the ↓ key to move one sentence at a time, and Spotlight to dim everything but the current sentence. Add ?lang=zh to the URL to open the Chinese version.",
- open1:"Open Case",copy:"Copy URL",qrTitle:"Download QR Code Images",
+ g2Title:"ABC Bath & Living",
+ g2Desc:"Mr. Chen buys a bathroom upgrade online by card, is told he doesn't qualify for the card promotion and must pay again with a D Bank card, and grows uneasy as the refund and payment-request process unfolds (a fictional case). Read it paragraph by paragraph while the illustration builds up, then map his customer journey: pick his mood at five stages, see the emotion curve and experience score, and discuss the p.12 questions.",
+ g2Note:"Opens in English (translated from the original Chinese); switch to the Chinese original at the top right, or add ?lang=zh to the URL. When projecting, use a presentation clicker or the ↓ key to move one paragraph at a time. Journey map answers stay in each student's own browser and are never uploaded.",
+ open1:"Open Case",open2:"Open Case",copy:"Copy URL",qrTitle:"Download QR Code Images",
  qrText:"Each activity has an automatically generated QR Code that opens it directly. Select Download PNG to save the image. A QR Code for this chapter is also available on the course home page.",
  homeBtn:"Back to Course Home",footer:"Chapter 3 | Financial Big Data"
 }};
 let current="zh";
 function setLang(l){
  current=l; document.documentElement.lang=l==="zh"?"zh-Hant":"en"; const t=lang[l];
- ["title","subtitle","langLabel","teacherNote","g1Title","g1Desc","g1Note","open1","qrTitle","qrText","homeBtn","footer"].forEach(k=>{
+ ["title","subtitle","langLabel","teacherNote","g1Title","g1Desc","g1Note","g2Title","g2Desc","g2Note","open1","open2","qrTitle","qrText","homeBtn","footer"].forEach(k=>{
    const e=document.getElementById(k); if(e)e.textContent=t[k];
  });
  for(let i=1;i<=COUNT;i++)document.getElementById("copy"+i).textContent=t.copy;

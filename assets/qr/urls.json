@@ -96,5 +96,12 @@
     "zh": "刷卡被拒：信用額度不足",
     "en": "Card Declined: Credit Limit Too Low",
     "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-03/cases/card-declined/"
+  },
+  {
+    "file": "abc-bath-living",
+    "path": "/chapter-03/cases/abc-bath-living/",
+    "zh": "個案：ABC衛浴生活館",
+    "en": "ABC Bath & Living",
+    "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-03/cases/abc-bath-living/"
   }
 ]
