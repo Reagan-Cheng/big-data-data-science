@@ -82,5 +82,19 @@
     "zh": "店長的一天：RFM 足測鞋店",
     "en": "Store Manager for a Day",
     "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-02/games/aso-store/"
+  },
+  {
+    "file": "chapter-03",
+    "path": "/chapter-03/",
+    "zh": "第三章｜金融大數據",
+    "en": "Chapter 3 | Financial Big Data",
+    "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-03/"
+  },
+  {
+    "file": "card-declined",
+    "path": "/chapter-03/cases/card-declined/",
+    "zh": "刷卡被拒：信用額度不足",
+    "en": "Card Declined: Credit Limit Too Low",
+    "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-03/cases/card-declined/"
   }
 ]

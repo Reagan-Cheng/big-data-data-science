@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 3｜金融大數據</title>
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/qr-codes.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%23102a56%22/%3E%3Cpath%20d%3D%22M8%2024V17h4v7zm6%200V11h4v13zm6%200V6h4v18z%22%20fill%3D%22%23ffffff%22/%3E%3C/svg%3E">
+<style>
+.game .hint{margin-top:10px;font-size:13px;color:var(--muted)}
+@media(min-width:801px){.game-grid .game:last-child:nth-child(odd){grid-column:1/-1}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap top">
+    <div>
+      <div class="small" style="color:#dbeafe">大數據與資料科學 / Big Data & Data Science</div>
+      <h1 id="title">第三章｜金融大數據</h1>
+      <div class="subtitle" id="subtitle">Chapter 3 | Financial Big Data</div>
+    </div>
+    <div class="lang">
+      <span id="langLabel">語言</span>
+      <button id="zh" class="active" type="button">繁體中文</button>
+      <button id="en" type="button">English</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="note" id="teacherNote">
+    <b>教師使用方式：</b>每個活動都有獨立網址。上課時建議直接把指定活動的網址做成 QR Code，學生掃描後會直接進入該活動，不需要先經過本頁。
+  </div>
+
+  <div class="game-grid">
+    <article class="game">
+      <div class="num">CASE 01</div>
+      <h2 id="g1Title">刷卡被拒：信用額度不足</h2>
+      <p id="g1Desc">國泰世華銀行「一鍵調高信用卡額度」個案全文（講義 p.10–14），一句一句讀，旁邊的示意圖跟著動起來；最後是 p.9 的兩題討論題。</p>
+      <div class="game-meta">
+        <span class="tag" data-zh="個案閱讀" data-en="Case Reading">個案閱讀</span>
+        <span class="tag" data-zh="即時決策・RTDM" data-en="Real-time Decisions · RTDM">即時決策・RTDM</span>
+        <span class="tag" data-zh="手機／電腦" data-en="Phone / Computer">手機／電腦</span>
+        <span class="tag" data-zh="English／繁體中文" data-en="English／繁體中文">English／繁體中文</span>
+      </div>
+      <p class="hint" id="g1Note">預設為英文原文，右上角可切換中文。投影時可用簡報筆或鍵盤 ↓ 逐句前進，按「Spotlight／聚焦」只亮出目前這一句。網址加 ?lang=zh 可直接開啟中文版。</p>
+      <div class="urlbox" id="url1"></div>
+      <div class="qr-code" data-qr-path="/chapter-03/cases/card-declined/">
+        <img class="qr-image" src="../assets/qr/card-declined.png" width="192" height="192" alt="刷卡被拒：信用額度不足 QR Code" data-qr-zh="刷卡被拒：信用額度不足 QR Code" data-qr-en="Card Declined: Credit Limit Too Low QR Code">
+        <div>
+          <div data-qr-zh="掃描後直接進入個案" data-qr-en="Scan to open the case directly" class="qr-help">掃描後直接進入個案</div>
+          <a data-qr-zh="下載 PNG 圖片" data-qr-en="Download PNG" class="button secondary qr-download" href="../assets/qr/card-declined.png" download="big-data-card-declined-qr.png">下載 PNG 圖片</a>
+        </div>
+      </div>
+      <div class="actions">
+        <a class="button" href="cases/card-declined/" target="_blank" id="open1">開啟個案</a>
+        <button class="button secondary" type="button" data-copy="1" id="copy1">複製網址</button>
+      </div>
+    </article>
+  </div>
+
+  <section class="card teacher-panel">
+    <h2 id="qrTitle">QR Code 圖片下載</h2>
+    <p id="qrText">
+      每個活動的 QR Code 已自動建立，掃描後可直接進入活動。按「下載 PNG 圖片」即可保存圖片；課程首頁另提供本章的 QR Code。
+    </p>
+    <div class="actions">
+      <a href="../index.html" class="button ghost" id="homeBtn">返回課程首頁</a>
+    </div>
+  </section>
+</main>
+<footer id="footer">Chapter 3｜金融大數據</footer>
+
+<script>
+const COUNT=1;
+const paths=["cases/card-declined/"];
+function gameUrl(i){ return new URL(paths[i-1], window.location.href).href; }
+function refreshUrls(){for(let i=1;i<=COUNT;i++)document.getElementById("url"+i).textContent=gameUrl(i)}
+async function copyUrl(i){
+ const text=gameUrl(i);
+ try{await navigator.clipboard.writeText(text)}catch(e){
+   const ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();
+ }
+ const b=document.getElementById("copy"+i); const old=b.textContent;
+ b.textContent=current==="zh"?"已複製":"Copied";
+ setTimeout(()=>b.textContent=old,1000);
+}
+document.querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>copyUrl(Number(b.dataset.copy)));
+
+const lang={
+zh:{
+ title:"第三章｜金融大數據",subtitle:"Chapter 3 | Financial Big Data",langLabel:"語言",
+ teacherNote:"教師使用方式：每個活動都有獨立網址。上課時建議直接把指定活動的網址做成 QR Code，學生掃描後會直接進入該活動，不需要先經過本頁。",
+ g1Title:"刷卡被拒：信用額度不足",
+ g1Desc:"國泰世華銀行「一鍵調高信用卡額度」個案全文（講義 p.10–14），一句一句讀，旁邊的示意圖跟著動起來；最後是 p.9 的兩題討論題。",
+ g1Note:"預設為英文原文，右上角可切換中文。投影時可用簡報筆或鍵盤 ↓ 逐句前進，按「Spotlight／聚焦」只亮出目前這一句。網址加 ?lang=zh 可直接開啟中文版。",
+ open1:"開啟個案",copy:"複製網址",qrTitle:"QR Code 圖片下載",
+ qrText:"每個活動的 QR Code 已自動建立，掃描後可直接進入活動。按「下載 PNG 圖片」即可保存圖片；課程首頁另提供本章的 QR Code。",
+ homeBtn:"返回課程首頁",footer:"Chapter 3｜金融大數據"
+},
+en:{
+ title:"Chapter 3 | Financial Big Data",subtitle:"第三章｜金融大數據",langLabel:"Language",
+ teacherNote:"Instructor use: each activity has its own direct URL. In class, provide the QR code for the specific activity so students enter it directly without browsing this page first.",
+ g1Title:"Card Declined: Credit Limit Too Low",
+ g1Desc:"The full Cathay United Bank one-key credit limit case (handout p.10–14). Read it sentence by sentence while the illustration beside it builds up; the two discussion questions from p.9 come at the end.",
+ g1Note:"Opens in the original English; switch to Chinese at the top right. When projecting, use a presentation clicker or the ↓ key to move one sentence at a time, and Spotlight to dim everything but the current sentence. Add ?lang=zh to the URL to open the Chinese version.",
+ open1:"Open Case",copy:"Copy URL",qrTitle:"Download QR Code Images",
+ qrText:"Each activity has an automatically generated QR Code that opens it directly. Select Download PNG to save the image. A QR Code for this chapter is also available on the course home page.",
+ homeBtn:"Back to Course Home",footer:"Chapter 3 | Financial Big Data"
+}};
+let current="zh";
+function setLang(l){
+ current=l; document.documentElement.lang=l==="zh"?"zh-Hant":"en"; const t=lang[l];
+ ["title","subtitle","langLabel","teacherNote","g1Title","g1Desc","g1Note","open1","qrTitle","qrText","homeBtn","footer"].forEach(k=>{
+   const e=document.getElementById(k); if(e)e.textContent=t[k];
+ });
+ for(let i=1;i<=COUNT;i++)document.getElementById("copy"+i).textContent=t.copy;
+ document.querySelectorAll("[data-zh][data-en]").forEach(e=>e.textContent=l==="zh"?e.dataset.zh:e.dataset.en);
+ document.getElementById("zh").classList.toggle("active",l==="zh");
+ document.getElementById("en").classList.toggle("active",l==="en");
+}
+document.getElementById("zh").onclick=()=>setLang("zh");
+document.getElementById("en").onclick=()=>setLang("en");
+refreshUrls();setLang("zh");
+</script>
+<script src="../assets/vendor/qrcode.js"></script>
+<script src="../assets/qr-codes.js"></script>
+</body>
+</html>

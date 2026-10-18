@@ -1,0 +1,893 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#102a56">
+<title>Card Declined: Credit Limit Too Low | Case Reading</title>
+<meta name="description" content="Case reading for Financial Big Data: Cathay United Bank's one-key credit limit increase. Full case text with sentence-by-sentence animated illustrations.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%23102a56%22/%3E%3Cpath%20d%3D%22M8%2024V17h4v7zm6%200V11h4v13zm6%200V6h4v18z%22%20fill%3D%22%23ffffff%22/%3E%3C/svg%3E">
+<!-- ============================================================
+     Card Declined: Credit Limit Too Low — case reading (lecture 03 Financial Big Data, p.10–14)
+     One file, no external resources. The case text is reproduced in full, unchanged.
+     Each sentence (<span class="s" data-st="N">) drives stage N of the illustration beside it.
+     Navigation: scroll, or ↓ / → / Space / PageDown (presentation clicker) for the next sentence.
+     ============================================================ -->
+<style>
+:root{
+  --bg:#f4f2ed; --panel:#fff; --ink:#1b2433; --ink2:#4d5869; --ink3:#7a8494; --line:#dcd8cf; --line2:#ebe8e1;
+  --navy:#102a56; --blue:#1f5fb8; --blue2:#3f84d6; --blue-wash:#e8f0fc;
+  --good:#127a3d; --good-wash:#e3f4e9; --bad:#c0282f; --bad-wash:#fcebeb; --gold:#e8a317; --mark:#ffe58a;
+  --k:1;
+  --fs:calc(clamp(18px, 0.55vw + 14px, 22px) * var(--k));
+  --bar:52px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC",Arial,sans-serif;line-height:1.6}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px;border-radius:6px}
+
+/* ---------- top bar ---------- */
+.top{position:fixed;inset:0 0 auto 0;z-index:50;height:calc(var(--bar) + env(safe-area-inset-top));padding:env(safe-area-inset-top) 12px 0;background:var(--navy);color:#fff;display:flex;align-items:center;gap:10px}
+.top a.home{color:#fff;text-decoration:none;font-weight:700;font-size:14px;opacity:.85;white-space:nowrap}
+.top .ttl{flex:1;min-width:0;font-weight:800;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tools{display:flex;gap:6px;align-items:center}
+.tools button{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:9px;height:34px;min-width:34px;padding:0 10px;font-weight:800;font-size:14px;cursor:pointer}
+.tools button[aria-pressed="true"]{background:#fff;color:var(--navy)}
+.langsw{display:flex;border:1px solid rgba(255,255,255,.35);border-radius:9px;overflow:hidden}
+.tools .langsw button{border:0;border-radius:0;background:transparent;min-width:40px}
+.tools .langsw button[aria-pressed="true"]{background:#fff;color:var(--navy)}
+.plabel em{font-style:normal}
+html[lang="zh-Hant"] body{font-family:system-ui,-apple-system,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
+html[lang="zh-Hant"] .text p,html[lang="zh-Hant"] .disc li{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;line-height:1.95;letter-spacing:.02em}
+html[lang="zh-Hant"] .hero h1,html[lang="zh-Hant"] .case-title,html[lang="zh-Hant"] .disc h2{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;font-weight:900;letter-spacing:.02em}
+html[lang="zh-Hant"] .hero h1{line-height:1.18}
+html[lang="zh-Hant"] .kicker,html[lang="zh-Hant"] .plabel{letter-spacing:.04em}
+.progress{position:absolute;left:0;bottom:0;height:3px;background:var(--gold);width:0}
+
+/* ---------- hero ---------- */
+.hero{min-height:100svh;display:flex;align-items:center;padding:calc(var(--bar) + 40px) 20px 60px;background:radial-gradient(1200px 600px at 85% 10%,#1f5fb8 0,transparent 60%),linear-gradient(160deg,#0c2148,#102a56 55%,#163a75);color:#fff;position:relative;overflow:hidden}
+.hero .in{max-width:1100px;margin:0 auto;width:100%;display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center}
+.kicker{display:inline-block;font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);padding:5px 12px;border-radius:999px}
+.hero h1{font-family:Georgia,"Iowan Old Style","Times New Roman",serif;font-size:clamp(38px,6vw,72px);line-height:1.04;margin:18px 0 14px;letter-spacing:-.01em}
+.hero p.sub{font-size:18px;opacity:.88;margin:0 0 26px;max-width:34em}
+.hero .meta{display:flex;flex-wrap:wrap;gap:10px;font-size:14px;opacity:.9;margin-bottom:28px}
+.hero .meta span{border-left:3px solid var(--gold);padding-left:9px}
+.btn{display:inline-flex;align-items:center;gap:10px;background:var(--gold);color:#1b2433;font-weight:900;border:0;border-radius:12px;padding:14px 22px;font-size:17px;cursor:pointer;text-decoration:none}
+.keys{margin-top:18px;font-size:13px;opacity:.75}
+.keys kbd{display:inline-block;border:1px solid rgba(255,255,255,.45);border-radius:5px;padding:0 6px;font-family:inherit;font-size:12px;margin:0 2px}
+.hero-art{width:100%;max-width:420px;justify-self:center}
+.hero-art .hc{animation:hcard 4.5s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.hero-art .stamp{animation:stamp 4.5s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes hcard{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-10px) rotate(-4deg)}}
+@keyframes stamp{0%,18%{opacity:0;transform:scale(1.6) rotate(-14deg)}26%,70%{opacity:1;transform:scale(1) rotate(-14deg)}80%,100%{opacity:0;transform:scale(1) rotate(-14deg)}}
+
+/* ---------- parts ---------- */
+.part{max-width:1180px;margin:0 auto;padding:0 20px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:56px;position:relative}
+.part + .part{border-top:1px dashed var(--line)}
+.figwrap{position:sticky;top:calc(var(--bar) + 20px);height:calc(100svh - var(--bar) - 40px);display:flex;flex-direction:column;justify-content:center;gap:10px}
+.fig{position:relative;width:100%;aspect-ratio:4/3;background:var(--panel);border:1px solid var(--line);border-radius:22px;box-shadow:0 18px 40px -22px rgba(16,42,86,.35);overflow:hidden}
+.fig svg{display:block;width:100%;height:100%}
+.chip{position:absolute;top:10px;right:12px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);background:#f6f5f1;border:1px solid var(--line2);border-radius:999px;padding:2px 9px}
+.pips{display:flex;gap:6px;justify-content:center}
+.pips i{width:8px;height:8px;border-radius:50%;background:var(--line);transition:background .3s,transform .3s}
+.pips i.on{background:var(--blue)}
+.pips i.cur{transform:scale(1.35);background:var(--navy)}
+.text{padding:34svh 0 44svh}
+.plabel{display:flex;align-items:baseline;gap:12px;margin-bottom:22px;color:var(--blue);font-weight:900;letter-spacing:.05em;text-transform:uppercase;font-size:13px}
+.plabel b{font-family:Georgia,serif;font-size:44px;line-height:1;color:var(--navy);letter-spacing:0}
+.plabel span{color:var(--ink3)}
+.case-title{font-family:Georgia,"Iowan Old Style",serif;font-size:calc(var(--fs) * 1.25);color:var(--navy);margin:0 0 18px;font-weight:700}
+.text p{font-family:Georgia,"Iowan Old Style","Times New Roman",serif;font-size:var(--fs);line-height:1.75;margin:0 0 1.15em;color:var(--ink)}
+.s{transition:opacity .35s,background-color .35s;border-radius:4px;-webkit-box-decoration-break:clone;box-decoration-break:clone;padding:1px 2px;margin:0 -2px;cursor:pointer}
+.s.cur{background-color:rgba(31,95,184,.08)}
+body.spot .s{opacity:.25}
+body.spot .s.cur{opacity:1;background-color:transparent}
+mark{background:linear-gradient(transparent 58%,var(--mark) 58%) no-repeat 0 0/0% 100%;color:inherit;transition:background-size .9s cubic-bezier(.3,.7,.2,1) .15s;padding:0 1px}
+.s.seen mark{background-size:100% 100%}
+
+/* ---------- discussion & footer ---------- */
+.disc{max-width:900px;margin:0 auto;padding:12svh 20px 18svh}
+.disc h2{font-family:Georgia,serif;font-size:clamp(28px,3.4vw,40px);color:var(--navy);margin:8px 0 22px}
+.disc ol{margin:0;padding:0;list-style:none;counter-reset:q}
+.disc li{counter-increment:q;background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px 22px 20px 70px;margin-bottom:14px;position:relative;font-size:var(--fs);line-height:1.6}
+.disc li::before{content:counter(q);position:absolute;left:20px;top:18px;width:34px;height:34px;border-radius:50%;background:var(--navy);color:#fff;font-weight:900;display:grid;place-items:center;font-size:16px}
+.disc li .s{cursor:default}
+footer{border-top:1px solid var(--line);padding:22px 20px 40px;text-align:center;font-size:13px;color:var(--ink3)}
+footer p{margin:4px 0}
+
+/* ---------- floating step controls ---------- */
+.step{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:45;display:flex;flex-direction:column;gap:8px}
+.step button{width:48px;height:48px;border-radius:50%;border:0;background:var(--navy);color:#fff;font-size:20px;font-weight:900;box-shadow:0 8px 20px rgba(16,42,86,.35);cursor:pointer}
+.step button:disabled{opacity:.35;cursor:default}
+
+/* ---------- SVG animation system ----------
+   [data-s="a"]   visible from stage a onward;  [data-s="a-b"] visible for stages a..b
+   [data-m="a"]   gets .mv from stage a onward (used for movement)
+   .d1–.d4        delay on entering                                                       */
+.fig [data-s]{opacity:0;transition:opacity .55s ease,transform .8s cubic-bezier(.2,.8,.2,1);transition-delay:0s}
+.fig [data-s].on{opacity:1}
+.fig .on.d1{transition-delay:.6s}.fig .on.d2{transition-delay:1.3s}.fig .on.d3{transition-delay:2.1s}.fig .on.d4{transition-delay:2.9s}
+.fig *{transform-box:fill-box}
+.up{transform:translateY(14px)} .up.on{transform:none}
+.pop{transform:scale(.6);transform-origin:center} .pop.on{transform:scale(1)}
+.slide-l{transform:translateX(-30px)} .slide-l.on{transform:none}
+.card-in{transform:translateY(-36px)} .card-in.on{transform:none}
+.gx{transform:scaleX(0);transform-origin:left center;transition:transform 1.1s cubic-bezier(.3,.7,.2,1)!important}
+.on .gx{transform:scaleX(1)}
+.gy{transform:scaleY(0);transform-origin:center bottom;transition:transform 1.1s cubic-bezier(.3,.7,.2,1)!important}
+.on .gy{transform:scaleY(1)}
+.on .gy.d1,.on .gx.d1{transition-delay:.7s!important}
+.limitfill{transform:scaleX(.5);transform-origin:left center;transition:transform 1.1s cubic-bezier(.3,.7,.2,1) 1.4s!important}
+.on .limitfill{transform:scaleX(1)}
+.draw{stroke-dasharray:var(--len,600);stroke-dashoffset:var(--len,600);transition:stroke-dashoffset 1.6s ease!important}
+.on .draw{stroke-dashoffset:0}
+.on .draw.d1{transition-delay:.5s!important}.on .draw.d2{transition-delay:1.1s!important}.on .draw.d3{transition-delay:1.7s!important}
+.dot{opacity:0;transform:scale(.2);transform-origin:center;transition:opacity .3s,transform .4s cubic-bezier(.3,1.6,.5,1)}
+.on .dot{opacity:1;transform:scale(1)}
+.node{transition:fill .5s}
+.on .node{fill:var(--blue)}
+.fade-mv{transition:opacity .6s}.fade-mv.mv{opacity:.3}
+.ppl{transition:transform 1.6s cubic-bezier(.45,.05,.3,1)}
+.ppl.mv{transform:translateX(232px)}
+.steps4 g{transition:transform .9s cubic-bezier(.5,0,.3,1),opacity .6s}
+.steps4.mv g{transition-delay:3.1s}
+.steps4.mv .st-b,.steps4.mv .st-c,.steps4.mv .st-d{opacity:0}
+.steps4.mv .st-b{transform:translateX(-36px)}.steps4.mv .st-c{transform:translateX(-72px)}.steps4.mv .st-d{transform:translateX(-108px)}
+
+/* continuous motion */
+.spin{animation:spin 7s linear infinite;transform-origin:center}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin-r{animation:spin 7s linear infinite reverse;transform-origin:center}
+.ripple{transform-origin:center;opacity:0}
+.on .ripple{animation:ripple 1.6s ease-out .4s 2}
+@keyframes ripple{0%{opacity:.6;transform:scale(1)}100%{opacity:0;transform:scale(2.2)}}
+.flow{animation:flow 1.2s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-24}}
+.drift{animation:drift 3.2s ease-in infinite}
+@keyframes drift{0%{transform:translateX(0);opacity:1}80%{opacity:.15}100%{transform:translateX(70px);opacity:0}}
+.belt{animation:belt 3s linear infinite}
+@keyframes belt{from{transform:translateX(0)}to{transform:translateX(64px)}}
+.marker{animation:marker 4s ease-in-out infinite}
+@keyframes marker{0%{transform:translateX(0)}55%,75%{transform:translateX(220px)}100%{transform:translateX(380px)}}
+.coin{animation:coin 2.6s ease-in-out infinite}
+@keyframes coin{0%{transform:translate(0,0);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:translate(230px,-10px);opacity:0}}
+.pulse{animation:pulse 1.8s ease-in-out infinite;transform-origin:center}
+@keyframes pulse{50%{transform:scale(1.08)}}
+.blink{animation:blink 1.2s steps(2) infinite}
+@keyframes blink{50%{opacity:.25}}
+
+/* ---------- small screens: sticky illustration on top, text below ---------- */
+@media (max-width:860px){
+  :root{--bar:50px}
+  .top a.home span{display:none}
+  .top .ttl{visibility:hidden}
+  .tools{gap:4px}
+  .tools button{padding:0 8px}
+  .hero .in{grid-template-columns:1fr;gap:18px}
+  .hero-art{max-width:260px;order:-1}
+  .part{grid-template-columns:1fr;gap:0;padding:0 16px}
+  .figwrap{top:calc(var(--bar) + env(safe-area-inset-top));height:auto;z-index:5;background:linear-gradient(var(--bg) 88%,rgba(244,242,237,0));padding:10px 0 16px;margin:0 -16px;padding-left:16px;padding-right:16px}
+  .fig{width:min(100%,calc(38svh * 4 / 3));margin:0 auto;border-radius:16px}
+  .text{padding:24svh 0 34svh}
+  .plabel b{font-size:34px}
+  .step{right:12px}
+  .step button{width:44px;height:44px}
+  .disc li{padding:16px 16px 16px 60px}
+  .disc li::before{left:14px;top:15px}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+@media print{
+  .top,.step,.figwrap,.hero-art{display:none}
+  .part{display:block}.text{padding:20px 0}
+  body.spot .s{opacity:1}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <a class="home" href="../../index.html" aria-label="Chapter 3">← <span data-zh="第三章">Chapter 3</span></a>
+  <div class="ttl" data-zh="刷卡被拒：信用額度不足">Card Declined: Credit Limit Too Low</div>
+  <div class="tools">
+    <div class="langsw" role="group" aria-label="Language"><button id="lEn" type="button" aria-pressed="true">EN</button><button id="lZh" type="button" aria-pressed="false">中文</button></div>
+    <button id="spot" type="button" aria-pressed="false" title="Spotlight: dim everything except the current sentence" data-zh="聚焦">Spotlight</button>
+    <button id="aMinus" type="button" aria-label="Smaller text">A−</button>
+    <button id="aPlus" type="button" aria-label="Larger text">A+</button>
+  </div>
+  <div class="progress" id="progress"></div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="hero" id="top">
+  <div class="in">
+    <div>
+      <span class="kicker" data-zh="個案研讀・金融大數據">Case Study · Financial Big Data</span>
+      <h1 data-zh="刷卡被拒：<br>信用額度不足">Card Declined: Credit Limit Too Low</h1>
+      <p class="sub" data-zh="國泰世華銀行與國泰金控">Cathay United Bank and Cathay Financial Holdings</p>
+      <div class="meta"><span data-zh="個案全文">Full case text</span><span data-zh="共 5 段">5 parts</span><span data-zh="讀到哪，圖就畫到哪">Pictures build as you read</span></div>
+      <button class="btn" id="start" type="button" data-zh="開始閱讀 ↓">Start reading ↓</button>
+      <div class="keys" data-zh="捲動畫面、點一下句子，或按 <kbd>↓</kbd> <kbd>Space</kbd> <kbd>PgDn</kbd> 前往下一句">Scroll, tap a sentence, or press <kbd>↓</kbd> <kbd>Space</kbd> <kbd>PgDn</kbd> for the next sentence</div>
+    </div>
+    <svg class="hero-art" viewBox="0 0 320 240" role="img" aria-label="A credit card stamped DECLINED">
+      <g class="hc">
+        <rect x="40" y="50" width="230" height="145" rx="16" fill="#f6f8fd"/>
+        <rect x="40" y="80" width="230" height="26" fill="#1b2433"/>
+        <rect x="62" y="122" width="38" height="28" rx="5" fill="#e8a317"/>
+        <rect x="62" y="165" width="120" height="9" rx="4" fill="#c9d3e3"/>
+        <rect x="190" y="165" width="56" height="9" rx="4" fill="#c9d3e3"/>
+      </g>
+      <g class="stamp">
+        <rect x="80" y="98" width="170" height="50" rx="8" fill="none" stroke="#e5484d" stroke-width="5"/>
+        <text x="165" y="132" text-anchor="middle" font-size="27" font-weight="900" fill="#e5484d" font-family="system-ui,sans-serif" letter-spacing="2" data-zh="交易被拒">DECLINED</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ============ PART 1 · p.10 ============ -->
+<section class="part" data-part="1">
+  <div class="figwrap">
+    <div class="fig" role="img" aria-label="Illustration for part 1">
+      <span class="chip" data-zh="示意圖">Illustration</span>
+      <svg viewBox="0 0 480 360" font-family="system-ui,-apple-system,Segoe UI,sans-serif">
+        <defs>
+          <symbol id="person" viewBox="0 0 20 30"><circle cx="10" cy="6.5" r="5.8"/><path d="M0.5 29.5c0-8 4.2-13 9.5-13s9.5 5 9.5 13z"/></symbol>
+          <symbol id="bank" viewBox="0 0 80 70"><path d="M40 2 78 20H2z"/><rect x="4" y="22" width="72" height="5"/><rect x="10" y="30" width="8" height="28"/><rect x="26" y="30" width="8" height="28"/><rect x="46" y="30" width="8" height="28"/><rect x="62" y="30" width="8" height="28"/><rect x="2" y="60" width="76" height="8"/></symbol>
+          <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#7a8494"/></marker>
+          <marker id="arB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#1f5fb8"/></marker>
+        </defs>
+
+        <!-- Scene A: checkout (sentences 1–3) -->
+        <g data-s="1-3">
+          <g class="card-in" data-s="1">
+            <rect x="72" y="28" width="96" height="60" rx="7" fill="#1f5fb8"/>
+            <rect x="84" y="44" width="18" height="13" rx="2" fill="#e8a317"/>
+            <rect x="84" y="68" width="60" height="5" rx="2" fill="#a9c6ef"/>
+          </g>
+          <rect x="45" y="62" width="150" height="236" rx="18" fill="#1b2433"/>
+          <rect x="59" y="80" width="122" height="88" rx="9" fill="#f4f6fa"/>
+          <g fill="#3a4659"><rect x="66" y="186" width="30" height="20" rx="5"/><rect x="105" y="186" width="30" height="20" rx="5"/><rect x="144" y="186" width="30" height="20" rx="5"/><rect x="66" y="214" width="30" height="20" rx="5"/><rect x="105" y="214" width="30" height="20" rx="5"/><rect x="144" y="214" width="30" height="20" rx="5"/><rect x="66" y="242" width="30" height="20" rx="5"/><rect x="105" y="242" width="30" height="20" rx="5"/><rect x="144" y="242" width="30" height="20" rx="5" fill="#127a3d"/></g>
+          <g data-s="1-2">
+            <rect x="59" y="80" width="122" height="88" rx="9" fill="#fcebeb"/>
+            <text x="120" y="118" text-anchor="middle" font-size="19" font-weight="900" fill="#c0282f" class="blink" data-zh="交易被拒">DECLINED</text>
+            <text x="120" y="140" text-anchor="middle" font-size="10.5" fill="#4d5869" data-zh="信用額度不足">Credit limit too low</text>
+          </g>
+          <g data-s="3" class="d4">
+            <rect x="59" y="80" width="122" height="88" rx="9" fill="#e3f4e9"/>
+            <text x="120" y="118" text-anchor="middle" font-size="15.5" font-weight="900" fill="#127a3d" data-zh="交易成功 ✓">APPROVED ✓</text>
+            <text x="120" y="140" text-anchor="middle" font-size="10.5" fill="#4d5869" data-zh="完成消費">Purchase complete</text>
+          </g>
+
+          <!-- s1: the shopper's choice -->
+          <g data-s="1-1">
+            <g class="pop d1" data-s="1"><rect x="236" y="70" width="190" height="40" rx="20" fill="#eef3fb" stroke="#c9d6ea"/><text x="331" y="95" text-anchor="middle" font-size="14" fill="#1b2433" data-zh="換一張卡？">Switch to another card?</text></g>
+            <g class="pop d2" data-s="1"><rect x="256" y="124" width="150" height="40" rx="20" fill="#eef3fb" stroke="#c9d6ea"/><text x="331" y="149" text-anchor="middle" font-size="14" fill="#1b2433" data-zh="還是乾脆不買？">Or just skip it?</text></g>
+            <use href="#person" x="306" y="188" width="50" height="76" fill="#4d5869"/>
+          </g>
+
+          <!-- s2: the bank loses the transaction and maybe the customer -->
+          <g data-s="2-2">
+            <use href="#bank" x="236" y="150" width="96" height="84" fill="#102a56"/>
+            <text x="284" y="256" text-anchor="middle" font-size="12" font-weight="700" fill="#102a56" data-zh="銀行">The bank</text>
+            <g class="drift"><circle cx="360" cy="120" r="17" fill="#e8a317"/><text x="360" y="126" text-anchor="middle" font-size="16" font-weight="900" fill="#fff">$</text></g>
+            <text x="388" y="94" text-anchor="middle" font-size="12" fill="#4d5869" data-zh="這筆交易">that transaction</text>
+            <g class="drift" style="animation-delay:1s"><use href="#person" x="350" y="190" width="30" height="45" fill="#7a8494"/></g>
+            <text x="388" y="258" text-anchor="middle" font-size="12" fill="#4d5869" data-zh="客戶">the customer</text>
+            <path d="M332 175 350 135M332 205 350 212" stroke="#7a8494" stroke-width="2" stroke-dasharray="4 4" fill="none"/>
+          </g>
+
+          <!-- s3: text message, press one key, limit raised -->
+          <g data-s="3" class="slide-l">
+            <rect x="262" y="36" width="168" height="292" rx="24" fill="#1b2433"/>
+            <rect x="272" y="56" width="148" height="256" rx="10" fill="#fff"/>
+            <text x="346" y="76" text-anchor="middle" font-size="10" font-weight="800" fill="#7a8494" data-zh="簡訊">Text message</text>
+            <rect x="282" y="86" width="128" height="62" rx="12" fill="#e8f0fc"/>
+            <text x="292" y="106" font-size="11" fill="#1b2433" data-zh="國泰世華銀行：">Cathay United Bank:</text>
+            <text x="292" y="122" font-size="11" fill="#1b2433" data-zh="按 1 即可">Press 1 to raise</text>
+            <text x="292" y="138" font-size="11" fill="#1b2433" data-zh="立即調高額度。">your limit now.</text>
+            <g data-s="3" class="d1">
+              <circle cx="346" cy="192" r="24" fill="#1f5fb8" class="ripple"/>
+              <circle cx="346" cy="192" r="24" fill="#1f5fb8"/>
+              <text x="346" y="200" text-anchor="middle" font-size="22" font-weight="900" fill="#fff">1</text>
+              <text x="346" y="232" text-anchor="middle" font-size="10" fill="#7a8494" data-zh="按一個鍵">one key</text>
+            </g>
+            <g data-s="3" class="d2">
+              <text x="284" y="258" font-size="10.5" font-weight="700" fill="#4d5869" data-zh="信用額度">Credit limit</text>
+              <rect x="284" y="265" width="124" height="13" rx="6.5" fill="#e6e3dc"/>
+              <rect x="284" y="265" width="124" height="13" rx="6.5" fill="#127a3d" class="limitfill"/>
+              <text x="346" y="298" text-anchor="middle" font-size="10.5" font-weight="800" fill="#127a3d" data-zh="立即調高">raised immediately</text>
+            </g>
+          </g>
+        </g>
+
+        <!-- Scene B: branches → digital channels (sentences 4–6) -->
+        <g data-s="4-6">
+          <g data-s="4" class="up">
+            <g class="fade-mv" data-m="5">
+              <use href="#bank" x="36" y="72" width="150" height="132" fill="#102a56"/>
+              <text x="111" y="228" text-anchor="middle" font-size="13" font-weight="800" fill="#102a56" data-zh="傳統分行">Traditional branches</text>
+            </g>
+          </g>
+          <g data-s="4" class="d1">
+            <g class="ppl" data-m="5" fill="#1f5fb8">
+              <use href="#person" x="62" y="244" width="24" height="36"/>
+              <use href="#person" x="98" y="244" width="24" height="36"/>
+              <use href="#person" x="134" y="244" width="24" height="36"/>
+            </g>
+          </g>
+          <g data-s="5">
+            <path d="M200 140 C 250 140, 260 140, 286 140" stroke="#1f5fb8" stroke-width="2.5" stroke-dasharray="6 6" class="flow" fill="none" marker-end="url(#arB)"/>
+            <g class="pop">
+              <rect x="300" y="86" width="96" height="64" rx="6" fill="#1b2433"/><rect x="306" y="92" width="84" height="50" rx="3" fill="#e8f0fc"/><path d="M290 154h116l-8 10H298z" fill="#3a4659"/>
+            </g>
+            <g class="pop d1">
+              <rect x="414" y="86" width="40" height="74" rx="8" fill="#1b2433"/><rect x="419" y="94" width="30" height="56" rx="3" fill="#e8f0fc"/>
+            </g>
+            <text x="372" y="190" text-anchor="middle" font-size="13" font-weight="800" fill="#1f5fb8" data-zh="數位通路">Digital channels</text>
+            <text x="372" y="207" text-anchor="middle" font-size="11" fill="#4d5869" data-zh="電腦與手機">computers and phones</text>
+          </g>
+          <g data-s="6" class="up">
+            <rect x="34" y="296" width="412" height="46" rx="12" fill="#102a56"/>
+            <text x="240" y="325" text-anchor="middle" font-size="15" font-weight="700" fill="#fff" font-style="italic" data-zh="「客戶的行為正在改變。」">"Customer behavior is changing."</text>
+          </g>
+        </g>
+      </svg>
+    </div>
+    <div class="pips"></div>
+  </div>
+  <div class="text">
+    <div class="plabel"><b>1</b><em data-zh="第 1 段，共 5 段">Part 1 of 5</em> <span>· p.10</span></div>
+    <h2 class="case-title" data-zh="刷卡被拒：信用額度不足">Card Declined: Credit Limit Too Low</h2>
+    <p><span class="s" data-st="1">When a credit card purchase is declined because of the credit limit, do you <mark>switch to another card or just skip the purchase?</mark></span> <span class="s" data-st="2">One casual action by a consumer can cost the bank not only <mark>that transaction but possibly the customer</mark> as well.</span> <span class="s" data-st="3">To solve this pain point, Cathay United Bank now proactively sends a text message: without calling customer service, you <mark>press one key, your limit is raised immediately</mark>, and you can complete the purchase.</span></p>
+    <p><span class="s" data-st="4">Liang Ming-chiao, assistant vice president of Cathay Financial Holdings' Digital and Data Development Center (the DDD Center), says banks used to manage customer relationships through <mark>traditional branches</mark>.</span> <span class="s" data-st="5">Now more and more customers come through <mark>digital channels</mark> such as computers and phones.</span> <span class="s" data-st="6">"Customer behavior is changing. Banks must keep up with how customers want to be served, or they will be eliminated!"</span></p>
+  </div>
+</section>
+
+<!-- ============ PART 2 · p.11 ============ -->
+<section class="part" data-part="2">
+  <div class="figwrap">
+    <div class="fig" role="img" aria-label="Illustration for part 2">
+      <span class="chip" data-zh="示意圖">Illustration</span>
+      <svg viewBox="0 0 480 360" font-family="system-ui,-apple-system,Segoe UI,sans-serif">
+        <!-- Scene A: scenario first, then process -->
+        <g data-s="1-1">
+          <g class="up">
+            <rect x="40" y="96" width="160" height="128" rx="14" fill="#fff" stroke="#1f5fb8" stroke-width="2.5"/>
+            <rect x="52" y="108" width="136" height="80" rx="8" fill="#e8f0fc"/>
+            <use href="#person" x="78" y="122" width="30" height="45" fill="#1f5fb8"/>
+            <rect x="122" y="128" width="26" height="44" rx="5" fill="#1b2433"/><rect x="126" y="134" width="18" height="30" rx="2" fill="#fff"/>
+            <path d="M156 132q12-8 22 0" stroke="#e8a317" stroke-width="3" fill="none"/>
+            <text x="120" y="210" text-anchor="middle" font-size="13" font-weight="800" fill="#102a56" data-zh="情境">Scenario</text>
+            <text x="120" y="252" text-anchor="middle" font-size="13" fill="#4d5869" data-zh="① 先設計">① Design first</text>
+          </g>
+          <path d="M214 160h50" stroke="#7a8494" stroke-width="3" marker-end="url(#ar)" data-s="1" class="d1"/>
+          <g data-s="1" class="d2 pop">
+            <g transform="translate(344 160)">
+              <g class="spin"><circle r="48" fill="none" stroke="#1f5fb8" stroke-width="16" stroke-dasharray="11 9"/><circle r="40" fill="#1f5fb8"/><circle r="14" fill="#fff"/></g>
+            </g>
+            <text x="344" y="240" text-anchor="middle" font-size="13" font-weight="800" fill="#102a56" data-zh="流程">Process</text>
+            <text x="344" y="262" text-anchor="middle" font-size="13" fill="#4d5869" data-zh="② 再優化">② Then optimize</text>
+          </g>
+        </g>
+        <!-- Scene B: RTDM, right moment, data -->
+        <g data-s="2-4">
+          <g class="slide-l">
+            <use href="#person" x="34" y="104" width="44" height="66" fill="#1f5fb8"/>
+            <rect x="74" y="124" width="22" height="38" rx="5" fill="#1b2433"/><rect x="77" y="129" width="16" height="27" rx="2" fill="#e8f0fc"/>
+            <text x="72" y="194" text-anchor="middle" font-size="10.5" fill="#4d5869" data-zh="數位通路">digital-channel</text>
+            <text x="72" y="208" text-anchor="middle" font-size="10.5" fill="#4d5869" data-zh="客戶">customer</text>
+          </g>
+          <g data-s="2" class="d1">
+            <path d="M108 140h56" stroke="#1f5fb8" stroke-width="3" stroke-dasharray="6 6" class="flow" marker-end="url(#arB)"/>
+            <text x="136" y="128" text-anchor="middle" font-size="11" font-weight="800" fill="#1f5fb8" data-zh="即時">immediately</text>
+          </g>
+          <g data-s="2" class="pop d1">
+            <rect x="176" y="92" width="140" height="98" rx="16" fill="#102a56"/>
+            <path d="M206 108l-12 26h12l-8 24 22-32h-12l8-18z" fill="#e8a317"/>
+            <text x="268" y="138" text-anchor="middle" font-size="24" font-weight="900" fill="#fff">RTDM</text>
+            <text x="246" y="162" text-anchor="middle" font-size="9.5" fill="#c9d6ea" data-zh="即時決策">real-time decision</text>
+            <text x="246" y="175" text-anchor="middle" font-size="9.5" fill="#c9d6ea" data-zh="管理系統">management system</text>
+          </g>
+          <text x="246" y="76" text-anchor="middle" font-size="11" fill="#7a8494" data-s="2" class="d2" data-zh="數數發中心自行研發">developed in-house by the DDD Center</text>
+          <!-- right moment timeline -->
+          <g data-s="4" class="up">
+            <rect x="214" y="246" width="70" height="34" rx="8" fill="#fff4d6" stroke="#e8a317"/>
+            <text x="249" y="300" text-anchor="middle" font-size="12" font-weight="800" fill="#a15c00" data-zh="對的時刻">the right moment</text>
+            <line x1="34" y1="263" x2="446" y2="263" stroke="#c9c4b8" stroke-width="3"/>
+            <g fill="#c9c4b8"><circle cx="74" cy="263" r="3"/><circle cx="134" cy="263" r="3"/><circle cx="194" cy="263" r="3"/><circle cx="314" cy="263" r="3"/><circle cx="374" cy="263" r="3"/><circle cx="434" cy="263" r="3"/></g>
+            <g class="marker"><circle cx="34" cy="263" r="9" fill="#1f5fb8"/></g>
+            <text x="34" y="236" font-size="11" fill="#7a8494" data-zh="時機">timing</text>
+          </g>
+          <g data-s="4" class="pop d1">
+            <path d="M40 44c-6-8-18-2-12 8l12 11 12-11c6-10-6-16-12-8z" fill="#e5484d"/>
+            <path d="M68 44c-6-8-18-2-12 8l12 11 12-11c6-10-6-16-12-8z" fill="#e5484d" opacity=".75"/>
+            <text x="92" y="58" font-size="11" fill="#4d5869" data-zh="滿意度與忠誠度">satisfaction &amp; loyalty</text>
+          </g>
+          <g data-s="4" class="d2">
+            <path d="M318 141h52" stroke="#127a3d" stroke-width="3" stroke-dasharray="4 6" class="flow" marker-end="url(#ar)"/>
+            <g transform="translate(392 104)">
+              <ellipse cx="26" cy="8" rx="26" ry="9" fill="#127a3d"/>
+              <path d="M0 8v60c0 5 12 9 26 9s26-4 26-9V8c0 5-12 9-26 9S0 13 0 8z" fill="#1d9150"/>
+              <path d="M0 30c0 5 12 9 26 9s26-4 26-9M0 50c0 5 12 9 26 9s26-4 26-9" stroke="#e3f4e9" stroke-width="2" fill="none"/>
+            </g>
+            <text x="418" y="200" text-anchor="middle" font-size="11" font-weight="800" fill="#127a3d" data-zh="資料">data</text>
+            <text x="418" y="215" text-anchor="middle" font-size="10" fill="#4d5869" data-zh="客戶需求">customer needs</text>
+          </g>
+        </g>
+      </svg>
+    </div>
+    <div class="pips"></div>
+  </div>
+  <div class="text">
+    <div class="plabel"><b>2</b><em data-zh="第 2 段，共 5 段">Part 2 of 5</em> <span>· p.11</span></div>
+    <p><span class="s" data-st="1"><mark>Design the scenario first, then optimize the process.</mark></span> <span class="s" data-st="2">The key is to satisfy digital-channel customers "immediately," and the <mark>real-time decision management system (RTDM)</mark> developed in-house by the DDD Center is Cathay Financial's solution.</span> <span class="s" data-st="4">Liang explains that "real time" refers to timing: interacting with customers at <mark>the right moment</mark> not only raises their satisfaction with and loyalty to the brand, but also lets the bank <mark>collect data</mark> through these interactions to fully understand customer needs.</span></p>
+  </div>
+</section>
+
+<!-- ============ PART 3 · p.12 ============ -->
+<section class="part" data-part="3">
+  <div class="figwrap">
+    <div class="fig" role="img" aria-label="Illustration for part 3">
+      <span class="chip" data-zh="示意圖">Illustration</span>
+      <svg viewBox="0 0 480 360" font-family="system-ui,-apple-system,Segoe UI,sans-serif">
+        <!-- Scene A: ~80-person data team & business units -->
+        <g data-s="1-2">
+          <text x="40" y="52" font-size="13" font-weight="800" fill="#102a56" data-zh="數據團隊・近 80 人">Data team · nearly 80 people</text>
+          <g data-gen="dots" data-n="80" data-cols="10" data-x="48" data-y="74" data-gap="17" data-r="5.5" data-fill="#1f5fb8"></g>
+          <g data-s="1" class="d2">
+            <path d="M232 98 C 280 98, 290 86, 318 86M232 140 C 280 140, 290 146, 318 146M232 182 C 280 182, 290 206, 318 206" stroke="#9db5d8" stroke-width="2" fill="none" stroke-dasharray="5 5" class="flow"/>
+            <g font-size="12" font-weight="700" fill="#102a56" text-anchor="middle">
+              <rect x="320" y="66" width="122" height="40" rx="9" fill="#eef3fb" stroke="#c9d6ea"/><text x="381" y="91" data-zh="事業單位">Business unit</text>
+              <rect x="320" y="126" width="122" height="40" rx="9" fill="#eef3fb" stroke="#c9d6ea"/><text x="381" y="151" data-zh="事業單位">Business unit</text>
+              <rect x="320" y="186" width="122" height="40" rx="9" fill="#eef3fb" stroke="#c9d6ea"/><text x="381" y="211" data-zh="事業單位">Business unit</text>
+            </g>
+            <text x="381" y="246" text-anchor="middle" font-size="11" fill="#4d5869" data-zh="商業分析">business analytics</text>
+          </g>
+          <g data-s="2" class="up">
+            <rect x="34" y="264" width="412" height="74" rx="14" fill="#102a56"/>
+            <text x="240" y="295" text-anchor="middle" font-size="15" font-style="italic" fill="#fff" data-zh="「模型如果不能商轉，">"A model is useless if it can't be</text>
+            <text x="240" y="318" text-anchor="middle" font-size="15" font-style="italic" fill="#fff" data-zh="就沒有用。」">put into commercial use."</text>
+          </g>
+        </g>
+        <!-- Scene B: credit card data → NT$100 million -->
+        <g data-s="3-4">
+          <g class="slide-l">
+            <rect x="34" y="52" width="176" height="112" rx="13" fill="#1f5fb8"/>
+            <rect x="52" y="78" width="30" height="22" rx="4" fill="#e8a317"/>
+            <rect x="52" y="124" width="120" height="8" rx="4" fill="#a9c6ef"/>
+            <rect x="52" y="140" width="70" height="8" rx="4" fill="#a9c6ef"/>
+            <text x="122" y="186" text-anchor="middle" font-size="12" font-weight="800" fill="#102a56" data-zh="信用卡資料">credit card data</text>
+          </g>
+          <g data-gen="rows" data-x="236" data-y="58" data-n="6"></g>
+          <g data-s="4">
+            <text x="240" y="252" text-anchor="middle" font-size="40" font-weight="900" fill="#c0282f" data-count="100000000" data-prefix="NT$" data-suffix="+">NT$0</text>
+            <text x="240" y="280" text-anchor="middle" font-size="13" fill="#4d5869" data-zh="每年被放棄的刷卡消費">card purchases abandoned a year</text>
+            <text x="240" y="298" text-anchor="middle" font-size="13" fill="#4d5869" data-zh="原因：額度太低">because limits are too low</text>
+          </g>
+        </g>
+        <!-- Scene C: waiting on hold -->
+        <g data-s="5-5">
+          <g class="pop">
+            <path d="M84 118c-8 8-8 22 4 40l26 34c12 16 26 22 36 16l14-10c4-3 4-8 1-11l-20-22c-3-3-8-3-11 0l-8 7c-8-2-24-24-24-32l7-8c3-3 3-8 0-11l-18-20c-3-4-8-4-11-1z" fill="#1b2433"/>
+          </g>
+          <text x="128" y="250" text-anchor="middle" font-size="13" fill="#4d5869" data-zh="打電話給客服">calling customer service</text>
+          <text x="318" y="112" text-anchor="middle" font-size="14" font-weight="700" fill="#7a8494" class="blink" data-zh="等待中…">On hold…</text>
+          <text x="318" y="170" text-anchor="middle" font-size="48" font-weight="900" fill="#102a56" font-variant-numeric="tabular-nums" data-timer="10">00:00</text>
+          <text x="318" y="196" text-anchor="middle" font-size="12" fill="#4d5869" data-zh="至少數十分鐘">at least tens of minutes</text>
+          <g data-s="5" class="d4 up">
+            <rect x="214" y="234" width="210" height="58" rx="12" fill="#fcebeb"/>
+            <text x="319" y="259" text-anchor="middle" font-size="13" font-weight="800" fill="#c0282f" data-zh="刷卡的時機">The moment to use</text>
+            <text x="319" y="278" text-anchor="middle" font-size="13" font-weight="800" fill="#c0282f" data-zh="就此錯過">the card was lost</text>
+          </g>
+        </g>
+        <!-- Scene D: recovering interrupted transactions -->
+        <g data-s="6">
+          <use href="#bank" x="330" y="104" width="120" height="105" fill="#102a56"/>
+          <g fill="#e8a317">
+            <g class="coin"><circle cx="70" cy="160" r="15"/><text x="70" y="166" text-anchor="middle" font-size="15" font-weight="900" fill="#fff">$</text></g>
+            <g class="coin" style="animation-delay:.85s"><circle cx="70" cy="160" r="15"/><text x="70" y="166" text-anchor="middle" font-size="15" font-weight="900" fill="#fff">$</text></g>
+            <g class="coin" style="animation-delay:1.7s"><circle cx="70" cy="160" r="15"/><text x="70" y="166" text-anchor="middle" font-size="15" font-weight="900" fill="#fff">$</text></g>
+          </g>
+          <path d="M40 200h40m10 0h30m10 0h40" stroke="#c0282f" stroke-width="3"/>
+          <text x="104" y="226" text-anchor="middle" font-size="12" fill="#4d5869" data-zh="被中斷的交易">interrupted transactions</text>
+          <text x="240" y="282" text-anchor="middle" font-size="16" font-weight="800" fill="#127a3d" data-zh="「現在我們只是把">"Now we are only recovering</text>
+          <text x="240" y="304" text-anchor="middle" font-size="16" font-weight="800" fill="#127a3d" data-zh="被中斷的交易找回來。」">transactions that were interrupted"</text>
+        </g>
+      </svg>
+    </div>
+    <div class="pips"></div>
+  </div>
+  <div class="text">
+    <div class="plabel"><b>3</b><em data-zh="第 3 段，共 5 段">Part 3 of 5</em> <span>· p.12</span></div>
+    <p><span class="s" data-st="1">Besides researching new technologies, the <mark>data team of nearly 80 people</mark> focuses on business analytics with each business unit.</span> <span class="s" data-st="2">"A model is useless if it can't be put into commercial use," Liang says.</span> <span class="s" data-st="3">So they designed various interaction scenarios, starting with <mark>credit card data</mark>.</span> <span class="s" data-st="4">They found that Cathay United Bank customers abandon card purchases worth <mark>over NT$100 million a year</mark> because their limits are too low.</span> <span class="s" data-st="5">In the past, calling customer service meant waiting <mark>at least tens of minutes</mark> for a limit increase, so the moment to use the card was lost.</span> <span class="s" data-st="6">"That money was as good as ours. Now we are only <mark>recovering transactions that were interrupted</mark>," Liang adds.</span></p>
+  </div>
+</section>
+
+<!-- ============ PART 4 · p.13 ============ -->
+<section class="part" data-part="4">
+  <div class="figwrap">
+    <div class="fig" role="img" aria-label="Illustration for part 4">
+      <span class="chip" data-zh="示意圖">Illustration</span>
+      <svg viewBox="0 0 480 360" font-family="system-ui,-apple-system,Segoe UI,sans-serif">
+        <defs><clipPath id="pipe"><rect x="34" y="62" width="412" height="40" rx="20"/></clipPath></defs>
+        <!-- Scene A: existing transactions; connecting RTDM -->
+        <g data-s="1-2">
+          <text x="40" y="50" font-size="12" font-weight="800" fill="#102a56" data-zh="既有交易">Existing transactions</text>
+          <rect x="34" y="62" width="412" height="40" rx="20" fill="#eef3fb" stroke="#c9d6ea"/>
+          <g clip-path="url(#pipe)">
+            <g class="belt"><g fill="#1f5fb8">
+              <rect x="-64" y="72" width="34" height="20" rx="4"/><rect x="0" y="72" width="34" height="20" rx="4"/><rect x="64" y="72" width="34" height="20" rx="4"/><rect x="128" y="72" width="34" height="20" rx="4"/><rect x="192" y="72" width="34" height="20" rx="4"/><rect x="256" y="72" width="34" height="20" rx="4"/><rect x="320" y="72" width="34" height="20" rx="4"/><rect x="384" y="72" width="34" height="20" rx="4"/><rect x="448" y="72" width="34" height="20" rx="4"/>
+            </g></g>
+          </g>
+          <g data-s="2">
+            <rect x="164" y="126" width="152" height="54" rx="10" fill="#102a56"/>
+            <text x="240" y="158" text-anchor="middle" font-size="13" font-weight="800" fill="#fff" data-zh="交易系統">Transaction system</text>
+            <line x1="240" y1="102" x2="240" y2="126" stroke="#102a56" stroke-width="4"/>
+            <g class="slide-l d1" data-s="2">
+              <rect x="34" y="222" width="120" height="56" rx="12" fill="#1f5fb8"/>
+              <path d="M58 234l-8 16h8l-5 16 15-21h-8l5-11z" fill="#e8a317"/>
+              <text x="106" y="256" text-anchor="middle" font-size="16" font-weight="900" fill="#fff">RTDM</text>
+            </g>
+            <path d="M154 250 C 200 250, 210 220, 210 182" stroke="#1f5fb8" stroke-width="3" fill="none" class="draw d2" style="--len:120"/>
+            <g data-s="2" class="d3">
+              <text x="378" y="208" text-anchor="middle" font-size="11" fill="#4d5869" data-zh="使用者的步驟">user's steps</text>
+              <g class="steps4" data-m="2">
+                <circle cx="324" cy="236" r="14" fill="#1f5fb8"/><text x="324" y="241" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">1</text>
+                <g class="st-b"><circle cx="360" cy="236" r="14" fill="#9db5d8"/><text x="360" y="241" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">2</text></g>
+                <g class="st-c"><circle cx="396" cy="236" r="14" fill="#9db5d8"/><text x="396" y="241" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">3</text></g>
+                <g class="st-d"><circle cx="432" cy="236" r="14" fill="#9db5d8"/><text x="432" y="241" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">4</text></g>
+              </g>
+              <text x="378" y="270" text-anchor="middle" font-size="11" font-weight="700" fill="#1f5fb8" data-zh="簡化">simplified</text>
+            </g>
+            <g data-s="2" class="d4 up">
+              <rect x="190" y="296" width="256" height="44" rx="10" fill="#fcebeb" stroke="#e8b4b6" stroke-dasharray="5 4"/>
+              <path d="M210 328l12-22 12 22z" fill="#c0282f"/><text x="222" y="325" text-anchor="middle" font-size="12" font-weight="900" fill="#fff">!</text>
+              <text x="244" y="314" font-size="11" font-weight="800" fill="#c0282f" data-zh="系統一旦當機，">a system crash would cost</text>
+              <text x="244" y="330" font-size="11" font-weight="800" fill="#c0282f" data-zh="損失將大於收穫">more than it gained</text>
+            </g>
+          </g>
+        </g>
+        <!-- Scene B: stress tests -->
+        <g data-s="3-3">
+          <text x="40" y="44" font-size="13" font-weight="800" fill="#102a56" data-zh="壓力測試">Stress tests</text>
+          <line x1="60" y1="290" x2="446" y2="290" stroke="#7a8494" stroke-width="2"/>
+          <line x1="60" y1="70" x2="60" y2="290" stroke="#7a8494" stroke-width="2"/>
+          <text x="66" y="66" font-size="11" fill="#7a8494" data-zh="流量">traffic</text>
+          <line x1="60" y1="104" x2="446" y2="104" stroke="#c0282f" stroke-width="2" stroke-dasharray="7 6"/>
+          <text x="444" y="96" text-anchor="end" font-size="11" font-weight="800" fill="#c0282f" data-zh="失控">out of control</text>
+          <g fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <path class="draw" style="--len:460" d="M60 270 L100 250 140 262 180 214 220 230 260 190 300 206 340 168 380 186 420 150 446 160" stroke="#9db5d8"/>
+            <path class="draw d1" style="--len:460" d="M60 274 L100 240 140 248 180 200 220 220 260 170 300 186 340 150 380 168 420 138 446 146" stroke="#3f84d6"/>
+            <path class="draw d2" style="--len:460" d="M60 266 L100 236 140 244 180 196 220 206 260 164 300 172 340 140 380 156 420 128 446 134" stroke="#1f5fb8"/>
+          </g>
+          <g data-s="3" class="d4 pop">
+            <rect x="300" y="214" width="132" height="46" rx="23" fill="#127a3d"/>
+            <text x="366" y="243" text-anchor="middle" font-size="16" font-weight="900" fill="#fff" data-zh="上線 ✓">Launch ✓</text>
+          </g>
+        </g>
+        <!-- Scene C: 8–10 months, 100+ people, three teams -->
+        <g data-s="4-4">
+          <text x="40" y="46" font-size="13" font-weight="800" fill="#102a56" data-zh="八到十個月">Eight to ten months</text>
+          <rect x="40" y="58" width="400" height="22" rx="11" fill="#ebe8e1"/>
+          <rect x="40" y="58" width="320" height="22" rx="11" fill="#1f5fb8" class="gx d1"/>
+          <rect x="360" y="58" width="80" height="22" rx="0" fill="#9db5d8" opacity=".9"/>
+          <rect x="420" y="58" width="20" height="22" rx="11" fill="#9db5d8" opacity=".9"/>
+          <g font-size="10" fill="#7a8494" text-anchor="middle"><text x="40" y="96">0</text><text x="360" y="96">8</text><text x="440" y="96">10</text></g>
+          <text x="40" y="128" font-size="13" font-weight="800" fill="#102a56" data-zh="超過 100 人">More than 100 people</text>
+          <g data-gen="dots" data-n="104" data-cols="26" data-x="46" data-y="146" data-gap="15" data-r="5" data-fill="#102a56"></g>
+          <g data-s="4" class="d4 up" font-size="13" font-weight="800" text-anchor="middle">
+            <rect x="40" y="250" width="124" height="38" rx="19" fill="#e8f0fc"/><text x="102" y="274" fill="#1f5fb8" data-zh="數據">Data</text>
+            <rect x="178" y="250" width="124" height="38" rx="19" fill="#fff4d6"/><text x="240" y="274" fill="#a15c00" data-zh="信用卡">Credit card</text>
+            <rect x="316" y="250" width="124" height="38" rx="19" fill="#e3f4e9"/><text x="378" y="274" fill="#127a3d" data-zh="風險審查">Risk review</text>
+            <text x="240" y="316" font-size="11" font-weight="400" fill="#7a8494" data-zh="團隊">teams</text>
+          </g>
+        </g>
+        <!-- Scene D: +60% -->
+        <g data-s="5">
+          <text x="240" y="44" text-anchor="middle" font-size="13" font-weight="800" fill="#102a56" data-zh="刷卡平均客單價">Average spend per card transaction</text>
+          <line x1="70" y1="300" x2="410" y2="300" stroke="#7a8494" stroke-width="2"/>
+          <rect x="110" y="180" width="90" height="120" rx="6" fill="#c9c4b8" class="gy"/>
+          <rect x="280" y="108" width="90" height="192" rx="6" fill="#127a3d" class="gy d1"/>
+          <text x="155" y="322" text-anchor="middle" font-size="12" fill="#4d5869" data-zh="上線前">pre-launch level</text>
+          <text x="325" y="322" text-anchor="middle" font-size="12" fill="#4d5869" data-zh="上線後">after launch</text>
+          <line x1="110" y1="180" x2="370" y2="180" stroke="#7a8494" stroke-dasharray="4 4" data-s="5" class="d2"/>
+          <g data-s="5" class="d2 pop"><text x="325" y="96" text-anchor="middle" font-size="34" font-weight="900" fill="#127a3d" data-count="60" data-prefix="+" data-suffix="%" data-delay="1500">+0%</text></g>
+          <text x="240" y="346" text-anchor="middle" font-size="12" font-style="italic" fill="#7a8494" data-s="5" class="d4" data-zh="遠遠超出團隊的預期">far beyond the team's expectations</text>
+        </g>
+      </svg>
+    </div>
+    <div class="pips"></div>
+  </div>
+  <div class="text">
+    <div class="plabel"><b>4</b><em data-zh="第 4 段，共 5 段">Part 4 of 5</em> <span>· p.13</span></div>
+    <p><span class="s" data-st="1">"The hardest part was that we <mark>couldn't affect existing transactions</mark>," Liang says.</span> <span class="s" data-st="2">For temporary limit increases, the real-time decision system has to <mark>connect with the bank's transaction system</mark> while simplifying the user's steps, and a system crash would cost more than it gained.</span> <span class="s" data-st="3">So the team ran many <mark>stress tests</mark> and launched only after confirming that traffic would not spike out of control.</span> <span class="s" data-st="4">The project took <mark>eight to ten months</mark> and involved <mark>more than 100 people</mark> from the data, credit card, and risk review teams.</span> <span class="s" data-st="5">The results were striking: this seemingly simple change raised the bank's <mark>average spend per card transaction by 60%</mark> over the pre-launch level, far beyond the team's expectations.</span></p>
+  </div>
+</section>
+
+<!-- ============ PART 5 · p.14 ============ -->
+<section class="part" data-part="5">
+  <div class="figwrap">
+    <div class="fig" role="img" aria-label="Illustration for part 5">
+      <span class="chip" data-zh="示意圖">Illustration</span>
+      <svg viewBox="0 0 480 360" font-family="system-ui,-apple-system,Segoe UI,sans-serif">
+        <!-- Scene A: foundation & engine -->
+        <g data-s="1-2">
+          <g class="up">
+            <path d="M240 46 330 92H150z" fill="#102a56"/>
+            <rect x="156" y="96" width="168" height="8" fill="#102a56"/>
+            <g fill="#102a56"><rect x="166" y="110" width="14" height="124"/><rect x="300" y="110" width="14" height="124"/></g>
+            <rect x="150" y="236" width="180" height="10" fill="#102a56"/>
+            <text x="240" y="80" text-anchor="middle" font-size="9.5" font-weight="800" fill="#fff" data-zh="國泰金控">CATHAY FINANCIAL</text>
+          </g>
+          <g data-s="1" class="d1 up">
+            <rect x="110" y="252" width="260" height="50" rx="8" fill="#1f5fb8"/>
+            <text x="240" y="283" text-anchor="middle" font-size="16" font-weight="900" fill="#fff" data-zh="數據分析">Data analytics</text>
+            <text x="240" y="326" text-anchor="middle" font-size="12" fill="#4d5869" data-zh="「我們的根基」">"our foundation"</text>
+          </g>
+          <g data-s="2" class="pop">
+            <g transform="translate(240 170)">
+              <g class="spin"><circle r="40" fill="none" stroke="#e8a317" stroke-width="14" stroke-dasharray="10 8"/><circle r="33" fill="#e8a317"/><circle r="11" fill="#fff"/></g>
+            </g>
+            <text x="240" y="230" text-anchor="middle" font-size="11" font-weight="800" fill="#a15c00" data-zh="數據團隊＝引擎">data team = engine</text>
+          </g>
+          <g data-s="2" class="d1">
+            <path d="M196 160H118" stroke="#a15c00" stroke-width="2.5" stroke-dasharray="5 5" class="flow" marker-end="url(#ar)"/>
+            <path d="M284 160H362" stroke="#a15c00" stroke-width="2.5" stroke-dasharray="5 5" class="flow" marker-end="url(#ar)"/>
+          </g>
+          <g data-s="2" class="d2 pop">
+            <rect x="14" y="116" width="102" height="88" rx="12" fill="#fff" stroke="#c9d6ea" stroke-width="2"/>
+            <path d="M30 172l18-16 14 10 22-24 16 10" stroke="#127a3d" stroke-width="3" fill="none"/>
+            <text x="65" y="222" text-anchor="middle" font-size="10.5" font-weight="800" fill="#102a56" data-zh="智能投資">Smart investment</text>
+            <text x="65" y="236" text-anchor="middle" font-size="10.5" font-weight="800" fill="#102a56" data-zh="平台">platform</text>
+          </g>
+          <g data-s="2" class="d3 pop">
+            <rect x="364" y="116" width="102" height="88" rx="12" fill="#fff" stroke="#c9d6ea" stroke-width="2"/>
+            <path d="M384 136h62a8 8 0 0 1 8 8v24a8 8 0 0 1-8 8h-40l-14 12v-12h-8a8 8 0 0 1-8-8v-24a8 8 0 0 1 8-8z" fill="#1f5fb8"/>
+            <g fill="#fff"><circle cx="400" cy="156" r="3.5"/><circle cx="415" cy="156" r="3.5"/><circle cx="430" cy="156" r="3.5"/></g>
+            <text x="415" y="222" text-anchor="middle" font-size="10.5" font-weight="800" fill="#102a56" data-zh="聊天機器人">Chatbot</text>
+          </g>
+        </g>
+        <!-- Scene B: industry view vs. self-rating -->
+        <g data-s="3-3">
+          <g class="up">
+            <text x="240" y="56" text-anchor="middle" font-size="12" fill="#7a8494" data-zh="業界眼中的國泰金控是">The industry sees Cathay Financial as</text>
+            <rect x="130" y="68" width="220" height="44" rx="22" fill="#fff4d6" stroke="#e8a317"/>
+            <text x="240" y="96" text-anchor="middle" font-size="15" font-weight="900" fill="#a15c00" data-zh="★ 數據分析的領先者">★ a leader in data analytics</text>
+          </g>
+          <g data-s="3" class="d1">
+            <text x="240" y="160" text-anchor="middle" font-size="12" fill="#7a8494" data-zh="公司給自己打的分數">The company rates itself</text>
+            <g data-gen="scale" data-x="62" data-y="178"></g>
+          </g>
+          <g data-s="3" class="d3 pop">
+            <text x="240" y="300" text-anchor="middle" font-size="50" font-weight="900" fill="#102a56">3<tspan font-size="26" fill="#7a8494"> / 10</tspan></text>
+          </g>
+        </g>
+        <!-- Scene C: data culture across the group -->
+        <g data-s="4">
+          <text x="240" y="40" text-anchor="middle" font-size="13" font-weight="800" fill="#102a56" data-zh="將數據文化深植於整個集團">Embed a data culture across the group</text>
+          <g stroke="#c9d6ea" stroke-width="2">
+            <line x1="240" y1="150" x2="120" y2="96"/><line x1="240" y1="150" x2="360" y2="96"/><line x1="240" y1="150" x2="90" y2="196"/><line x1="240" y1="150" x2="390" y2="196"/><line x1="240" y1="150" x2="170" y2="238"/><line x1="240" y1="150" x2="310" y2="238"/>
+          </g>
+          <circle cx="240" cy="150" r="30" fill="#102a56"/>
+          <text x="240" y="155" text-anchor="middle" font-size="12" font-weight="900" fill="#fff" data-zh="數據">DATA</text>
+          <g data-gen="nodes"></g>
+          <g data-s="4" class="d3 up">
+            <rect x="40" y="282" width="400" height="56" rx="12" fill="#e8f0fc"/>
+            <text x="240" y="306" text-anchor="middle" font-size="13" font-weight="800" fill="#102a56" data-zh="產品設計 → … → 流程改善">product design  →  …  →  process improvement</text>
+            <text x="240" y="326" text-anchor="middle" font-size="12" fill="#1f5fb8" data-zh="由數據驅動">driven by data</text>
+          </g>
+        </g>
+      </svg>
+    </div>
+    <div class="pips"></div>
+  </div>
+  <div class="text">
+    <div class="plabel"><b>5</b><em data-zh="第 5 段，共 5 段">Part 5 of 5</em> <span>· p.14</span></div>
+    <p><span class="s" data-st="1">"<mark>Data analytics is our foundation</mark>," says Sun Chih-te, senior executive vice president of Cathay Financial Holdings.</span> <span class="s" data-st="2">The data team could even be called Cathay Financial's <mark>engine</mark>: its smart investment platform and chatbot are both products born from data.</span> <span class="s" data-st="3">Although the industry sees Cathay Financial as a leader in data analytics, the company <mark>rates itself only 3 out of 10</mark>.</span> <span class="s" data-st="4">The challenge ahead is to <mark>embed a data culture across the group</mark>, so that everything from product design to process improvement is driven by data.</span></p>
+  </div>
+</section>
+
+<!-- ============ DISCUSSION · p.9 ============ -->
+<section class="disc" id="discussion">
+  <div class="plabel"><b>?</b><em data-zh="討論">Discussion</em> <span>· p.9</span></div>
+  <h2 data-zh="刷卡被拒：信用額度不足">Card Declined: Credit Limit Too Low</h2>
+  <ol>
+    <li><span class="s">Based on the case, draw the credit limit approval process under the old system and the new system, and compare the differences.</span></li>
+    <li><span class="s">Based on your understanding of big data analytics, what preparation might the new system require?</span></li>
+  </ol>
+</section>
+
+<footer>
+  <p data-zh="個案來源：程倚華，《數位時代》，2019 年 2 月 23 日。中文版為本頁英文個案的翻譯。">Case source: Cheng Yi-hua, BusinessNext (數位時代), February 23, 2019.</p>
+  <p data-zh="僅供國立臺灣科技大學「大數據與資料科學」課程教學使用。插圖為示意。">For teaching use in the Big Data &amp; Data Science course, National Taiwan University of Science and Technology. Illustrations are schematic.</p>
+</footer>
+
+<div class="step" aria-label="Sentence navigation">
+  <button id="prev" type="button" aria-label="Previous sentence">↑</button>
+  <button id="next" type="button" aria-label="Next sentence">↓</button>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var NS="http://www.w3.org/2000/svg";
+  function el(tag,attrs,parent){var e=document.createElementNS(NS,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+
+  /* ---------- generated SVG content ---------- */
+  document.querySelectorAll('[data-gen="dots"]').forEach(function(g){
+    var n=+g.dataset.n,c=+g.dataset.cols,x=+g.dataset.x,y=+g.dataset.y,gap=+g.dataset.gap,r=+g.dataset.r;
+    for(var i=0;i<n;i++){var d=el("circle",{cx:x+(i%c)*gap,cy:y+Math.floor(i/c)*gap,r:r,fill:g.dataset.fill,"class":"dot"},g);d.style.transitionDelay=(i*18)+"ms";}
+  });
+  document.querySelectorAll('[data-gen="rows"]').forEach(function(g){
+    var x=+g.dataset.x,y=+g.dataset.y,n=+g.dataset.n;
+    for(var i=0;i<n;i++){
+      var row=el("g",{"class":"dot"},g);row.style.transitionDelay=(300+i*160)+"ms";
+      el("rect",{x:x,y:y+i*19,width:44,height:13,rx:3,fill:"#c9d6ea"},row);
+      el("rect",{x:x+50,y:y+i*19,width:70,height:13,rx:3,fill:"#e8f0fc"},row);
+      el("rect",{x:x+126,y:y+i*19,width:84,height:13,rx:3,fill:i%3===1?"#fcebeb":"#e8f0fc"},row);
+    }
+  });
+  document.querySelectorAll('[data-gen="scale"]').forEach(function(g){
+    var x=+g.dataset.x,y=+g.dataset.y;
+    for(var i=0;i<10;i++){
+      var r=el("rect",{x:x+i*36,y:y,width:30,height:44,rx:7,fill:i<3?"#1f5fb8":"#ebe8e1","class":"dot"},g);r.style.transitionDelay=(200+i*140)+"ms";
+      var t=el("text",{x:x+i*36+15,y:y+64,"text-anchor":"middle","font-size":11,fill:"#7a8494"},g);t.textContent=i+1;
+    }
+  });
+  document.querySelectorAll('[data-gen="nodes"]').forEach(function(g){
+    var pts=[[120,96],[360,96],[90,196],[390,196],[170,238],[310,238]];
+    var wrap=el("g",{"data-s":"4"},g);
+    pts.forEach(function(p,i){var c=el("circle",{cx:p[0],cy:p[1],r:18,fill:"#ebe8e1","class":"node"},wrap);c.style.transitionDelay=(500+i*260)+"ms";});
+  });
+
+  /* ---------- counters ---------- */
+  function fmt(v){return Math.round(v).toLocaleString("en-US");}
+  function runCounters(root){
+    var list=[].slice.call(root.querySelectorAll("[data-count],[data-timer]"));
+    if(root.matches&&root.matches("[data-count],[data-timer]"))list.push(root);
+    list.forEach(function(t){
+      var delay=+(t.dataset.delay||400),dur=1600,start=null,token={};t._tok=token;
+      if(t.dataset.timer){var mins=+t.dataset.timer;}
+      setTimeout(function(){
+        function step(ts){
+          if(t._tok!==token)return;
+          if(start===null)start=ts;var p=Math.min(1,(ts-start)/dur),e=1-Math.pow(1-p,3);
+          if(t.dataset.timer){var s=Math.round(e*mins*60);t.textContent=String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")+(p===1?"+":"");}
+          else t.textContent=(t.dataset.prefix||"")+fmt(e*+t.dataset.count)+(p===1?(t.dataset.suffix||""):"");
+          if(p<1)requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      },delay);
+    });
+  }
+
+  /* ---------- stage engine ---------- */
+  function range(v){var a=v.split("-");return [+a[0],a.length>1?+a[1]:Infinity];}
+  function setStage(fig,n){
+    if(fig._st===n)return;fig._st=n;
+    fig.querySelectorAll("[data-s]").forEach(function(e){
+      var r=range(e.dataset.s),on=n>=r[0]&&n<=r[1];
+      if(on&&!e.classList.contains("on")){e.classList.add("on");if(e.querySelector("[data-count],[data-timer]")||e.matches("[data-count],[data-timer]"))runCounters(e);}
+      else if(!on&&e.classList.contains("on"))e.classList.remove("on");
+    });
+    fig.querySelectorAll("[data-m]").forEach(function(e){e.classList.toggle("mv",n>=+e.dataset.m);});
+  }
+
+  var parts=[].slice.call(document.querySelectorAll(".part")).map(function(p){
+    var ss=[].slice.call(p.querySelectorAll(".s"));
+    var pips=p.querySelector(".pips");
+    ss.forEach(function(){pips.appendChild(document.createElement("i"));});
+    return {el:p,fig:p.querySelector(".fig"),ss:ss,pips:[].slice.call(pips.children)};
+  });
+  var allS=[].slice.call(document.querySelectorAll(".s"));
+
+  /* reading position of a sentence: top of its first line, plus how far along that line it starts
+     (so two sentences that share a line are still ordered) */
+  function pos(s){
+    var r=s.getClientRects()[0];if(!r)return Infinity;
+    var p=s.parentElement.getBoundingClientRect();
+    return r.top+(r.left-p.left)/Math.max(1,p.width)*r.height;
+  }
+  function trigger(){return window.innerHeight*(window.innerWidth<=860?0.70:0.52);}
+  var curEl=null;
+  function update(){
+    var T=trigger(),last=null;
+    allS.forEach(function(s){if(pos(s)<T){last=s;s.classList.add("seen");}});
+    if(last!==curEl){if(curEl)curEl.classList.remove("cur");curEl=last;if(curEl)curEl.classList.add("cur");}
+    parts.forEach(function(P){
+      var idx=-1;P.ss.forEach(function(s,i){if(pos(s)<T)idx=i;});
+      setStage(P.fig,idx<0?0:+P.ss[idx].dataset.st);
+      P.pips.forEach(function(d,i){d.classList.toggle("on",i<=idx);d.classList.toggle("cur",i===idx);});
+    });
+    var h=document.documentElement.scrollHeight-window.innerHeight;
+    document.getElementById("progress").style.width=(h>0?window.scrollY/h*100:0)+"%";
+    document.getElementById("prev").disabled=!curEl;
+    document.getElementById("next").disabled=curEl===allS[allS.length-1];
+  }
+  var ticking=false;
+  function onScroll(){if(!ticking){ticking=true;requestAnimationFrame(function(){ticking=false;update();});}}
+  window.addEventListener("scroll",onScroll,{passive:true});
+  window.addEventListener("resize",onScroll);
+
+  function goTo(s){
+    if(!s){window.scrollTo({top:0});return;}
+    var y=window.scrollY+pos(s)-(trigger()-3);
+    window.scrollTo({top:Math.max(0,y)});
+  }
+  function move(d){
+    var i=curEl?allS.indexOf(curEl):-1,j=Math.max(-1,Math.min(allS.length-1,i+d));
+    goTo(j<0?null:allS[j]);
+  }
+  document.getElementById("next").onclick=function(){move(1);};
+  document.getElementById("prev").onclick=function(){move(-1);};
+  document.getElementById("start").onclick=function(){goTo(allS[0]);};
+  allS.forEach(function(s){s.addEventListener("click",function(){if(!s.closest(".disc"))goTo(s);});});
+  document.addEventListener("keydown",function(e){
+    if(e.altKey||e.ctrlKey||e.metaKey)return;
+    var k=e.key;
+    if(k==="ArrowDown"||k==="ArrowRight"||k==="PageDown"||(k===" "&&!e.shiftKey)){e.preventDefault();move(1);}
+    else if(k==="ArrowUp"||k==="ArrowLeft"||k==="PageUp"||(k===" "&&e.shiftKey)){e.preventDefault();move(-1);}
+    else if(k==="Home"){e.preventDefault();goTo(null);}
+    else if(k==="s"||k==="S"){toggleSpot();}
+  });
+
+  /* ---------- reader tools ---------- */
+  var store={get:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},set:function(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
+  var spotBtn=document.getElementById("spot");
+  function toggleSpot(force){
+    var on=typeof force==="boolean"?force:!document.body.classList.contains("spot");
+    document.body.classList.toggle("spot",on);spotBtn.setAttribute("aria-pressed",on);store.set("cd-spot",on?"1":"0");
+  }
+  spotBtn.onclick=function(){toggleSpot();};
+  if(store.get("cd-spot")==="1")toggleSpot(true);
+  var k=parseFloat(store.get("cd-k"))||1;
+  function setK(v){k=Math.max(.85,Math.min(1.6,Math.round(v*100)/100));document.documentElement.style.setProperty("--k",k);store.set("cd-k",k);onScroll();}
+  document.getElementById("aPlus").onclick=function(){setK(k+.1);};
+  document.getElementById("aMinus").onclick=function(){setK(k-.1);};
+  setK(k);
+
+  /* ---------- language: English (default) / 中文 ----------
+     Sentences: Chinese in ZH_S (document order). Other labels: data-zh on the element. */
+  var ZH_S=["刷卡時因為額度不足被拒，你會<mark>換一張卡，還是乾脆不買了？</mark>", "消費者一個不經意的舉動，讓銀行損失的可能不只是<mark>這筆交易，甚至連客戶</mark>也一併失去。", "為了解決這個痛點，國泰世華銀行現在會主動發送簡訊：不必打電話給客服，<mark>只要按一個鍵，額度就立即調高</mark>，就能完成這筆消費。", "國泰金控數據暨數位發展中心（數數發中心）協理梁明喬表示，銀行過去透過<mark>傳統分行</mark>經營客戶關係。", "如今，愈來愈多客戶透過電腦、手機等<mark>數位通路</mark>而來。", "「客戶的行為正在改變。銀行必須跟上客戶想要被服務的方式，否則就會被淘汰！」", "<mark>先設計情境，再優化流程。</mark>", "關鍵在於「即時」滿足數位通路的客戶，而數數發中心自行研發的<mark>即時決策管理系統（RTDM）</mark>，就是國泰金控的解方。", "梁明喬解釋，「即時」指的是時機：在<mark>對的時刻</mark>與客戶互動，不僅能提升客戶對品牌的滿意度與忠誠度，也能讓銀行透過這些互動<mark>蒐集資料</mark>，充分了解客戶需求。", "除了研究新技術，這支<mark>近 80 人的數據團隊</mark>也與各事業單位一起專注於商業分析。", "「模型如果不能商轉，就沒有用。」梁明喬說。", "因此他們設計了各種互動情境，並從<mark>信用卡資料</mark>著手。", "他們發現，國泰世華銀行的客戶每年因為額度太低而放棄的刷卡消費，<mark>金額超過新台幣 1 億元</mark>。", "過去打電話給客服申請調高額度，<mark>至少要等上數十分鐘</mark>，刷卡的時機也就錯過了。", "「那些錢本來就該是我們的。現在我們只是<mark>把被中斷的交易找回來</mark>。」梁明喬補充。", "「最困難的是，我們<mark>不能影響既有的交易</mark>。」梁明喬說。", "為了臨時調高額度，即時決策系統必須<mark>與銀行的交易系統串接</mark>，同時簡化使用者的步驟；一旦系統當機，損失將比收穫還大。", "因此團隊做了許多次<mark>壓力測試</mark>，確認流量不會暴增失控之後才上線。", "這個專案歷時<mark>八到十個月</mark>，動員了數據、信用卡與風險審查團隊<mark>超過 100 人</mark>。", "成果十分驚人：這個看似簡單的改變，讓銀行的<mark>刷卡平均客單價比上線前提升了 60%</mark>，遠遠超出團隊的預期。", "「<mark>數據分析是我們的根基</mark>。」國泰金控資深副總經理孫至德說。", "數據團隊甚至可以稱為國泰金控的<mark>引擎</mark>：旗下的智能投資平台與聊天機器人，都是從數據誕生的產品。", "雖然業界將國泰金控視為數據分析的領先者，公司<mark>卻只給自己打 3 分（滿分 10 分）</mark>。", "未來的挑戰是<mark>將數據文化深植於整個集團</mark>，讓從產品設計到流程改善的每一件事，都由數據驅動。", "根據個案，畫出舊制度與新制度下的信用額度核准流程，並比較兩者的差異。", "根據你對大數據分析的理解，新系統可能需要哪些準備？"];
+  var langNow="en";
+  allS.forEach(function(sEl,i){sEl._en=sEl.innerHTML;sEl._zh=ZH_S[i];});
+  var gaps=[];
+  document.querySelectorAll(".text p").forEach(function(pp){pp.childNodes.forEach(function(n){if(n.nodeType===3&&!n.nodeValue.trim())gaps.push(n);});});
+  var i18n=[].slice.call(document.querySelectorAll("[data-zh]"));
+  i18n.forEach(function(e){e._en=(e instanceof SVGElement)?e.textContent:e.innerHTML;});
+  function setLang(l){
+    langNow=l==="zh"?"zh":"en";
+    var zh=langNow==="zh";
+    document.documentElement.lang=zh?"zh-Hant":"en";
+    document.title=zh?"刷卡被拒：信用額度不足｜個案閱讀":"Card Declined: Credit Limit Too Low | Case Reading";
+    allS.forEach(function(sEl){sEl.innerHTML=zh?sEl._zh:sEl._en;});
+    /* Chinese runs sentences together: drop the spaces between sentence spans */
+    gaps.forEach(function(t){t.nodeValue=zh?"":" ";});
+    i18n.forEach(function(e){var v=zh?e.getAttribute("data-zh"):e._en;if(e instanceof SVGElement)e.textContent=v;else e.innerHTML=v;});
+    document.getElementById("lEn").setAttribute("aria-pressed",!zh);
+    document.getElementById("lZh").setAttribute("aria-pressed",zh);
+    spotBtn.title=zh?"聚焦：只亮出目前這一句":"Spotlight: dim everything except the current sentence";
+    document.getElementById("next").setAttribute("aria-label",zh?"下一句":"Next sentence");
+    document.getElementById("prev").setAttribute("aria-label",zh?"上一句":"Previous sentence");
+    store.set("cd-lang",langNow);
+    onScroll();
+  }
+  function switchLang(l){
+    /* keep the reader on the same sentence after the text reflows */
+    var keep=curEl;setLang(l);
+    if(keep){var y=window.scrollY+pos(keep)-(trigger()-3);window.scrollTo({top:Math.max(0,y),behavior:"instant"});}
+  }
+  document.getElementById("lEn").onclick=function(){switchLang("en");};
+  document.getElementById("lZh").onclick=function(){switchLang("zh");};
+  var qLang=(new URLSearchParams(location.search).get("lang")||"").toLowerCase();
+  setLang(qLang==="zh"||qLang==="en"?qLang:(store.get("cd-lang")||"en"));
+  update();
+})();
+</script>
+</body>
+</html>
