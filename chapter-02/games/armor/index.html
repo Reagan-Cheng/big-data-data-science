@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#102a56">
+<title>裝甲該裝在哪裡？ | Where Should the Armour Go?</title>
+<meta name="description" content="倖存者偏差小遊戲：看返航轟炸機的彈痕資料，決定裝甲裝在哪裡。A survivorship-bias game: read the bullet holes on returning bombers and decide where the armour goes.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%23102a56%22/%3E%3Cpath%20d%3D%22M16%204l2%208%2010%203v2l-10%201-1%207%204%203v1h-10v-1l4-3-1-7-10-1v-2l10-3z%22%20fill%3D%22%23ffffff%22/%3E%3C/svg%3E">
+<!-- ============================================================
+     裝甲該裝在哪裡？· Where Should the Armour Go?
+     大數據與資料科學 第二章：正確解讀數據 & 問對問題（倖存者偏差）
+     單一檔案、無外部資源。所有文字都在 T 裡（中文／English）。
+     The same choices always give the same results (fixed random seed),
+     so teams can compare. One file, no external resources.
+     ============================================================ -->
+<style>
+:root{
+  --bg:#f3f1ec; --panel:#fff; --ink:#1b2433; --ink2:#4d5869; --ink3:#6f7988; --line:#dcd8cf; --line2:#ebe8e1;
+  --navy:#102a56; --blue:#1f5fb8; --blue-wash:#e8f0fc;
+  --good:#127a3d; --good-wash:#e6f5ec; --bad:#b4232c; --bad-wash:#fcebeb; --warn:#a15c00; --warn-wash:#fff4e0;
+  --hole:#c8102e; --lost:#3b4352; --armor:#f2b705;
+  --tap:48px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",Arial,sans-serif;line-height:1.6;font-size:18px}
+html[lang="zh-Hant"] body{line-height:1.7}
+button{font:inherit;color:inherit}
+h1,h2,h3,p{margin:0}
+:focus-visible{outline:3px solid var(--armor);outline-offset:2px;border-radius:6px}
+.hide{display:none!important}
+.top{position:sticky;top:0;z-index:20;background:var(--navy);color:#fff;min-height:calc(52px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 12px 0;display:flex;align-items:center;gap:10px}
+.top .name{font-weight:800;font-size:17px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.steps{display:flex;gap:4px}
+.steps i{width:22px;height:6px;border-radius:3px;background:rgba(255,255,255,.25)}
+.steps i.on{background:var(--armor)}
+.lang{display:flex;border:1px solid rgba(255,255,255,.5);border-radius:999px;overflow:hidden;flex-shrink:0}
+.lang button{border:0;background:transparent;color:#fff;padding:4px 12px;font-size:15px;cursor:pointer;min-height:36px}
+.lang button[aria-pressed="true"]{background:#fff;color:var(--navy);font-weight:700}
+main{max-width:1060px;margin:0 auto;padding:18px 16px 48px}
+.kicker{font-size:15px;font-weight:800;color:var(--blue)}
+.title{font-size:clamp(30px,7vw,46px);font-weight:900;line-height:1.15;margin:4px 0 10px}
+h2.h{font-size:clamp(22px,4.6vw,28px);font-weight:900;line-height:1.3;margin:2px 0 8px}
+.lead{font-size:19px;color:var(--ink2);max-width:60ch}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}
+.stack>*+*{margin-top:12px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{border:0;border-radius:12px;background:var(--blue);color:#fff;font-weight:800;padding:12px 22px;min-height:var(--tap);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;font-size:18px}
+.btn:hover{background:var(--navy)}
+.btn[disabled]{background:#b8c0cc;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--blue);border:2px solid var(--blue)}
+.btn.ghost:hover{background:var(--blue-wash)}
+.btn.big{font-size:20px;padding:14px 26px}
+.small{font-size:15px;color:var(--ink3)}
+.note{font-size:14px;color:var(--ink3);margin-top:16px}
+.hint{font-size:17px;color:var(--ink2);background:var(--bg);border-radius:12px;padding:10px 12px}
+.split{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;align-items:start}
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.9fr);gap:20px;align-items:center}
+
+/* plane */
+.planebox{background:linear-gradient(#e8eef6,#dfe7f1);border-radius:16px;padding:8px;position:relative}
+svg.plane{display:block;width:100%;height:auto;max-height:68vh;touch-action:manipulation}
+.zone{cursor:pointer;transition:fill .2s}
+.zone .z{fill:#cfd6df;stroke:#5c6878;stroke-width:2}
+.zone:hover .z{fill:#bfc9d6}
+.zone.sel .z{fill:#ffe089;stroke:#8a6400;stroke-width:3}
+.zone.ro{cursor:default}
+.zone.ro:hover .z{fill:#cfd6df}
+.zone.ro.sel:hover .z{fill:#ffe089}
+.plate{fill:url(#plate);stroke:#8a6400;stroke-width:2;pointer-events:none}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:15px;color:var(--ink2);margin-top:6px;padding:0 6px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--hole);display:inline-block}
+.xx{font-weight:900;color:var(--lost);font-size:15px;line-height:1}
+.chips{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.chip{border:2px solid var(--line);background:#fff;border-radius:12px;padding:8px 6px;cursor:pointer;min-height:var(--tap);text-align:center;font-size:16px;line-height:1.3}
+.chip b{display:block;font-size:17px}
+.chip span{font-size:13px;color:var(--ink3)}
+.chip:hover{border-color:var(--blue)}
+.chip.sel{border-color:#8a6400;background:#fff3c4}
+.chip[disabled]{cursor:default}
+table.data{width:100%;border-collapse:collapse;font-size:16px}
+table.data th,table.data td{padding:7px 6px;border-bottom:1px solid var(--line2);text-align:left}
+table.data th{font-size:14px;color:var(--ink3);font-weight:700}
+table.data td.n{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.bar{display:block;height:10px;border-radius:5px;background:var(--hole);min-width:2px}
+.bar.l{background:var(--lost)}
+
+/* mission */
+.sky{background:linear-gradient(90deg,#d8e6d0 0 12%,#9cc3e6 12% 88%,#e7dcc6 88%);border-radius:16px;padding:12px;position:relative}
+.sky .ends{display:flex;justify-content:space-between;font-size:14px;font-weight:800;color:var(--navy);margin-bottom:6px}
+.fleet{display:grid;grid-template-columns:repeat(20,minmax(0,1fr));gap:4px}
+.fleet i{aspect-ratio:1;display:grid;place-items:center;border-radius:4px;background:rgba(255,255,255,.35);font-style:normal;transition:background .2s}
+.fleet i svg{width:90%;height:90%}
+.fleet i.ok{background:#fff}
+.fleet i.ok svg path{fill:var(--navy)}
+.fleet i.down{background:var(--bad)}
+.fleet i.down svg path{fill:#fff}
+.fleet i.wait svg path{fill:rgba(16,42,86,.35)}
+.score{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px}
+.kpi span{display:block;font-size:15px;color:var(--ink2)}
+.kpi b{display:block;font-size:clamp(26px,6vw,36px);font-weight:900;color:var(--navy);font-variant-numeric:tabular-nums;line-height:1.2}
+.kpi b.good{color:var(--good)} .kpi b.bad{color:var(--bad)}
+.fb{border-radius:12px;padding:12px 14px;font-size:18px;background:var(--blue-wash)}
+.fb.good{background:var(--good-wash)} .fb.bad{background:var(--bad-wash)} .fb.ok{background:var(--warn-wash)}
+.big-q{font-size:clamp(22px,5vw,30px);font-weight:900;line-height:1.35;color:var(--navy)}
+.compare{display:grid;gap:10px}
+.cmp{display:grid;grid-template-columns:110px minmax(0,1fr) 60px;gap:10px;align-items:center;font-size:16px}
+.cmp .track{height:26px;border-radius:8px;background:var(--line2);overflow:hidden}
+.cmp .track u{display:block;height:100%;background:var(--blue);text-decoration:none;border-radius:8px;transition:width .8s}
+.cmp .track u.r2{background:var(--good)} .cmp .track u.base{background:#9aa5b5}
+.cmp b{font-variant-numeric:tabular-nums;text-align:right}
+.opts{display:grid;gap:8px}
+.opt{border:2px solid var(--line);background:#fff;border-radius:12px;padding:11px 13px;text-align:left;cursor:pointer;min-height:var(--tap);font-size:18px;line-height:1.5}
+.opt:hover:not([disabled]){border-color:var(--blue)}
+.opt[disabled]{cursor:default;color:var(--ink2)}
+.opt.good{border-color:var(--good);background:var(--good-wash);color:var(--ink)}
+.opt.bad{border-color:var(--bad);background:var(--bad-wash);color:var(--ink)}
+.opt.right{border-color:var(--good);border-style:dashed;color:var(--ink)}
+.qn{font-size:15px;font-weight:800;color:var(--blue)}
+ol.qs{margin:8px 0 0;padding-left:1.4em}
+ol.qs li{margin:14px 0;font-size:19px}
+.toggle{display:inline-flex;border:2px solid var(--navy);border-radius:999px;overflow:hidden}
+.toggle button{border:0;background:#fff;padding:6px 14px;font-weight:800;cursor:pointer;min-height:40px;font-size:16px}
+.toggle button[aria-pressed="true"]{background:var(--navy);color:#fff}
+@media (max-width:760px){
+  .split,.hero{grid-template-columns:minmax(0,1fr)}
+  .chips{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .fleet{grid-template-columns:repeat(10,minmax(0,1fr))}
+  .score{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cmp{grid-template-columns:84px minmax(0,1fr) 52px;font-size:15px}
+  .steps{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="name" id="appname"></div>
+  <div class="steps" id="steps" aria-hidden="true"></div>
+  <div class="lang" role="group" aria-label="Language 語言">
+    <button type="button" data-lang="zh">中文</button>
+    <button type="button" data-lang="en">EN</button>
+  </div>
+</header>
+<main id="main"></main>
+
+<script>
+(() => {
+'use strict';
+
+/* ============================================================
+   COPY — 繁體中文 and English
+   ============================================================ */
+const T = {
+  zh: {
+    app: '裝甲該裝在哪裡？',
+    kicker: '大數據行銷 · 正確解讀數據 · 約 10 分鐘',
+    title: '裝甲該裝在哪裡？',
+    lead: '第二次世界大戰期間，英國幾乎每天派轟炸機飛越英吉利海峽，許多飛行員一去不回。你們是工程小組：裝甲很重，每架飛機只能加裝 2 片。先看返航飛機的彈痕資料，再決定裝在哪裡。',
+    howH: '怎麼玩',
+    how: ['看返航飛機的彈痕統計', '和組員討論，選 2 個部位加裝甲', '派 100 架飛機出任務，看有幾架回來', '再想一想，還有第二次機會'],
+    start: '開始',
+    note: '情境改編自二戰統計學家 Abraham Wald 的經典案例。彈痕與任務結果皆為教學模擬，同樣的選擇一定得到同樣的結果，方便各組比較。',
+    zone: { wings: '機翼', fuselage: '機身', tail: '尾翼', engines: '引擎', cockpit: '駕駛艙' },
+    holes: n => `${n} 個彈孔`,
+    dataH: '返航飛機的彈痕統計',
+    dataP: (n, all) => `過去 ${all} 架次任務中，有 ${n} 架飛回基地。紅點是這些飛機身上的彈孔。`,
+    thZone: '部位', thHoles: '彈孔數', thDens: '每單位面積',
+    legendHole: '返航飛機的彈孔', legendLost: '被擊落飛機的彈孔', legendPlate: '裝甲',
+    taskH: '你們只有 2 片裝甲',
+    taskP: '點飛機上的部位或下面的按鈕，選 2 個部位。先和組員討論再決定！',
+    need: k => `再選 ${k} 個部位`,
+    go: '確認，出任務！',
+    missionH: r => `第 ${r} 輪任務：100 架轟炸機出發`,
+    flying: '飛越英吉利海峽中⋯⋯',
+    england: '英國基地', france: '目標',
+    kBack: '平安返航', kLost: '被擊落', kBase: '不加裝甲',
+    yourPick: (a, b) => `你們的裝甲：${a}＋${b}`,
+    r1Result: (n, base) => n - base >= 10 ? `比不加裝甲多救回 ${n - base} 架。` : n > base ? `只比不加裝甲多救回 ${n - base} 架⋯⋯` : `和不加裝甲幾乎一樣。`,
+    next: '下一步',
+    twistH: '等一下⋯⋯',
+    twistQ: '你們看到的彈孔，全都在「飛回來的飛機」上。',
+    twistQ2: '那些被擊落的飛機呢？它們的彈孔在哪裡？',
+    guess: '先猜猜看：被擊落的飛機，最可能是哪裡中彈？',
+    reveal: '把被擊落的飛機也畫上去',
+    revealH: '被擊落飛機的彈孔',
+    showWhich: '顯示', showBack: '只看返航', showAll: '全部',
+    revealP: '灰色 × 是被擊落飛機身上的彈孔。引擎和駕駛艙並不是比較少中彈，而是那裡中彈的飛機，大多飛不回來。',
+    waldP: '統計學家 Abraham Wald 當年就指出：裝甲要裝在「返航飛機上沒有彈孔」的地方。只看活下來的樣本，就會得到相反的結論，這叫做「倖存者偏差」。',
+    guessRight: '猜對了！', guessWrong: z => `其實是引擎和駕駛艙，不是${z}。`,
+    retry: '第二次機會：重新選裝甲',
+    r2H: '第二次機會',
+    r2P: '知道被擊落的飛機在哪裡中彈後，再選一次 2 個部位。',
+    cmpH: '兩輪比較',
+    cmpBase: '不加裝甲', cmpR1: '第一輪', cmpR2: '第二輪',
+    r2Good: '這就是 Wald 的建議：補強「返航飛機上看不到彈孔」的地方。',
+    r2Meh: '還有更好的組合，提示：返航飛機上，哪裡幾乎沒有彈孔？',
+    toQuiz: '換成行銷資料試試看',
+    quizH: '換成行銷資料，你看得出缺了誰嗎？',
+    quiz: [
+      { q: '某品牌只問「目前的會員」為什麼喜歡我們，九成說「品質好」，幾乎沒人提價格。結論：價格不是問題。這份資料最缺誰的聲音？',
+        o: ['回答最認真的會員', '已經不再來買的流失顧客', '消費金額最高的 VIP'], a: 1,
+        why: '因為價格離開的人早就不是會員，問卷問不到他們。就像返航的飛機，留下來的樣本看不到「致命傷」。' },
+      { q: '一篇報導分析 50 家成功新創，發現多數創辦人都曾休學，於是建議「休學創業比較容易成功」。問題出在哪裡？',
+        o: ['樣本只有 50 家太少', '看不到休學創業卻失敗的人', '「成功」的定義不清楚'], a: 1,
+        why: '失敗的新創不會被報導。休學但失敗的人從資料裡消失了，「休學」和「成功」的關聯可能只是倖存者偏差。' },
+      { q: '電商只用「回購顧客」的資料訓練推薦模型，結果新客的轉換率一直很低。最可能的原因是？',
+        o: ['模型不夠複雜', '訓練資料裡幾乎沒有第一次買完就離開的顧客', '新客本來就不喜歡推薦'], a: 1,
+        why: '只用留下來的人訓練，模型學不到「讓人第一次就離開」的原因。資料量很大，不代表資料是完整的。' }
+    ],
+    right: '答對了！', wrong: '再想想：',
+    toEnd: '看總結',
+    endH: '總結',
+    endR: (r, a, b, n) => `第 ${r} 輪：${a}＋${b}，${n} 架返航`,
+    endQ: (s, n) => `行銷資料題：答對 ${s}／${n}`,
+    lesson: '只看「留下來的資料」，會把真正的問題藏起來。做數據分析前先問：誰沒有出現在資料裡？',
+    talkH: '和組員聊聊',
+    qs: [
+      '第一輪你們選了哪兩個部位？當時的理由是什麼？為什麼「彈孔多就補強」這麼直覺？',
+      'Wald 問的關鍵問題是「哪些飛機沒有出現在資料裡？」你們公司的 CRM、會員或 App 資料裡，看不到哪些人？',
+      '「彈孔多」和「飛機被擊落」之間，是相關還是因果？這和「因果 vs 相關」有什麼關係？',
+      '大數據的資料量很大，是不是就不會有倖存者偏差？為什麼？',
+      '想一個你在行銷或社群上看過的倖存者偏差例子：要補什麼資料，才能看清楚真相？'
+    ],
+    copy: '複製結果', copied: '已複製', again: '再玩一次', back2: '返回第二章', backHome: '返回課程首頁'
+  },
+  en: {
+    app: 'Where Should the Armour Go?',
+    kicker: 'Big Data in Marketing · Reading data right · about 10 minutes',
+    title: 'Where Should the Armour Go?',
+    lead: 'During the Second World War, Britain sent bombers across the English Channel almost every day, and many crews never came back. You are the engineering team. Armour is heavy, so each plane can carry only 2 plates. Study the bullet holes on the planes that returned, then decide where the armour goes.',
+    howH: 'How to play',
+    how: ['Study the bullet holes on returning planes', 'Discuss with your team and armour 2 parts', 'Send 100 planes on a mission and count who comes back', 'Think again: you get a second chance'],
+    start: 'Start',
+    note: 'Adapted from the classic case of WWII statistician Abraham Wald. Bullet holes and mission results are simulated for teaching; the same choices always give the same results, so teams can compare.',
+    zone: { wings: 'Wings', fuselage: 'Fuselage', tail: 'Tail', engines: 'Engines', cockpit: 'Cockpit' },
+    holes: n => `${n} hole${n === 1 ? '' : 's'}`,
+    dataH: 'Bullet holes on returning planes',
+    dataP: (n, all) => `Out of ${all} past sorties, ${n} planes made it back to base. The red dots are the bullet holes on those planes.`,
+    thZone: 'Part', thHoles: 'Holes', thDens: 'Per unit area',
+    legendHole: 'Holes on returning planes', legendLost: 'Holes on planes shot down', legendPlate: 'Armour',
+    taskH: 'You have only 2 armour plates',
+    taskP: 'Tap a part of the plane, or the buttons below, to pick 2 parts. Talk it over with your team first!',
+    need: k => `Pick ${k} more part${k > 1 ? 's' : ''}`,
+    go: 'Confirm and fly!',
+    missionH: r => `Mission ${r}: 100 bombers take off`,
+    flying: 'Crossing the Channel…',
+    england: 'Base in England', france: 'Target',
+    kBack: 'Made it back', kLost: 'Shot down', kBase: 'No armour',
+    yourPick: (a, b) => `Your armour: ${a} + ${b}`,
+    r1Result: (n, base) => n - base >= 10 ? `${n - base} more planes saved than with no armour.` : n > base ? `Only ${n - base} more than with no armour…` : `About the same as no armour at all.`,
+    next: 'Next',
+    twistH: 'Wait a moment…',
+    twistQ: 'Every hole you saw was on a plane that came back.',
+    twistQ2: 'What about the planes that were shot down? Where were they hit?',
+    guess: 'Guess first: where were the planes that went down most likely hit?',
+    reveal: 'Add the planes that were shot down',
+    revealH: 'Bullet holes on planes shot down',
+    showWhich: 'Show', showBack: 'Returned only', showAll: 'All',
+    revealP: 'The grey × marks are holes on planes that were shot down. Engines and cockpits were not hit less often: planes hit there mostly never made it home.',
+    waldP: 'Statistician Abraham Wald pointed this out: put the armour where the returning planes have no holes. Looking only at the survivors leads you to the opposite conclusion. This is survivorship bias.',
+    guessRight: 'Right!', guessWrong: z => `Actually it was the engines and cockpit, not the ${z.toLowerCase()}.`,
+    retry: 'Second chance: armour again',
+    r2H: 'Second chance',
+    r2P: 'Now you know where the lost planes were hit. Pick 2 parts again.',
+    cmpH: 'Both missions compared',
+    cmpBase: 'No armour', cmpR1: 'Mission 1', cmpR2: 'Mission 2',
+    r2Good: 'That is Wald’s advice: strengthen the parts where returning planes show no holes.',
+    r2Meh: 'There is a better pair. Hint: where do the returning planes have almost no holes?',
+    toQuiz: 'Now try it with marketing data',
+    quizH: 'Marketing data: can you spot who is missing?',
+    quiz: [
+      { q: 'A brand asks its current members why they like it. Nine in ten say “quality”, almost nobody mentions price. Conclusion: price is not a problem. Whose voice is this data missing most?',
+        o: ['The members who answered most carefully', 'Customers who stopped buying', 'The VIPs who spend the most'], a: 1,
+        why: 'People who left over price are no longer members, so the survey never reaches them. Like the returning planes, the survivors cannot show the fatal hits.' },
+      { q: 'An article studies 50 successful start-ups, finds most founders dropped out of university, and concludes that dropping out helps you succeed. What is wrong?',
+        o: ['50 companies is too small a sample', 'We cannot see the dropouts whose start-ups failed', '“Success” is not well defined'], a: 1,
+        why: 'Failed start-ups do not get written about. Dropouts who failed vanish from the data, so the link between dropping out and success may be pure survivorship bias.' },
+      { q: 'An online store trains its recommender only on repeat customers, and first-time buyers keep converting poorly. What is the most likely reason?',
+        o: ['The model is not complex enough', 'The training data has almost no customers who left after their first purchase', 'New customers simply dislike recommendations'], a: 1,
+        why: 'Trained only on people who stayed, the model never learns what makes people leave after the first visit. Lots of data is not the same as complete data.' }
+    ],
+    right: 'Correct!', wrong: 'Think again: ',
+    toEnd: 'See the summary',
+    endH: 'Summary',
+    endR: (r, a, b, n) => `Mission ${r}: ${a} + ${b}, ${n} planes back`,
+    endQ: (s, n) => `Marketing questions: ${s} / ${n} correct`,
+    lesson: 'Looking only at the data that survived hides the real problem. Before any analysis, ask: who is missing from this data?',
+    talkH: 'Talk it over with your team',
+    qs: [
+      'Which two parts did you armour in Mission 1, and why? Why does “armour where the holes are” feel so natural?',
+      'Wald’s key question was “which planes are missing from the data?” In your company’s CRM, membership or app data, who is missing?',
+      'Are “many holes” and “getting shot down” related by correlation or by cause? How does this connect to causation versus correlation?',
+      'Big data sets are huge. Does that make them safe from survivorship bias? Why or why not?',
+      'Think of a survivorship-bias example you have seen in marketing or on social media. What data would you add to see the full picture?'
+    ],
+    copy: 'Copy results', copied: 'Copied', again: 'Play again', back2: 'Back to Chapter 2', backHome: 'Back to course home'
+  }
+};
+
+/* ============================================================
+   THE MODEL — fixed seed, so the same choices give the same results
+   area: share of hits; kill: chance one hit downs the plane
+   ============================================================ */
+const ZONES = ['wings', 'fuselage', 'tail', 'engines', 'cockpit'];
+const SIZE = { wings: 8458, fuselage: 6540, tail: 3557, engines: 3767, cockpit: 1055 };   // drawn areas (px²): hits land evenly over the plane
+const AREA = Object.fromEntries(Object.entries(SIZE).map(([k, v]) => [k, v / 23377]));
+const KILL = { wings: 0.02, fuselage: 0.03, tail: 0.08, engines: 0.6, cockpit: 0.8 };
+const ARMOUR = 0.15;                  // armour leaves 15% of the danger
+const HITS = [[0, 0.10], [1, 0.25], [2, 0.30], [3, 0.20], [4, 0.10], [5, 0.05]];
+function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let x = Math.imul(a ^ a >>> 15, 1 | a); x = x + Math.imul(x ^ x >>> 7, 61 | x) ^ x; return ((x ^ x >>> 14) >>> 0) / 4294967296; }; }
+function pickW(r, pairs) { let u = r(), acc = 0; for (const [v, w] of pairs) { acc += w; if (u < acc) return v; } return pairs[pairs.length - 1][0]; }
+// one sortie of n planes: each plane has a list of hits {zone, x, y, u}
+function sortie(seed, n) {
+  const r = mulberry(seed), planes = [];
+  for (let i = 0; i < n; i++) {
+    const k = pickW(r, HITS), hits = [];
+    for (let j = 0; j < k; j++) { const z = pickW(r, ZONES.map(z => [z, AREA[z]])); const [x, y] = pointIn(z, r); hits.push({ z, x, y, u: r() }); }
+    planes.push(hits);
+  }
+  return planes;
+}
+const survives = (hits, armour) => hits.every(h => h.u >= KILL[h.z] * (armour.includes(h.z) ? ARMOUR : 1));
+const flyCount = (planes, armour) => planes.filter(p => survives(p, armour)).length;
+
+/* ============================================================
+   THE PLANE — a generic twin-engine bomber seen from above
+   ============================================================ */
+const inEll = (x, y, cx, cy, rx, ry) => ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1;
+function inPoly(x, y, pts) { let c = false; for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) { const [xi, yi] = pts[i], [xj, yj] = pts[j]; if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) c = !c; } return c; }
+const WING_L = [[183, 128], [44, 150], [34, 160], [42, 172], [183, 178]], WING_R = WING_L.map(([x, y]) => [400 - x, y]);
+const TAIL_L = [[183, 300], [122, 316], [120, 330], [183, 328]], TAIL_R = TAIL_L.map(([x, y]) => [400 - x, y]);
+const ENG = [[126, 136, 15, 40], [274, 136, 15, 40]], CPT = [200, 52, 14, 24];
+const inEng = (x, y) => ENG.some(e => inEll(x, y, ...e));
+const SHAPE = {
+  cockpit: { box: [186, 28, 214, 76], test: (x, y) => inEll(x, y, ...CPT) },
+  engines: { box: [111, 96, 289, 176], test: (x, y) => inEng(x, y) },
+  wings: { box: [34, 128, 366, 178], test: (x, y) => (inPoly(x, y, WING_L) || inPoly(x, y, WING_R)) && !inEng(x, y) && (x < 185 || x > 215) },
+  fuselage: { box: [185, 80, 215, 298], test: (x, y) => !inEll(x, y, ...CPT) },
+  tail: { box: [120, 298, 280, 340], test: (x, y) => inPoly(x, y, TAIL_L) || inPoly(x, y, TAIL_R) || (x > 188 && x < 212 && y > 298 && y < 338) }
+};
+function pointIn(z, r) {
+  const s = SHAPE[z], [x0, y0, x1, y1] = s.box;
+  for (let k = 0; k < 200; k++) { const x = x0 + r() * (x1 - x0), y = y0 + r() * (y1 - y0); if (s.test(x, y)) return [Math.round(x * 10) / 10, Math.round(y * 10) / 10]; }
+  return [(x0 + x1) / 2, (y0 + y1) / 2];
+}
+function planeSvg(opts) {
+  const { sel = [], ro = false, holes = [], lost = [], plates = [] } = opts;
+  const z = (id, inner) => `<g class="zone ${sel.includes(id) ? 'sel' : ''} ${ro ? 'ro' : ''}" data-zone="${id}" role="${ro ? 'img' : 'button'}" ${ro ? '' : 'tabindex="0"'} aria-label="${esc(t().zone[id])}" aria-pressed="${sel.includes(id)}">${inner}</g>`;
+  const P = pts => pts.map(p => p.join(',')).join(' ');
+  return `<svg class="plane" viewBox="0 0 400 360" aria-label="${esc(t().app)}">
+    <defs><linearGradient id="plate" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#ffe9a8"/><stop offset="1" stop-color="#e3ad1c"/></linearGradient></defs>
+    ${z('wings', `<polygon class="z" points="${P(WING_L)}"/><polygon class="z" points="${P(WING_R)}"/>`)}
+    ${z('tail', `<polygon class="z" points="${P(TAIL_L)}"/><polygon class="z" points="${P(TAIL_R)}"/><rect class="z" x="188" y="296" width="24" height="44" rx="10"/>`)}
+    ${z('fuselage', `<path class="z" d="M200 22C213 22 217 44 217 74L217 292C217 316 209 336 200 344C191 336 183 316 183 292L183 74C183 44 187 22 200 22Z"/>`)}
+    ${z('engines', ENG.map(([cx, cy, rx, ry]) => `<ellipse class="z" cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"/><line x1="${cx - 22}" y1="${cy - ry - 2}" x2="${cx + 22}" y2="${cy - ry - 2}" stroke="#5c6878" stroke-width="3" stroke-linecap="round" pointer-events="none"/>`).join(''))}
+    ${z('cockpit', `<ellipse class="z" cx="${CPT[0]}" cy="${CPT[1]}" rx="${CPT[2]}" ry="${CPT[3]}"/><path d="M191 44h18M190 52h20M191 60h18" stroke="#8a96a8" stroke-width="1.5" pointer-events="none"/>`)}
+    ${plates.map(pl => plateFor(pl)).join('')}
+    <g pointer-events="none">${lost.map(([x, y]) => `<path d="M${x - 3.2} ${y - 3.2}l6.4 6.4M${x + 3.2} ${y - 3.2}l-6.4 6.4" stroke="#3b4352" stroke-width="2.2" stroke-linecap="round"/>`).join('')}
+    ${holes.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3.4" fill="#c8102e" stroke="#fff" stroke-width=".8"/>`).join('')}</g>
+  </svg>`;
+}
+// a translucent armour plate drawn over the chosen part
+function plateFor(zn) {
+  const P = pts => pts.map(p => p.join(',')).join(' ');
+  const o = 'class="plate" opacity=".55"';
+  if (zn === 'wings') return `<polygon ${o} points="${P(WING_L)}"/><polygon ${o} points="${P(WING_R)}"/>`;
+  if (zn === 'tail') return `<polygon ${o} points="${P(TAIL_L)}"/><polygon ${o} points="${P(TAIL_R)}"/>`;
+  if (zn === 'fuselage') return `<rect ${o} x="184" y="80" width="32" height="216" rx="12"/>`;
+  if (zn === 'engines') return ENG.map(([cx, cy, rx, ry]) => `<ellipse ${o} cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"/>`).join('');
+  if (zn === 'cockpit') return `<ellipse ${o} cx="${CPT[0]}" cy="${CPT[1]}" rx="${CPT[2]}" ry="${CPT[3]}"/>`;
+  return '';
+}
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const qs = new URLSearchParams(location.search);
+let LANG = null;
+try { LANG = localStorage.getItem('armor.lang'); } catch (e) { /* no storage */ }
+if (qs.get('lang') === 'en' || qs.get('lang') === 'zh') LANG = qs.get('lang');
+LANG = LANG === 'en' || LANG === 'zh' ? LANG : (/^zh/i.test(navigator.language || 'zh') ? 'zh' : 'en');
+const t = () => T[LANG];
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const PAST = sortie(1943258, 150);             // the data the engineers see
+const MISSION = sortie(1944009, 100);          // the mission every team flies
+const BASE = flyCount(MISSION, []);
+const back = PAST.filter(p => survives(p, [])), down = PAST.filter(p => !survives(p, []));
+const holesBack = back.flat(), holesLost = down.flat();
+const count = (hs, z) => hs.filter(h => h.z === z).length;
+const STEPS = ['intro', 'data', 'mission', 'twist', 'reveal', 'pick2', 'mission2', 'quiz', 'end'];
+let S = fresh();
+function fresh() { return { step: 'intro', pick1: [], pick2: [], r1: null, r2: null, guess: null, show: 'all', quiz: [null, null, null], played: false }; }
+
+/* ============================================================
+   VIEWS
+   ============================================================ */
+function picker(sel, round) {
+  const X = t();
+  return `<div class="chips">${ZONES.map(z => `<button type="button" class="chip ${sel.includes(z) ? 'sel' : ''}" data-act="pick" data-v="${z}" aria-pressed="${sel.includes(z)}"><b>${X.zone[z]}</b><span>${X.holes(count(holesBack, z))}</span></button>`).join('')}</div>
+    <button type="button" class="btn big" data-act="${round === 1 ? 'fly1' : 'fly2'}" ${sel.length === 2 ? '' : 'disabled'} style="margin-top:12px;width:100%">${sel.length === 2 ? X.go : X.need(2 - sel.length)}</button>`;
+}
+function dataTable(withLost) {
+  const X = t(), max = Math.max(...ZONES.map(z => count(holesBack, z) / SIZE[z]));
+  return `<table class="data"><thead><tr><th>${X.thZone}</th><th style="text-align:right">${X.thHoles}</th><th style="width:42%">${X.thDens}</th></tr></thead><tbody>
+    ${ZONES.map(z => { const d = count(holesBack, z) / SIZE[z], l = count(holesLost, z) / SIZE[z]; return `<tr><td>${X.zone[z]}</td><td class="n">${count(holesBack, z)}${withLost ? ` <span class="xx">+${count(holesLost, z)}×</span>` : ''}</td>
+      <td><span class="bar" style="width:${Math.round(d / max * 100)}%"></span>${withLost ? `<span class="bar l" style="width:${Math.min(100, Math.round(l / max * 100))}%;margin-top:3px"></span>` : ''}</td></tr>`; }).join('')}
+  </tbody></table>`;
+}
+const legend = (lost, plates) => { const X = t(); return `<div class="legend"><span><i class="dot"></i>${X.legendHole}</span>${lost ? `<span><b class="xx">×</b>${X.legendLost}</span>` : ''}${plates ? `<span><i class="dot" style="background:var(--armor);border-radius:3px"></i>${X.legendPlate}</span>` : ''}</div>`; };
+const planeIcon = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1l1.2 6 7.8 2.2v1.6l-7.8 1-.6 4.6 2.6 2v.6H7.8V18.4l2.6-2-.6-4.6-7.8-1V9.2L9.8 7z"/></svg>';
+
+function vIntro() {
+  const X = t();
+  return `<div class="hero"><div><p class="kicker">${X.kicker}</p><h1 class="title" tabindex="-1">${X.title}</h1><p class="lead">${X.lead}</p>
+      <div class="card" style="margin-top:16px"><b>${X.howH}</b><ol style="margin:6px 0 0;padding-left:1.3em">${X.how.map(h => `<li>${h}</li>`).join('')}</ol></div>
+      <div class="row" style="margin-top:16px"><button type="button" class="btn big" data-act="goto" data-v="data">${X.start}</button></div></div>
+    <div class="planebox">${planeSvg({ ro: true, holes: holesBack.map(h => [h.x, h.y]) })}</div></div>
+    <p class="note">${X.note}</p>`;
+}
+function vData() {
+  const X = t();
+  return `<div class="split"><div><div class="planebox">${planeSvg({ sel: S.pick1, holes: holesBack.map(h => [h.x, h.y]), plates: S.pick1 })}${legend(false, S.pick1.length)}</div></div>
+    <div class="stack"><div><h2 class="h" tabindex="-1">${X.dataH}</h2><p>${X.dataP(back.length, PAST.length)}</p></div>
+      <div class="card">${dataTable(false)}</div>
+      <div class="card"><h3 style="font-size:20px">${X.taskH}</h3><p style="margin:4px 0 10px;color:var(--ink2)">${X.taskP}</p>${picker(S.pick1, 1)}</div></div></div>`;
+}
+function vMission(round) {
+  const X = t(), pick = round === 1 ? S.pick1 : S.pick2, n = round === 1 ? S.r1 : S.r2;
+  const res = MISSION.map(p => survives(p, pick));
+  return `<h2 class="h" tabindex="-1">${X.missionH(round)}</h2><p class="small" style="margin-bottom:8px">${X.yourPick(X.zone[pick[0]], X.zone[pick[1]])}</p>
+    <div class="sky"><div class="ends"><span>${X.england}</span><span id="flying">${X.flying}</span><span>${X.france}</span></div>
+      <div class="fleet" id="fleet">${res.map(ok => `<i class="wait" data-ok="${ok ? 1 : 0}">${planeIcon}</i>`).join('')}</div></div>
+    <div id="after" class="stack hide" style="margin-top:14px">
+      <div class="score"><div class="kpi"><span>${X.kBack}</span><b class="good">${n}</b></div><div class="kpi"><span>${X.kLost}</span><b class="bad">${100 - n}</b></div><div class="kpi"><span>${X.kBase}</span><b>${BASE}</b></div></div>
+      ${round === 1 ? `<div class="fb ${n - BASE >= 10 ? 'good' : 'ok'}">${X.r1Result(n, BASE)}</div><button type="button" class="btn big" data-act="goto" data-v="twist">${X.next}</button>`
+        : `${compare()}<div class="fb ${n - BASE >= 10 ? 'good' : 'ok'}">${n - BASE >= 10 ? X.r2Good : X.r2Meh}</div><button type="button" class="btn big" data-act="goto" data-v="quiz">${X.toQuiz}</button>`}
+    </div>`;
+}
+function compare() {
+  const X = t();
+  const row = (lab, n, cls) => `<div class="cmp"><span>${lab}</span><div class="track"><u class="${cls}" style="width:${n}%"></u></div><b>${n}</b></div>`;
+  return `<div class="card"><h3 style="font-size:19px;margin-bottom:8px">${X.cmpH}</h3><div class="compare">${row(X.cmpBase, BASE, 'base')}${row(X.cmpR1, S.r1, '')}${S.r2 != null ? row(X.cmpR2, S.r2, 'r2') : ''}</div></div>`;
+}
+function vTwist() {
+  const X = t();
+  return `<div class="split"><div class="planebox">${planeSvg({ ro: true, holes: holesBack.map(h => [h.x, h.y]) })}${legend(false, false)}</div>
+    <div class="stack"><h2 class="h" tabindex="-1">${X.twistH}</h2><p class="big-q">${X.twistQ}</p><p class="big-q">${X.twistQ2}</p>
+      <div class="card"><p style="font-weight:800;margin-bottom:8px">${X.guess}</p><div class="chips">${ZONES.map(z => `<button type="button" class="chip ${S.guess === z ? 'sel' : ''}" data-act="guess" data-v="${z}"><b>${X.zone[z]}</b></button>`).join('')}</div></div>
+      <button type="button" class="btn big" data-act="goto" data-v="reveal" ${S.guess ? '' : 'disabled'}>${X.reveal}</button></div></div>`;
+}
+function vReveal() {
+  const X = t(), all = S.show === 'all', right = S.guess === 'engines' || S.guess === 'cockpit';
+  return `<div class="split"><div class="planebox">${planeSvg({ ro: true, holes: holesBack.map(h => [h.x, h.y]), lost: all ? holesLost.map(h => [h.x, h.y]) : [] })}${legend(all, false)}
+      <div class="row" style="padding:6px"><span class="small">${X.showWhich}</span><div class="toggle"><button type="button" data-act="show" data-v="back" aria-pressed="${!all}">${X.showBack}</button><button type="button" data-act="show" data-v="all" aria-pressed="${all}">${X.showAll}</button></div></div></div>
+    <div class="stack"><h2 class="h" tabindex="-1">${X.revealH}</h2>
+      <div class="fb ${right ? 'good' : 'ok'}"><b>${right ? X.guessRight : X.guessWrong(X.zone[S.guess])}</b> ${X.revealP}</div>
+      <div class="card">${dataTable(true)}</div>
+      <p class="hint">${X.waldP}</p>
+      <button type="button" class="btn big" data-act="goto" data-v="pick2">${X.retry}</button></div></div>`;
+}
+function vPick2() {
+  const X = t();
+  return `<div class="split"><div class="planebox">${planeSvg({ sel: S.pick2, holes: holesBack.map(h => [h.x, h.y]), lost: holesLost.map(h => [h.x, h.y]), plates: S.pick2 })}${legend(true, S.pick2.length)}</div>
+    <div class="stack"><h2 class="h" tabindex="-1">${X.r2H}</h2><p>${X.r2P}</p>
+      <div class="card">${picker(S.pick2, 2)}</div>${compare()}</div></div>`;
+}
+function vQuiz() {
+  const X = t();
+  const items = X.quiz.map((q, i) => {
+    const a = S.quiz[i];
+    return `<div class="card"><p class="qn">${i + 1} / ${X.quiz.length}</p><p style="font-weight:800;margin:4px 0 10px">${q.q}</p>
+      <div class="opts">${q.o.map((o, j) => `<button type="button" class="opt ${a === j ? (j === q.a ? 'good' : 'bad') : ''} ${a != null && a !== q.a && j === q.a ? 'right' : ''}" data-act="quiz" data-q="${i}" data-v="${j}" ${a != null ? 'disabled' : ''}>${o}</button>`).join('')}</div>
+      ${a != null ? `<div class="fb ${a === q.a ? 'good' : 'bad'}" style="margin-top:10px"><b>${a === q.a ? X.right : X.wrong}</b>${q.why}</div>` : ''}</div>`;
+  }).join('');
+  const done = S.quiz.every(a => a != null);
+  return `<h2 class="h" tabindex="-1">${X.quizH}</h2><div class="stack" style="margin-top:10px">${items}</div>
+    <div class="row" style="margin-top:16px"><button type="button" class="btn big" data-act="goto" data-v="end" ${done ? '' : 'disabled'}>${X.toEnd}</button></div>`;
+}
+function quizScore() { return S.quiz.filter((a, i) => a === T.zh.quiz[i].a).length; }
+function vEnd() {
+  const X = t();
+  return `<h2 class="h" tabindex="-1">${X.endH}</h2>
+    <div class="split" style="margin-top:8px"><div class="stack">${compare()}
+      <div class="card"><p>${X.endR(1, X.zone[S.pick1[0]], X.zone[S.pick1[1]], S.r1)}</p><p>${X.endR(2, X.zone[S.pick2[0]], X.zone[S.pick2[1]], S.r2)}</p><p>${X.endQ(quizScore(), X.quiz.length)}</p></div>
+      <p class="hint" style="font-weight:700">${X.lesson}</p></div>
+    <div class="card"><h3 style="font-size:21px">${X.talkH}</h3><ol class="qs">${X.qs.map(q => `<li>${q}</li>`).join('')}</ol></div></div>
+    <div class="row" style="margin-top:16px"><button type="button" class="btn" data-act="copy">${X.copy}</button><button type="button" class="btn ghost" data-act="again">${X.again}</button>
+      <a class="btn ghost" href="../../index.html">${X.back2}</a><span class="small" id="copymsg" role="status"></span></div>
+    <p class="note"><a href="../../../index.html">${X.backHome}</a></p>`;
+}
+
+/* ============================================================
+   RENDER + INPUT
+   ============================================================ */
+let anim = 0;
+function render(focus) {
+  const X = t();
+  document.documentElement.lang = LANG === 'zh' ? 'zh-Hant' : 'en';
+  document.title = X.app; $('appname').textContent = X.app;
+  document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === LANG)));
+  const si = STEPS.indexOf(S.step);
+  $('steps').innerHTML = STEPS.slice(1).map((_, i) => `<i class="${i < si ? 'on' : ''}"></i>`).join('');
+  const v = { intro: vIntro, data: vData, mission: () => vMission(1), twist: vTwist, reveal: vReveal, pick2: vPick2, mission2: () => vMission(2), quiz: vQuiz, end: vEnd }[S.step];
+  $('main').innerHTML = v();
+  if (S.step === 'mission' || S.step === 'mission2') fly();
+  if (focus) { window.scrollTo(0, 0); const h = document.querySelector('#main h1, #main h2'); if (h) h.focus({ preventScroll: true }); }
+}
+// planes fly out in order; returned ones turn navy, lost ones turn red
+function fly() {
+  clearInterval(anim);
+  const cells = [...document.querySelectorAll('#fleet i')], after = $('after');
+  const key = S.step + ':' + (S.step === 'mission' ? S.pick1 : S.pick2).join();
+  const finish = () => { cells.forEach(c => { c.className = c.dataset.ok === '1' ? 'ok' : 'down'; }); after.classList.remove('hide'); $('flying').textContent = ''; S.played = key; };
+  if (S.played === key || matchMedia('(prefers-reduced-motion:reduce)').matches) { finish(); return; }
+  let i = 0;
+  anim = setInterval(() => {
+    for (let k = 0; k < 4 && i < cells.length; k++, i++) cells[i].className = cells[i].dataset.ok === '1' ? 'ok' : 'down';
+    if (i >= cells.length) { clearInterval(anim); setTimeout(finish, 300); }
+  }, 70);
+}
+function toggle(list, z) { const i = list.indexOf(z); if (i >= 0) list.splice(i, 1); else if (list.length < 2) list.push(z); else { list.shift(); list.push(z); } }
+function go(step) { S.step = step; render(true); }
+function summary() {
+  const X = t();
+  return [X.app, `${X.cmpBase}: ${BASE}`, X.endR(1, X.zone[S.pick1[0]], X.zone[S.pick1[1]], S.r1), X.endR(2, X.zone[S.pick2[0]], X.zone[S.pick2[1]], S.r2), X.endQ(quizScore(), X.quiz.length)].join('\n');
+}
+document.addEventListener('click', e => {
+  const lb = e.target.closest('[data-lang]');
+  if (lb) { LANG = lb.dataset.lang; try { localStorage.setItem('armor.lang', LANG); } catch (er) { /* no storage */ } render(false); return; }
+  const zg = e.target.closest('.zone:not(.ro)');
+  if (zg) { pickZone(zg.dataset.zone); return; }
+  const el = e.target.closest('[data-act]'); if (!el || el.disabled) return;
+  const a = el.dataset.act, v = el.dataset.v;
+  if (a === 'goto') go(v);
+  else if (a === 'pick') pickZone(v);
+  else if (a === 'fly1') { S.r1 = flyCount(MISSION, S.pick1); go('mission'); }
+  else if (a === 'fly2') { S.r2 = flyCount(MISSION, S.pick2); go('mission2'); }
+  else if (a === 'guess') { S.guess = v; render(false); }
+  else if (a === 'show') { S.show = v; render(false); }
+  else if (a === 'quiz') { S.quiz[+el.dataset.q] = +v; render(false); }
+  else if (a === 'again') { S = fresh(); go('intro'); }
+  else if (a === 'copy') { const m = $('copymsg'); (navigator.clipboard ? navigator.clipboard.writeText(summary()) : Promise.reject()).then(() => { m.textContent = t().copied; }, () => { m.textContent = summary(); }); }
+});
+document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('zone')) { e.preventDefault(); pickZone(e.target.dataset.zone); } });
+function pickZone(z) {
+  if (S.step === 'data') toggle(S.pick1, z);
+  else if (S.step === 'pick2') toggle(S.pick2, z);
+  else return;
+  const y = window.scrollY; render(false); window.scrollTo(0, y);
+  const g = document.querySelector(`.zone[data-zone="${z}"]`); if (g && document.activeElement !== g && e_isKeyboard) g.focus();
+}
+let e_isKeyboard = false;
+addEventListener('keydown', () => { e_isKeyboard = true; }); addEventListener('pointerdown', () => { e_isKeyboard = false; });
+render(false);
+window.__armor = { get S() { return S; }, BASE, flyCount, MISSION, back: back.length, holesBack, holesLost, count, ZONES };
+})();
+</script>
+</body>
+</html>
