@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>裝甲該裝在哪裡？｜教師投票結果</title>
+<!-- ============================================================
+     裝甲該裝在哪裡？｜教師頁
+     即時看各組投票：第一輪裝甲、猜被擊落飛機的中彈位置、第二輪裝甲、行銷資料題。
+     資料存在教師自己的 Google 試算表（與「最後一張優惠券」共用同一份），
+     連線位址寫在 ../last-coupon/config.js。
+     ============================================================ -->
+<style>
+:root{--bg:#f3f1ec;--panel:#fff;--ink:#1b2433;--ink2:#4d5869;--ink3:#6f7988;--line:#dcd8cf;--line2:#ebe8e1;--navy:#102a56;--blue:#1f5fb8;--blue-wash:#e8f0fc;--good:#127a3d;--bad:#b4232c;--armor:#f2b705}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",Arial,sans-serif;line-height:1.6;font-size:18px}
+h1,h2,h3,p{margin:0}
+button,input{font:inherit;color:inherit}
+[hidden]{display:none!important}
+:focus-visible{outline:3px solid var(--armor);outline-offset:2px;border-radius:6px}
+.top{background:var(--navy);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.top h1{font-size:19px;flex:1;min-width:0}
+.top h1 small{font-weight:500;opacity:.8;font-size:15px;margin-left:8px}
+.top a{color:#fff;font-size:15px}
+main{max-width:1240px;margin:0 auto;padding:18px 16px 60px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}
+.row{display:flex;gap:10px 14px;flex-wrap:wrap;align-items:flex-end}
+label.f span{display:block;font-size:15px;font-weight:700;margin-bottom:4px}
+input[type=text],input[type=password]{border:2px solid var(--ink3);border-radius:10px;padding:8px 12px;width:13rem;max-width:100%}
+.btn{border:0;border-radius:10px;background:var(--blue);color:#fff;font-weight:800;padding:10px 18px;cursor:pointer;min-height:44px}
+.btn:hover{background:var(--navy)}
+.ghost{border:2px solid var(--blue);background:#fff;color:var(--blue);border-radius:10px;font-weight:800;padding:8px 14px;cursor:pointer;min-height:44px}
+.ghost:hover{background:var(--blue-wash)}
+.msg{font-size:15px;font-weight:600}.msg.bad{color:var(--bad)}.msg.good{color:var(--good)}
+.small{font-size:15px;color:var(--ink3)}
+ol.setup{margin:6px 0 0;padding-left:1.4em;max-width:78ch}
+ol.setup li{margin:8px 0}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.9em;background:var(--line2);padding:1px 5px;border-radius:4px}
+.head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center}
+.entry{display:flex;gap:14px;align-items:center}
+.entry .qr{width:120px;height:120px;flex:0 0 auto;background:#fff}
+.entry .qr svg{width:100%;height:100%;display:block}
+.url{font-size:14px;word-break:break-all;background:var(--line2);border-radius:6px;padding:4px 8px;margin:4px 0 8px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.counts span{background:var(--blue-wash);border-radius:999px;padding:3px 12px;font-size:15px;font-weight:700;color:var(--navy)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px}
+.panel h2{font-size:22px;line-height:1.3}
+.panel .sub{font-size:15px;color:var(--ink3);margin:2px 0 12px}
+.bars{display:grid;gap:10px}
+.bar{display:grid;grid-template-columns:5.5em minmax(0,1fr) 6.2em;gap:10px;align-items:center;font-size:18px}
+.bar .lab{font-weight:800}
+.bar .track{position:relative;height:30px;background:var(--line2);border-radius:8px;overflow:hidden}
+.bar .track u{position:absolute;left:0;top:0;bottom:0;background:var(--blue);border-radius:8px;text-decoration:none;transition:width .6s}
+.bar .track u.ghost1{background:rgba(31,95,184,.22);border-radius:8px}
+.bar .track u.r2{background:var(--good)}
+.bar .track u.guess{background:#7a4cc2}
+.bar .track u.q{background:var(--good)}
+.bar .n{font-variant-numeric:tabular-nums;text-align:right;font-weight:800;white-space:nowrap}
+.bar .n small{font-weight:500;color:var(--ink3)}
+.hl{font-size:16px;margin-top:12px;background:var(--bg);border-radius:10px;padding:8px 12px}
+.empty{color:var(--ink3);font-size:16px;padding:10px 0}
+.cover{position:relative}
+.cover.hidden .bars,.cover.hidden .hl{filter:blur(9px);pointer-events:none;user-select:none}
+.cover.hidden::after{content:"結果已隱藏";position:absolute;left:50%;top:58%;transform:translate(-50%,-50%);background:var(--navy);color:#fff;font-weight:800;border-radius:999px;padding:6px 16px}
+table{border-collapse:collapse;width:100%;font-size:16px}
+th,td{padding:8px 10px;border-top:1px solid var(--line2);text-align:left;vertical-align:top}
+thead th{border-top:0;font-size:14px;color:var(--ink3)}
+td.n{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.scroll{overflow-x:auto}
+.foot{display:flex;gap:10px 16px;flex-wrap:wrap;align-items:center;margin-top:12px}
+details{margin-top:24px}
+summary{cursor:pointer;font-weight:700;color:var(--blue)}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}.head{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:480px){.bar{grid-template-columns:4.2em minmax(0,1fr) 5.4em;font-size:16px}.entry{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>裝甲該裝在哪裡？<small>教師投票結果</small></h1>
+  <a href="./" target="_blank" rel="noopener">開啟遊戲（單機）</a>
+  <a href="../../index.html">返回第二章</a>
+</header>
+<main>
+  <section id="needSetup" hidden>
+    <h2 style="font-size:24px">還沒有連上試算表</h2>
+    <p style="max-width:74ch;margin-top:6px">這一頁和「最後一張優惠券」共用同一份 Google 試算表。請先完成下面的設定，網址寫在 <code>chapter-02/games/last-coupon/config.js</code>。</p>
+    <div class="card" style="margin-top:12px"><ol class="setup" id="setupSteps"></ol></div>
+  </section>
+
+  <section id="login" hidden>
+    <h2 style="font-size:24px">連線到班級</h2>
+    <form class="row" id="loginForm" style="margin-top:10px">
+      <label class="f"><span>班級代碼</span><input type="text" id="cls" maxlength="20" placeholder="例如 MON" autocomplete="off" required></label>
+      <label class="f"><span>教師密碼</span><input type="password" id="key" autocomplete="off" required></label>
+      <button class="btn" type="submit">連線</button>
+      <span class="msg" id="loginMsg" role="status" aria-live="polite"></span>
+    </form>
+    <p class="small" style="margin-top:10px;max-width:78ch">班級代碼由您自訂（英文字母、數字、底線、連字號），換一個代碼就是新的班級。教師密碼在試算表的「設定」分頁。</p>
+  </section>
+
+  <div id="live" hidden>
+    <section class="card head">
+      <div>
+        <h2 style="font-size:24px">班級 <span id="clsName"></span></h2>
+        <div class="counts" id="counts"></div>
+        <div class="foot">
+          <button class="ghost" type="button" id="hideBtn">隱藏結果</button>
+          <button class="ghost" type="button" id="pause">暫停自動更新</button>
+          <button class="ghost" type="button" id="leave">換班級</button>
+          <span class="small" id="stamp" role="status"></span>
+        </div>
+      </div>
+      <div class="entry">
+        <div class="qr" id="qr" role="img" aria-label="學生入口 QR Code"></div>
+        <div style="max-width:22rem">
+          <div class="small">學生掃描或開啟這個網址，輸入組名就能投票</div>
+          <div class="url" id="url"></div>
+          <button class="ghost" type="button" id="copyUrl">複製網址</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid">
+      <section class="card panel cover" id="pR1"><h2>第一輪：裝甲裝在哪裡？</h2><p class="sub" id="sR1"></p><div class="bars" id="bR1"></div><p class="hl" id="hR1"></p></section>
+      <section class="card panel cover" id="pG"><h2>猜：被擊落的飛機哪裡中彈？</h2><p class="sub" id="sG"></p><div class="bars" id="bG"></div><p class="hl" id="hG"></p></section>
+      <section class="card panel cover" id="pR2"><h2>第二輪：重新選裝甲</h2><p class="sub" id="sR2"></p><div class="bars" id="bR2"></div><p class="hl" id="hR2"></p></section>
+      <section class="card panel cover" id="pQ"><h2>行銷資料題：答對率</h2><p class="sub" id="sQ"></p><div class="bars" id="bQ"></div><p class="hl" id="hQ"></p></section>
+    </div>
+
+    <section class="card" style="margin-top:14px">
+      <h2 style="font-size:22px">各組明細</h2>
+      <div class="scroll"><table id="tbl"><thead><tr><th>組名</th><th>第一輪</th><th class="n">返航</th><th>猜測</th><th>第二輪</th><th class="n">返航</th><th class="n">行銷題</th></tr></thead><tbody></tbody></table></div>
+      <p class="small" style="margin-top:8px">完整紀錄在試算表的「投票」分頁。同一組重玩會覆蓋舊的答案。</p>
+    </section>
+  </div>
+
+  <details id="setupAgain" hidden>
+    <summary>試算表後端的設定與更新步驟</summary>
+    <div class="card" style="margin-top:8px"><ol class="setup" id="setupSteps2"></ol></div>
+  </details>
+</main>
+
+<script src="../last-coupon/config.js"></script>
+<script src="../../../assets/vendor/qrcode.js"></script>
+<script>
+(() => {
+'use strict';
+const CFG = window.LAST_COUPON_CONFIG || {};
+const SYNC_URL = /^https?:\/\//.test(CFG.syncUrl || '') ? CFG.syncUrl : '';
+const LS = 'armor.teacher';
+const $ = id => document.getElementById(id);
+const ZONES = ['wings', 'fuselage', 'tail', 'engines', 'cockpit'];
+const ZN = { wings: '機翼', fuselage: '機身', tail: '尾翼', engines: '引擎', cockpit: '駕駛艙' };
+const QZ = [{ lab: '第 1 題', topic: '只問現有會員', o: ['最認真的會員', '流失顧客', 'VIP'] }, { lab: '第 2 題', topic: '成功新創都休學', o: ['樣本太少', '看不到失敗的人', '定義不清'] }, { lab: '第 3 題', topic: '只用回購顧客訓練', o: ['模型不夠複雜', '缺第一次就離開的人', '新客不愛推薦'] }];
+const ANS = [1, 1, 1];
+const state = { cls: '', key: '', rows: [], timer: null, paused: false, hidden: false };
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const normClass = v => String(v || '').toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 20);
+const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
+
+/* ---------- setup steps ---------- */
+function setupSteps(ol) {
+  const steps = [
+    ['如果還沒有試算表：用個人 Gmail 開一份新的 Google 試算表（網址列輸入 ', ['code', 'sheets.new'], '），再按「擴充功能 → Apps Script」。如果已經為「最後一張優惠券」建過，就打開同一份試算表的 Apps Script。'],
+    ['把編輯器裡的程式碼全部刪掉，貼上新版後端程式碼。', ['copy', '複製後端程式碼']],
+    ['第一次部署：按「部署 → 新增部署作業」，類型選「網頁應用程式」，執行身分選「我」，誰可以存取選「所有人」，按「部署」並依畫面完成授權。已經部署過：按「部署 → 管理部署作業 → 編輯（鉛筆圖示）→ 版本選『新版本』→ 部署」，網址不會變。'],
+    ['第一次部署時，把畫面上結尾是 ', ['code', '/exec'], ' 的網址貼進 ', ['code', 'chapter-02/games/last-coupon/config.js'], '，再推送到 GitHub。'],
+    ['回到這一頁，輸入班級代碼與密碼連線。教師密碼在試算表的「設定」分頁。']
+  ];
+  ol.textContent = '';
+  for (const parts of steps) {
+    const li = el('li');
+    for (const p of parts) {
+      if (typeof p === 'string') li.appendChild(document.createTextNode(p));
+      else if (p[0] === 'code') li.appendChild(el('code', '', p[1]));
+      else {
+        const b = el('button', 'ghost', p[1]); b.type = 'button'; b.style.marginLeft = '8px';
+        const m = el('span', 'msg', ''); m.style.marginLeft = '8px';
+        b.addEventListener('click', async () => {
+          const src = '../last-coupon/backend/Code.gs';
+          try { const code = await (await fetch(src, { cache: 'no-store' })).text(); await navigator.clipboard.writeText(code); m.className = 'msg good'; m.textContent = '已複製，可以貼到 Apps Script'; }
+          catch (e) { m.className = 'msg bad'; m.textContent = '無法自動複製，已開啟程式碼檔案'; window.open(src, '_blank', 'noopener'); }
+        });
+        li.appendChild(b); li.appendChild(m);
+      }
+    }
+    ol.appendChild(li);
+  }
+}
+
+/* ---------- talking to the sheet ---------- */
+async function call(payload) {
+  const r = await fetch(SYNC_URL, { method: 'POST', body: JSON.stringify(Object.assign({ cls: state.cls, key: state.key, act: 'armor' }, payload)) });
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error || 'refused');
+  return j;
+}
+async function refresh() {
+  try { const j = await call({ action: 'votes' }); state.rows = j.rows || []; draw(); $('stamp').textContent = '最後更新 ' + new Date().toLocaleTimeString('zh-TW', { hour12: false }); }
+  catch (e) { $('stamp').textContent = '更新失敗，稍後自動重試'; }
+}
+function loop() {
+  clearTimeout(state.timer);
+  if (state.paused || !state.cls) return;
+  state.timer = setTimeout(async () => { if (document.visibilityState === 'visible') await refresh(); loop(); }, 4000);
+}
+
+/* ---------- drawing ---------- */
+function latest(q) { const m = new Map(); for (const r of state.rows) if (r.q === q) { const x = m.get(r.tid); if (!x || r.t >= x.t) m.set(r.tid, r); } return [...m.values()]; }
+function bars(box, items, max, cls, ghost) {
+  box.textContent = '';
+  for (const it of items) {
+    const row = el('div', 'bar'); row.appendChild(el('span', 'lab', it.lab));
+    const tr = el('div', 'track');
+    if (ghost && ghost[it.key] != null) { const g = el('u', 'ghost1'); g.style.width = pct(ghost[it.key], max) + '%'; g.title = '第一輪'; tr.appendChild(g); }
+    const u = el('u', cls); u.style.width = pct(it.n, max) + '%'; tr.appendChild(u); row.appendChild(tr);
+    const n = el('span', 'n', pct(it.n, max) + '%'); n.appendChild(el('small', '', ` (${it.n})`)); row.appendChild(n);
+    box.appendChild(row);
+  }
+}
+function zoneCounts(rows) { const c = Object.fromEntries(ZONES.map(z => [z, 0])); for (const r of rows) for (const z of r.v.split('|')[0].split(',')) if (z in c) c[z]++; return c; }
+const pairName = s => s.split('|')[0].split(',').sort((a, b) => ZONES.indexOf(a) - ZONES.indexOf(b)).map(z => ZN[z] || z).join('＋');
+function topPair(rows) { const m = new Map(); for (const r of rows) { const k = r.v.split('|')[0]; m.set(k, (m.get(k) || 0) + 1); } return [...m.entries()].sort((a, b) => b[1] - a[1])[0]; }
+const avgBack = rows => { const v = rows.map(r => Number(r.v.split('|')[1])).filter(x => !isNaN(x)); return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : null; };
+function draw() {
+  const r1 = latest('r1'), g = latest('guess'), r2 = latest('r2'), qz = latest('quiz');
+  const teams = new Map(); for (const r of state.rows) { const x = teams.get(r.tid); if (!x || r.t >= x.t) teams.set(r.tid, r); }
+  const counts = $('counts'); counts.textContent = '';
+  [['組數', teams.size], ['第一輪', r1.length], ['猜測', g.length], ['第二輪', r2.length], ['行銷題', qz.length]].forEach(([a, b]) => counts.appendChild(el('span', '', `${a} ${b}`)));
+  // mission 1
+  const c1 = zoneCounts(r1);
+  $('sR1').textContent = r1.length ? `${r1.length} 組投票；每組選 2 個部位，百分比是選這個部位的組數比例。` : '';
+  bars($('bR1'), ZONES.map(z => ({ key: z, lab: ZN[z], n: c1[z] })), r1.length, '');
+  const p1 = topPair(r1), a1 = avgBack(r1);
+  $('hR1').textContent = r1.length ? `最多組選：${pairName(p1[0])}（${p1[1]} 組）。平均返航 ${a1} 架／100。` : '還沒有組別送出第一輪。';
+  if (!r1.length) $('bR1').appendChild(el('p', 'empty', '學生按「送出投票，出任務！」後會出現在這裡。'));
+  // guess
+  const cg = Object.fromEntries(ZONES.map(z => [z, 0])); for (const r of g) if (r.v in cg) cg[r.v]++;
+  $('sG').textContent = g.length ? `${g.length} 組作答；正解是引擎或駕駛艙。` : '';
+  bars($('bG'), ZONES.map(z => ({ key: z, lab: ZN[z], n: cg[z] })), g.length, 'guess');
+  $('hG').textContent = g.length ? `猜對（引擎或駕駛艙）：${pct(cg.engines + cg.cockpit, g.length)}%` : '還沒有組別送出猜測。';
+  // mission 2
+  const c2 = zoneCounts(r2);
+  $('sR2').textContent = r2.length ? `${r2.length} 組投票；淡色是第一輪的比例，方便對照。` : '';
+  const ghost = r1.length && r2.length ? Object.fromEntries(ZONES.map(z => [z, Math.round(c1[z] / r1.length * r2.length)])) : null;
+  bars($('bR2'), ZONES.map(z => ({ key: z, lab: ZN[z], n: c2[z] })), r2.length, 'r2', ghost);
+  const p2 = topPair(r2), a2 = avgBack(r2);
+  $('hR2').textContent = r2.length ? `最多組選：${pairName(p2[0])}（${p2[1]} 組）。平均返航 ${a2} 架／100${a1 != null ? `（第一輪 ${a1}）` : ''}。` : '還沒有組別送出第二輪。';
+  // quiz
+  const ans = qz.map(r => r.v.split(',').map(Number));
+  $('sQ').textContent = qz.length ? `${qz.length} 組作答。` : '';
+  bars($('bQ'), QZ.map((q, i) => ({ key: i, lab: q.lab, n: ans.filter(a => a[i] === ANS[i]).length })), qz.length, 'q');
+  if (qz.length) {
+    const worst = QZ.map((q, i) => { const wrong = ans.filter(a => a[i] !== ANS[i] && !isNaN(a[i])); const m = new Map(); wrong.forEach(a => m.set(a[i], (m.get(a[i]) || 0) + 1)); const top = [...m.entries()].sort((a, b) => b[1] - a[1])[0]; return { i, q, wrong: wrong.length, top }; }).sort((a, b) => b.wrong - a.wrong)[0];
+    $('hQ').textContent = worst.wrong ? `最多組答錯：${worst.q.lab}「${worst.q.topic}」，常見誤答是「${worst.q.o[worst.top[0]]}」。` : '三題全班都答對了！';
+  } else $('hQ').textContent = '還沒有組別送出行銷題。';
+  // table
+  const body = $('tbl').querySelector('tbody'); body.textContent = '';
+  const byQ = q => new Map(latest(q).map(r => [r.tid, r]));
+  const m1 = byQ('r1'), mg = byQ('guess'), m2 = byQ('r2'), mq = byQ('quiz');
+  const list = [...teams.values()].sort((a, b) => a.team.localeCompare(b.team, 'zh-Hant', { numeric: true }));
+  if (!list.length) { const tr = el('tr'); const td = el('td', 'empty', '還沒有任何一組送出。'); td.colSpan = 7; tr.appendChild(td); body.appendChild(tr); }
+  for (const tm of list) {
+    const tr = el('tr'), a = m1.get(tm.tid), b = mg.get(tm.tid), c = m2.get(tm.tid), d = mq.get(tm.tid);
+    tr.appendChild(el('th', '', tm.team || '（未命名）'));
+    tr.appendChild(el('td', '', a ? pairName(a.v) : '–')); tr.appendChild(el('td', 'n', a ? a.v.split('|')[1] : '–'));
+    tr.appendChild(el('td', '', b ? (ZN[b.v] || b.v) : '–'));
+    tr.appendChild(el('td', '', c ? pairName(c.v) : '–')); tr.appendChild(el('td', 'n', c ? c.v.split('|')[1] : '–'));
+    tr.appendChild(el('td', 'n', d ? `${d.v.split(',').map(Number).filter((x, i) => x === ANS[i]).length}／3` : '–'));
+    body.appendChild(tr);
+  }
+  ['pR1', 'pG', 'pR2', 'pQ'].forEach(id => $(id).classList.toggle('hidden', state.hidden));
+}
+function entry() {
+  const url = new URL('.', location.href).href + '?class=' + encodeURIComponent(state.cls);
+  $('clsName').textContent = state.cls; $('url').textContent = url;
+  try { const q = qrcode(0, 'M'); q.addData(url, 'Byte'); q.make(); $('qr').innerHTML = q.createSvgTag({ cellSize: 4, margin: 2, scalable: true }); } catch (e) { $('qr').textContent = ''; }
+}
+
+/* ---------- wiring ---------- */
+function show(which) { ['needSetup', 'login', 'live'].forEach(id => { $(id).hidden = id !== which; }); $('setupAgain').hidden = which === 'needSetup'; }
+async function connect(cls, key, quiet) {
+  state.cls = cls; state.key = key;
+  const msg = $('loginMsg'); msg.className = 'msg'; msg.textContent = quiet ? '' : '連線中…';
+  try {
+    const j = await call({ action: 'votes' });
+    try { localStorage.setItem(LS, JSON.stringify({ cls, key })); } catch (e) { /* no storage */ }
+    state.rows = j.rows || []; show('live'); entry(); draw(); loop(); msg.textContent = ''; $('stamp').textContent = '最後更新 ' + new Date().toLocaleTimeString('zh-TW', { hour12: false });
+  } catch (e) {
+    state.cls = ''; show('login'); $('cls').value = cls; msg.className = 'msg bad';
+    const m = String(e.message);
+    msg.textContent = m === 'bad key' ? '密碼不對。請到試算表的「設定」分頁查看教師密碼。'
+      : m === 'unknown action' ? '試算表的後端是舊版本，還不支援投票。請依下方「設定與更新步驟」貼上新版程式碼並部署「新版本」。'
+      : '連不上試算表。請確認 Apps Script 已授權並部署，且「誰可以存取」選了「所有人」。';
+    $('setupAgain').hidden = false; if (m === 'unknown action') $('setupAgain').open = true;
+  }
+}
+$('loginForm').addEventListener('submit', ev => { ev.preventDefault(); const c = normClass($('cls').value); if (!c) { $('loginMsg').className = 'msg bad'; $('loginMsg').textContent = '請輸入班級代碼（英文字母或數字）。'; return; } connect(c, $('key').value.trim()); });
+$('copyUrl').addEventListener('click', async () => { const b = $('copyUrl'); try { await navigator.clipboard.writeText($('url').textContent); b.textContent = '已複製'; } catch (e) { b.textContent = '請手動選取網址'; } setTimeout(() => { b.textContent = '複製網址'; }, 1500); });
+$('leave').addEventListener('click', () => { clearTimeout(state.timer); state.cls = ''; try { localStorage.removeItem(LS); } catch (e) { /* none */ } show('login'); $('key').value = ''; });
+$('pause').addEventListener('click', () => { state.paused = !state.paused; $('pause').textContent = state.paused ? '恢復自動更新' : '暫停自動更新'; if (!state.paused) { refresh(); loop(); } else clearTimeout(state.timer); });
+$('hideBtn').addEventListener('click', () => { state.hidden = !state.hidden; $('hideBtn').textContent = state.hidden ? '顯示結果' : '隱藏結果'; draw(); });
+
+setupSteps($('setupSteps')); setupSteps($('setupSteps2'));
+if (!SYNC_URL) { show('needSetup'); return; }
+show('login');
+const qs = new URLSearchParams(location.search);
+let saved = null; try { saved = JSON.parse(localStorage.getItem(LS) || 'null'); } catch (e) { saved = null; }
+const preCls = normClass(qs.get('class') || (saved && saved.cls) || '');
+if (preCls) $('cls').value = preCls;
+if (saved && saved.cls && saved.cls === preCls) { $('key').value = saved.key || ''; connect(saved.cls, saved.key || '', true); }
+window.__teacher = state;
+})();
+</script>
+</body>
+</html>

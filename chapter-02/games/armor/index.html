@@ -30,6 +30,12 @@ button{font:inherit;color:inherit}
 h1,h2,h3,p{margin:0}
 :focus-visible{outline:3px solid var(--armor);outline-offset:2px;border-radius:6px}
 .hide{display:none!important}
+.sync{font-size:13px;font-weight:700;border-radius:999px;padding:3px 10px;background:rgba(255,255,255,.16);white-space:nowrap}
+.sync.ok{background:#127a3d} .sync.bad{background:#b4232c}
+.classbox{background:var(--blue-wash);border:2px solid var(--blue);border-radius:14px;padding:12px 14px;margin-top:16px}
+.classbox label{display:block;font-weight:800;margin-bottom:6px}
+.classbox input{width:100%;max-width:320px;font-size:18px;padding:10px 12px;border:2px solid var(--ink3);border-radius:10px}
+.sent{color:var(--good);font-weight:800}
 .top{position:sticky;top:0;z-index:20;background:var(--navy);color:#fff;min-height:calc(52px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 12px 0;display:flex;align-items:center;gap:10px}
 .top .name{font-weight:800;font-size:17px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .steps{display:flex;gap:4px}
@@ -139,6 +145,7 @@ ol.qs li{margin:14px 0;font-size:19px}
 <body>
 <header class="top">
   <div class="name" id="appname"></div>
+  <span class="sync hide" id="sync" role="status"></span>
   <div class="steps" id="steps" aria-hidden="true"></div>
   <div class="lang" role="group" aria-label="Language 語言">
     <button type="button" data-lang="zh">中文</button>
@@ -147,6 +154,7 @@ ol.qs li{margin:14px 0;font-size:19px}
 </header>
 <main id="main"></main>
 
+<script src="../last-coupon/config.js"></script>
 <script>
 (() => {
 'use strict';
@@ -225,7 +233,10 @@ const T = {
       '大數據的資料量很大，是不是就不會有倖存者偏差？為什麼？',
       '想一個你在行銷或社群上看過的倖存者偏差例子：要補什麼資料，才能看清楚真相？'
     ],
-    copy: '複製結果', copied: '已複製', again: '再玩一次', back2: '返回第二章', backHome: '返回課程首頁'
+    copy: '複製結果', copied: '已複製', again: '再玩一次', back2: '返回第二章', backHome: '返回課程首頁',
+    classH: c => `課堂投票：班級 ${c}`, teamL: '你們的組名（老師會看到）', teamPh: '例如：第 3 組',
+    goVote: '送出投票，出任務！', revealVote: '送出猜測，畫上被擊落的飛機', endVote: '送出答案，看總結',
+    sOk: '已送給老師 ✓', sBusy: '傳送中…', sBad: '尚未送出，自動重試中', sentAll: '你們的投票都已送給老師 ✓', sentWait: '還有投票沒送出，請保持網路連線，會自動重試。'
   },
   en: {
     app: 'Where Should the Armour Go?',
@@ -297,7 +308,10 @@ const T = {
       'Big data sets are huge. Does that make them safe from survivorship bias? Why or why not?',
       'Think of a survivorship-bias example you have seen in marketing or on social media. What data would you add to see the full picture?'
     ],
-    copy: 'Copy results', copied: 'Copied', again: 'Play again', back2: 'Back to Chapter 2', backHome: 'Back to course home'
+    copy: 'Copy results', copied: 'Copied', again: 'Play again', back2: 'Back to Chapter 2', backHome: 'Back to course home',
+    classH: c => `Class vote: class ${c}`, teamL: 'Your team name (your teacher will see it)', teamPh: 'e.g. Team 3',
+    goVote: 'Send our vote and fly!', revealVote: 'Send our guess and show the lost planes', endVote: 'Send our answers and see the summary',
+    sOk: 'Sent to teacher ✓', sBusy: 'Sending…', sBad: 'Not sent yet, retrying', sentAll: 'All your votes have reached your teacher ✓', sentWait: 'Some votes have not been sent yet. Stay online and they will retry automatically.'
   }
 };
 
@@ -392,6 +406,41 @@ const BASE = flyCount(MISSION, []);
 const back = PAST.filter(p => survives(p, [])), down = PAST.filter(p => !survives(p, []));
 const holesBack = back.flat(), holesLost = down.flat();
 const count = (hs, z) => hs.filter(h => h.z === z).length;
+/* ---------- class voting: only with ?class=CODE and an address in ../last-coupon/config.js ---------- */
+const CFG = window.LAST_COUPON_CONFIG || {};
+const SYNC_URL = /^https?:\/\//.test(CFG.syncUrl || '') ? CFG.syncUrl : '';
+const CLS = (qs.get('class') || '').toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 20);
+const CLASS = !!(SYNC_URL && CLS);
+const store = { get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* no storage */ } } };
+let TID = store.get('armor.tid', '');
+if (!/^[a-z0-9]{8,16}$/.test(TID)) { TID = Math.random().toString(36).slice(2, 12).replace(/[^a-z0-9]/g, '') || 'x' + Date.now().toString(36); store.set('armor.tid', TID); }
+let TEAM = store.get('armor.team.' + CLS, '');
+let OUT = {}; try { OUT = JSON.parse(store.get('armor.out.' + CLS, '{}')) || {}; } catch (e) { OUT = {}; }
+let syncState = Object.keys(OUT).length ? 'bad' : '', retry = 0, sending = false;
+function vote(q, v) { if (!CLASS) return; OUT[q] = v; store.set('armor.out.' + CLS, JSON.stringify(OUT)); flush(); }
+async function flush() {
+  if (!CLASS || sending) return;
+  clearTimeout(retry);
+  const qsl = Object.keys(OUT); if (!qsl.length) return;
+  sending = true; syncState = 'busy'; drawSync();
+  for (const q of qsl) {
+    try {
+      const r = await fetch(SYNC_URL, { method: 'POST', body: JSON.stringify({ action: 'vote', cls: CLS, act: 'armor', tid: TID, team: TEAM, q, v: OUT[q], lang: LANG }) });   // text/plain: no preflight
+      const j = await r.json();
+      if (j.ok && OUT[q] !== undefined) delete OUT[q];
+    } catch (e) { /* stays in the outbox */ }
+  }
+  store.set('armor.out.' + CLS, JSON.stringify(OUT));
+  sending = false; syncState = Object.keys(OUT).length ? 'bad' : 'ok'; drawSync();
+  if (syncState === 'bad') retry = setTimeout(flush, 5000);
+}
+function drawSync() {
+  const el = $('sync'); if (!el) return;
+  el.classList.toggle('hide', !CLASS || !syncState);
+  el.className = 'sync ' + (syncState === 'ok' ? 'ok' : syncState === 'bad' ? 'bad' : '') + (!CLASS || !syncState ? ' hide' : '');
+  el.textContent = syncState === 'ok' ? t().sOk : syncState === 'busy' ? t().sBusy : t().sBad;
+  const m = $('sentmsg'); if (m) { m.className = Object.keys(OUT).length ? 'small' : 'sent'; m.textContent = Object.keys(OUT).length ? t().sentWait : t().sentAll; }
+}
 const STEPS = ['intro', 'data', 'mission', 'twist', 'reveal', 'pick2', 'mission2', 'quiz', 'end'];
 let S = fresh();
 function fresh() { return { step: 'intro', pick1: [], pick2: [], r1: null, r2: null, guess: null, show: 'all', quiz: [null, null, null], played: false }; }
@@ -402,7 +451,7 @@ function fresh() { return { step: 'intro', pick1: [], pick2: [], r1: null, r2: n
 function picker(sel, round) {
   const X = t();
   return `<div class="chips">${ZONES.map(z => `<button type="button" class="chip ${sel.includes(z) ? 'sel' : ''}" data-act="pick" data-v="${z}" aria-pressed="${sel.includes(z)}"><b>${X.zone[z]}</b><span>${X.holes(count(holesBack, z))}</span></button>`).join('')}</div>
-    <button type="button" class="btn big" data-act="${round === 1 ? 'fly1' : 'fly2'}" ${sel.length === 2 ? '' : 'disabled'} style="margin-top:12px;width:100%">${sel.length === 2 ? X.go : X.need(2 - sel.length)}</button>`;
+    <button type="button" class="btn big" data-act="${round === 1 ? 'fly1' : 'fly2'}" ${sel.length === 2 ? '' : 'disabled'} style="margin-top:12px;width:100%">${sel.length === 2 ? (CLASS ? X.goVote : X.go) : X.need(2 - sel.length)}</button>`;
 }
 function dataTable(withLost) {
   const X = t(), max = Math.max(...ZONES.map(z => count(holesBack, z) / SIZE[z]));
@@ -418,7 +467,8 @@ function vIntro() {
   const X = t();
   return `<div class="hero"><div><p class="kicker">${X.kicker}</p><h1 class="title" tabindex="-1">${X.title}</h1><p class="lead">${X.lead}</p>
       <div class="card" style="margin-top:16px"><b>${X.howH}</b><ol style="margin:6px 0 0;padding-left:1.3em">${X.how.map(h => `<li>${h}</li>`).join('')}</ol></div>
-      <div class="row" style="margin-top:16px"><button type="button" class="btn big" data-act="goto" data-v="data">${X.start}</button></div></div>
+      ${CLASS ? `<div class="classbox"><b>${X.classH(esc(CLS))}</b><label for="team" style="margin-top:6px">${X.teamL}</label><input id="team" maxlength="30" autocomplete="off" placeholder="${esc(X.teamPh)}" value="${esc(TEAM)}"></div>` : ''}
+      <div class="row" style="margin-top:16px"><button type="button" class="btn big" data-act="goto" data-v="data" id="startBtn" ${CLASS && !TEAM.trim() ? 'disabled' : ''}>${X.start}</button></div></div>
     <div class="planebox">${planeSvg({ ro: true, holes: holesBack.map(h => [h.x, h.y]) })}</div></div>
     <p class="note">${X.note}</p>`;
 }
@@ -451,7 +501,7 @@ function vTwist() {
   return `<div class="split"><div class="planebox">${planeSvg({ ro: true, holes: holesBack.map(h => [h.x, h.y]) })}${legend(false, false)}</div>
     <div class="stack"><h2 class="h" tabindex="-1">${X.twistH}</h2><p class="big-q">${X.twistQ}</p><p class="big-q">${X.twistQ2}</p>
       <div class="card"><p style="font-weight:800;margin-bottom:8px">${X.guess}</p><div class="chips">${ZONES.map(z => `<button type="button" class="chip ${S.guess === z ? 'sel' : ''}" data-act="guess" data-v="${z}"><b>${X.zone[z]}</b></button>`).join('')}</div></div>
-      <button type="button" class="btn big" data-act="goto" data-v="reveal" ${S.guess ? '' : 'disabled'}>${X.reveal}</button></div></div>`;
+      <button type="button" class="btn big" data-act="goto" data-v="reveal" ${S.guess ? '' : 'disabled'}>${CLASS ? X.revealVote : X.reveal}</button></div></div>`;
 }
 function vReveal() {
   const X = t(), all = S.show === 'all', right = S.guess === 'engines' || S.guess === 'cockpit';
@@ -479,7 +529,7 @@ function vQuiz() {
   }).join('');
   const done = S.quiz.every(a => a != null);
   return `<h2 class="h" tabindex="-1">${X.quizH}</h2><div class="stack" style="margin-top:10px">${items}</div>
-    <div class="row" style="margin-top:16px"><button type="button" class="btn big" data-act="goto" data-v="end" ${done ? '' : 'disabled'}>${X.toEnd}</button></div>`;
+    <div class="row" style="margin-top:16px"><button type="button" class="btn big" data-act="goto" data-v="end" ${done ? '' : 'disabled'}>${CLASS ? X.endVote : X.toEnd}</button></div>`;
 }
 function quizScore() { return S.quiz.filter((a, i) => a === T.zh.quiz[i].a).length; }
 function vEnd() {
@@ -487,7 +537,7 @@ function vEnd() {
   return `<h2 class="h" tabindex="-1">${X.endH}</h2>
     <div class="split" style="margin-top:8px"><div class="stack">${compare()}
       <div class="card"><p>${X.endR(1, X.zone[S.pick1[0]], X.zone[S.pick1[1]], S.r1)}</p><p>${X.endR(2, X.zone[S.pick2[0]], X.zone[S.pick2[1]], S.r2)}</p><p>${X.endQ(quizScore(), X.quiz.length)}</p></div>
-      <p class="hint" style="font-weight:700">${X.lesson}</p></div>
+      <p class="hint" style="font-weight:700">${X.lesson}</p>${CLASS ? '<p id="sentmsg" role="status"></p>' : ''}</div>
     <div class="card"><h3 style="font-size:21px">${X.talkH}</h3><ol class="qs">${X.qs.map(q => `<li>${q}</li>`).join('')}</ol></div></div>
     <div class="row" style="margin-top:16px"><button type="button" class="btn" data-act="copy">${X.copy}</button><button type="button" class="btn ghost" data-act="again">${X.again}</button>
       <a class="btn ghost" href="../../index.html">${X.back2}</a><span class="small" id="copymsg" role="status"></span></div>
@@ -508,6 +558,7 @@ function render(focus) {
   const v = { intro: vIntro, data: vData, mission: () => vMission(1), twist: vTwist, reveal: vReveal, pick2: vPick2, mission2: () => vMission(2), quiz: vQuiz, end: vEnd }[S.step];
   $('main').innerHTML = v();
   if (S.step === 'mission' || S.step === 'mission2') fly();
+  drawSync();
   if (focus) { window.scrollTo(0, 0); const h = document.querySelector('#main h1, #main h2'); if (h) h.focus({ preventScroll: true }); }
 }
 // planes fly out in order; returned ones turn navy, lost ones turn red
@@ -536,10 +587,15 @@ document.addEventListener('click', e => {
   if (zg) { pickZone(zg.dataset.zone); return; }
   const el = e.target.closest('[data-act]'); if (!el || el.disabled) return;
   const a = el.dataset.act, v = el.dataset.v;
-  if (a === 'goto') go(v);
+  if (a === 'goto') {
+    if (v === 'data' && CLASS) { const tv = ($('team') || {}).value; TEAM = String(tv || TEAM).trim().slice(0, 30); if (!TEAM) return; store.set('armor.team.' + CLS, TEAM); }
+    if (v === 'reveal') vote('guess', S.guess);
+    if (v === 'end') vote('quiz', S.quiz.join(','));
+    go(v);
+  }
   else if (a === 'pick') pickZone(v);
-  else if (a === 'fly1') { S.r1 = flyCount(MISSION, S.pick1); go('mission'); }
-  else if (a === 'fly2') { S.r2 = flyCount(MISSION, S.pick2); go('mission2'); }
+  else if (a === 'fly1') { S.r1 = flyCount(MISSION, S.pick1); vote('r1', S.pick1.slice().sort().join(',') + '|' + S.r1); go('mission'); }
+  else if (a === 'fly2') { S.r2 = flyCount(MISSION, S.pick2); vote('r2', S.pick2.slice().sort().join(',') + '|' + S.r2); go('mission2'); }
   else if (a === 'guess') { S.guess = v; render(false); }
   else if (a === 'show') { S.show = v; render(false); }
   else if (a === 'quiz') { S.quiz[+el.dataset.q] = +v; render(false); }
@@ -556,8 +612,12 @@ function pickZone(z) {
 }
 let e_isKeyboard = false;
 addEventListener('keydown', () => { e_isKeyboard = true; }); addEventListener('pointerdown', () => { e_isKeyboard = false; });
+document.addEventListener('input', e => { if (e.target.id === 'team') { TEAM = e.target.value.slice(0, 30); const b = $('startBtn'); if (b) b.disabled = !TEAM.trim(); } });
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'team' && e.target.value.trim()) $('startBtn').click(); });
+addEventListener('online', flush);
 render(false);
-window.__armor = { get S() { return S; }, BASE, flyCount, MISSION, back: back.length, holesBack, holesLost, count, ZONES };
+flush();
+window.__armor = { get S() { return S; }, get OUT() { return OUT; }, CLASS, CLS, BASE, flyCount, MISSION, back: back.length, holesBack, holesLost, count, ZONES };
 })();
 </script>
 </body>

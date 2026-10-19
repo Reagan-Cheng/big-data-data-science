@@ -7,10 +7,14 @@
  *   誰可以存取：所有人
  * 部署後得到的網址（結尾是 /exec）填進遊戲資料夾的 config.js。
  *
- * 這支程式會自動在試算表裡建立三個分頁：
- *   各組提交：每一組每一季一列（重複送出會覆蓋同一列）
- *   放行　　：每個班級目前開放到第幾階段
+ * 這支程式會自動在試算表裡建立這些分頁：
+ *   各組提交：最後一張優惠券，每一組每一季一列（重複送出會覆蓋同一列）
+ *   放行　　：最後一張優惠券，每個班級目前開放到第幾階段
+ *   投票　　：其他課堂活動（例如「裝甲該裝在哪裡？」）各組的投票，每組每題一列
  *   設定　　：教師密碼（第一次執行時自動產生，可以直接改）
+ *
+ * 更新程式碼後，要到「部署 → 管理部署作業 → 編輯（鉛筆）→ 版本：新版本 → 部署」，
+ * 網址不會變。
  *
  * 階段代號：1 = 第一季、2 = 第二季、3 = 第三季、4 = 第四季、5 = 結算。
  *
@@ -18,7 +22,7 @@
  * @OnlyCurrentDoc
  */
 
-var VERSION = 1;
+var VERSION = 2;
 var TAB_SUB = '各組提交';
 var TAB_GATE = '放行';
 var TAB_CFG = '設定';
@@ -27,6 +31,9 @@ var GATE_HEAD = ['班級', '已開放到（1–5）', '更新時間'];
 var CFG_HEAD = ['項目', '內容', '說明'];
 var STAGES = ['q1', 'q2', 'q3', 'q4', 'end'];
 var KEY_COL = 15;
+var TAB_VOTE = '投票';
+var VOTE_HEAD = ['時間', '班級', '活動', '組名', '裝置代碼', '題目', '選擇', '語言', '索引鍵'];
+var VOTE_KEY_COL = 9;
 
 function doGet(e) { return handle_((e && e.parameter) || {}); }
 
@@ -43,6 +50,11 @@ function handle_(p) {
     var cls = cls_(p.cls);
     if (!cls) return out_({ ok: false, error: 'no class' });
     if (a === 'gate') return out_({ ok: true, open: getGate_(cls) });
+    if (a === 'vote') return out_(vote_(cls, p));
+    if (a === 'votes') {
+      if (String(p.key || '') !== teacherKey_()) return out_({ ok: false, error: 'bad key' });
+      return out_(votes_(cls, p));
+    }
     if (a === 'submit') return out_(submit_(cls, p));
     if (a === 'board' || a === 'open') {
       if (String(p.key || '') !== teacherKey_()) return out_({ ok: false, error: 'bad key' });
@@ -170,4 +182,42 @@ function board_(cls) {
     }
   }
   return { ok: true, v: VERSION, cls: cls, open: getGate_(cls), rows: rows, now: new Date().getTime() };
+}
+
+/* ---------- 投票（其他課堂活動）---------- */
+function act_(v) { return String(v == null ? '' : v).toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 20); }
+
+function vote_(cls, p) {
+  var act = act_(p.act), q = act_(p.q);
+  if (!act || !q) return { ok: false, error: 'no question' };
+  var tid = String(p.tid || '').replace(/[^a-z0-9]/gi, '').slice(0, 16);
+  if (!tid) return { ok: false, error: 'no team id' };
+  var key = cls + '|' + act + '|' + tid + '|' + q;
+  var values = [[new Date(), cls, act, text_(p.team, 40), tid, q, text_(p.v, 200), text_(p.lang, 5), key]];
+  var lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    var sh = tab_(TAB_VOTE, VOTE_HEAD), last = sh.getLastRow(), row = last + 1;
+    if (last > 1) {
+      var keys = sh.getRange(2, VOTE_KEY_COL, last - 1, 1).getValues();
+      for (var i = 0; i < keys.length; i++) if (String(keys[i][0]) === key) { row = i + 2; break; }
+    }
+    sh.getRange(row, 1, 1, values[0].length).setValues(values);
+  } finally {
+    lock.releaseLock();
+  }
+  return { ok: true };
+}
+
+function votes_(cls, p) {
+  var act = act_(p.act), sh = tab_(TAB_VOTE, VOTE_HEAD), last = sh.getLastRow(), rows = [];
+  if (last > 1) {
+    var v = sh.getRange(2, 1, last - 1, VOTE_HEAD.length).getValues();
+    for (var i = 0; i < v.length; i++) {
+      var r = v[i];
+      if (String(r[1]) !== cls || (act && String(r[2]) !== act)) continue;
+      rows.push({ t: r[0] && r[0].getTime ? r[0].getTime() : 0, team: String(r[3]), tid: String(r[4]), q: String(r[5]), v: String(r[6]), lang: String(r[7]) });
+    }
+  }
+  return { ok: true, v: VERSION, cls: cls, rows: rows, now: new Date().getTime() };
 }
