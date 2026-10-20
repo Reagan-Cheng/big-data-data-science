@@ -9,7 +9,7 @@
      裝甲該裝在哪裡？｜教師頁
      即時看各組投票：第一輪裝甲、猜被擊落飛機的中彈位置、第二輪裝甲、行銷資料題。
      資料存在教師自己的 Google 試算表（與「最後一張優惠券」共用同一份），
-     連線位址寫在 ../last-coupon/config.js。
+     連線位址寫在網站的 assets/class-sync.js。
      ============================================================ -->
 <style>
 :root{--bg:#f3f1ec;--panel:#fff;--ink:#1b2433;--ink2:#4d5869;--ink3:#6f7988;--line:#dcd8cf;--line2:#ebe8e1;--navy:#102a56;--blue:#1f5fb8;--blue-wash:#e8f0fc;--good:#127a3d;--bad:#b4232c;--armor:#f2b705}
@@ -84,7 +84,7 @@ summary{cursor:pointer;font-weight:700;color:var(--blue)}
 <main>
   <section id="needSetup" hidden>
     <h2 style="font-size:24px">還沒有連上試算表</h2>
-    <p style="max-width:74ch;margin-top:6px">這一頁和「最後一張優惠券」共用同一份 Google 試算表。請先完成下面的設定，網址寫在 <code>chapter-02/games/last-coupon/config.js</code>。</p>
+    <p style="max-width:74ch;margin-top:6px">這一頁和「最後一張優惠券」共用同一份 Google 試算表。請先完成下面的設定，網址寫在 <code>assets/class-sync.js</code>。</p>
     <div class="card" style="margin-top:12px"><ol class="setup" id="setupSteps"></ol></div>
   </section>
 
@@ -141,12 +141,12 @@ summary{cursor:pointer;font-weight:700;color:var(--blue)}
   </details>
 </main>
 
-<script src="../last-coupon/config.js"></script>
+<script src="../../../assets/class-sync.js"></script>
 <script src="../../../assets/vendor/qrcode.js"></script>
 <script>
 (() => {
 'use strict';
-const CFG = window.LAST_COUPON_CONFIG || {};
+const CFG = window.CLASS_SYNC || {};
 const SYNC_URL = /^https?:\/\//.test(CFG.syncUrl || '') ? CFG.syncUrl : '';
 const LS = 'armor.teacher';
 const $ = id => document.getElementById(id);
@@ -165,7 +165,7 @@ function setupSteps(ol) {
     ['如果還沒有試算表：用個人 Gmail 開一份新的 Google 試算表（網址列輸入 ', ['code', 'sheets.new'], '），再按「擴充功能 → Apps Script」。如果已經為「最後一張優惠券」建過，就打開同一份試算表的 Apps Script。'],
     ['把編輯器裡的程式碼全部刪掉，貼上新版後端程式碼。', ['copy', '複製後端程式碼']],
     ['第一次部署：按「部署 → 新增部署作業」，類型選「網頁應用程式」，執行身分選「我」，誰可以存取選「所有人」，按「部署」並依畫面完成授權。已經部署過：按「部署 → 管理部署作業 → 編輯（鉛筆圖示）→ 版本選『新版本』→ 部署」，網址不會變。'],
-    ['第一次部署時，把畫面上結尾是 ', ['code', '/exec'], ' 的網址貼進 ', ['code', 'chapter-02/games/last-coupon/config.js'], '，再推送到 GitHub。'],
+    ['第一次部署時，把畫面上結尾是 ', ['code', '/exec'], ' 的網址貼進 ', ['code', 'assets/class-sync.js'], '，再推送到 GitHub。'],
     ['回到這一頁，輸入班級代碼與密碼連線。教師密碼在試算表的「設定」分頁。']
   ];
   ol.textContent = '';
@@ -178,7 +178,7 @@ function setupSteps(ol) {
         const b = el('button', 'ghost', p[1]); b.type = 'button'; b.style.marginLeft = '8px';
         const m = el('span', 'msg', ''); m.style.marginLeft = '8px';
         b.addEventListener('click', async () => {
-          const src = '../last-coupon/backend/Code.gs';
+          const src = '../../../backend/Code.gs';
           try { const code = await (await fetch(src, { cache: 'no-store' })).text(); await navigator.clipboard.writeText(code); m.className = 'msg good'; m.textContent = '已複製，可以貼到 Apps Script'; }
           catch (e) { m.className = 'msg bad'; m.textContent = '無法自動複製，已開啟程式碼檔案'; window.open(src, '_blank', 'noopener'); }
         });

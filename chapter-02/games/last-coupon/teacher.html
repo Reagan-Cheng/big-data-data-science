@@ -8,7 +8,7 @@
 <!-- ============================================================
      最後一張優惠券｜教師頁
      看各組每一季的分數與回答，並決定何時開放下一季。
-     資料存在教師自己的 Google 試算表，連線位址寫在 config.js。
+     資料存在教師自己的 Google 試算表，連線位址寫在網站的 assets/class-sync.js。
      ============================================================ -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -171,6 +171,7 @@ summary{cursor:pointer;font-weight:600;color:var(--accent-deep)}
   </details>
 </main>
 
+<script src="../../../assets/class-sync.js"></script>
 <script src="config.js"></script>
 <script src="../../../assets/vendor/qrcode.js"></script>
 <script>
@@ -200,7 +201,7 @@ summary{cursor:pointer;font-weight:600;color:var(--accent-deep)}
       ['用個人 Gmail 帳號開一份新的 Google 試算表。在瀏覽器網址列輸入 ', ['code', 'sheets.new'], ' 最快。學校帳號有時不允許對外公開，學生會連不上。'],
       ['在試算表選單按「擴充功能 → Apps Script」，把編輯器裡原有的內容全部刪掉，貼上後端程式碼。', ['copy', '複製後端程式碼']],
       ['按右上角「部署 → 新增部署作業」，類型選「網頁應用程式」，執行身分選「我」，誰可以存取選「所有人」，再按「部署」。第一次會要求授權，請依畫面同意。'],
-      ['複製畫面上的「網頁應用程式」網址（結尾是 ', ['code', '/exec'], '），貼進這個資料夾的 ', ['code', 'config.js'], ' 裡 ', ['code', "syncUrl: ''"], ' 的引號中，再推送到 GitHub。'],
+      ['複製畫面上的「網頁應用程式」網址（結尾是 ', ['code', '/exec'], '），貼進網站的 ', ['code', 'assets/class-sync.js'], ' 裡 ', ['code', "syncUrl: ''"], ' 的引號中，再推送到 GitHub。'],
       ['回到這一頁，輸入任意班級代碼和任意密碼按一次「連線」。這時試算表會出現「設定」分頁，裡面就是教師密碼。']
     ];
     ol.textContent = '';
@@ -214,9 +215,9 @@ summary{cursor:pointer;font-weight:600;color:var(--accent-deep)}
           const m = el('span', 'msg', ''); m.style.marginLeft = '.5rem';
           b.addEventListener('click', async () => {
             try {
-              const code = await (await fetch('backend/Code.gs', { cache: 'no-store' })).text();
+              const code = await (await fetch('../../../backend/Code.gs', { cache: 'no-store' })).text();
               await navigator.clipboard.writeText(code); m.className = 'msg good'; m.textContent = '已複製，可以貼到 Apps Script';
-            } catch (e) { m.className = 'msg bad'; m.textContent = '無法自動複製，請直接開啟 backend/Code.gs'; window.open('backend/Code.gs', '_blank', 'noopener'); }
+            } catch (e) { m.className = 'msg bad'; m.textContent = '無法自動複製，請直接開啟 backend/Code.gs（網站根目錄）'; window.open('../../../backend/Code.gs', '_blank', 'noopener'); }
           });
           li.appendChild(b); li.appendChild(m);
         }
@@ -318,7 +319,7 @@ summary{cursor:pointer;font-weight:600;color:var(--accent-deep)}
       state.pinned = false; show('live'); entry(); take(j); loop(); msg.textContent = '';
     } catch (e) {
       state.cls = ''; show('login'); $('cls').value = cls; msg.className = 'msg bad';
-      msg.textContent = String(e.message) === 'bad key' ? '密碼不對。請到試算表的「設定」分頁查看教師密碼。' : '連不上試算表。請確認 config.js 的網址正確，且部署時「誰可以存取」選了「所有人」。';
+      msg.textContent = String(e.message) === 'bad key' ? '密碼不對。請到試算表的「設定」分頁查看教師密碼。' : '連不上試算表。請確認 assets/class-sync.js 的網址正確，Apps Script 已授權，且部署時「誰可以存取」選了「所有人」。';
     }
   }
   async function setOpen(n) {

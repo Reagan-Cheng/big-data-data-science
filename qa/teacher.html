@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>課堂即時問答｜教師頁</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%23102a56%22/%3E%3Cpath%20d%3D%22M7%209h18v11H14l-5%204v-4H7z%22%20fill%3D%22%23f2b705%22/%3E%3C/svg%3E">
+<!-- ============================================================
+     課堂即時問答｜教師頁 · Live Class Q&A (teacher)
+     題庫、發布題目、即時看回答（長條圖、平均分數、文字雲、簡答列表）、投影模式。
+     資料存在教師自己的 Google 試算表；連線位址在 ../assets/class-sync.js，
+     後端程式在 ../backend/Code.gs。
+     ============================================================ -->
+<style>
+:root{--bg:#f3f1ec;--panel:#fff;--ink:#1b2433;--ink2:#4d5869;--ink3:#6f7988;--line:#dcd8cf;--line2:#ebe8e1;--navy:#102a56;--blue:#1f5fb8;--blue-wash:#e8f0fc;--good:#127a3d;--good-wash:#e6f5ec;--bad:#b4232c;--warn:#a15c00;--warn-wash:#fff4e0;--armor:#f2b705}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",Arial,sans-serif;line-height:1.6;font-size:17px}
+h1,h2,h3,p{margin:0}
+button,input,textarea,select{font:inherit;color:inherit}
+[hidden]{display:none!important}
+:focus-visible{outline:3px solid var(--armor);outline-offset:2px;border-radius:6px}
+.top{background:var(--navy);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.top h1{font-size:19px;flex:1;min-width:0}
+.top h1 small{font-weight:500;opacity:.8;font-size:15px;margin-left:8px}
+.top a{color:#fff;font-size:15px}
+.lang{display:flex;border:1px solid rgba(255,255,255,.5);border-radius:999px;overflow:hidden}
+.lang button{border:0;background:transparent;color:#fff;padding:3px 12px;font-size:14px;cursor:pointer;min-height:32px}
+.lang button[aria-pressed="true"]{background:#fff;color:var(--navy);font-weight:700}
+main{max-width:1320px;margin:0 auto;padding:16px 16px 60px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}
+.row{display:flex;gap:10px 12px;flex-wrap:wrap;align-items:center}
+label.f span{display:block;font-size:15px;font-weight:700;margin-bottom:4px}
+input[type=text],input[type=password],textarea,select{border:2px solid var(--ink3);border-radius:10px;padding:8px 12px;background:#fff;max-width:100%}
+textarea{width:100%;resize:vertical}
+.btn{border:0;border-radius:10px;background:var(--blue);color:#fff;font-weight:800;padding:9px 16px;cursor:pointer;min-height:42px}
+.btn:hover{background:var(--navy)}
+.btn.go{background:var(--good)} .btn.go:hover{background:#0d5c2d}
+.btn[disabled]{background:#b8c0cc;cursor:not-allowed}
+.ghost{border:2px solid var(--blue);background:#fff;color:var(--blue);border-radius:10px;font-weight:800;padding:7px 13px;cursor:pointer;min-height:42px}
+.ghost:hover{background:var(--blue-wash)}
+.ghost.armed{border-color:var(--bad);color:var(--bad)}
+.ghost.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.msg{font-size:15px;font-weight:600}.msg.bad{color:var(--bad)}.msg.good{color:var(--good)}
+.small{font-size:14px;color:var(--ink3)}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.9em;background:var(--line2);padding:1px 5px;border-radius:4px}
+ol.setup{margin:6px 0 0;padding-left:1.4em;max-width:80ch} ol.setup li{margin:8px 0}
+.bar0{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.bar0 h2{font-size:22px}
+.layout{display:grid;grid-template-columns:380px minmax(0,1fr);gap:14px;align-items:start}
+.badge{display:inline-block;font-size:13px;font-weight:800;border-radius:999px;padding:1px 10px;background:var(--blue-wash);color:var(--blue);white-space:nowrap}
+.badge.single{background:#e8f0fc;color:#1f5fb8}.badge.multi{background:#efe6fb;color:#6a3fb5}.badge.text{background:#fff4e0;color:#a15c00}.badge.words{background:#e6f5ec;color:#127a3d}.badge.scale{background:#fde8ef;color:#a2264f}
+.bank h2,.cur h2{font-size:20px}
+.list{display:grid;gap:8px;margin-top:10px;max-height:62vh;overflow:auto;padding-right:2px}
+.item{border:2px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff}
+.item.live{border-color:var(--good);background:var(--good-wash)}
+.item p{margin:4px 0 8px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap}
+.item .row{gap:6px}
+.item .row button{min-height:36px;padding:4px 10px;font-size:15px}
+.form{border:2px dashed var(--line);border-radius:12px;padding:12px;margin-top:10px;display:grid;gap:10px}
+.form.editing{border-color:var(--blue);border-style:solid}
+.status{font-size:14px;font-weight:800;border-radius:999px;padding:2px 12px;color:#fff;background:var(--good)}
+.status.closed{background:var(--warn)}
+.cur .qtext{font-size:clamp(24px,3vw,38px);font-weight:900;line-height:1.35;margin:8px 0 6px;white-space:pre-wrap;overflow-wrap:anywhere}
+.count{font-size:18px;font-weight:800;color:var(--navy)}
+.ctrls{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}
+.res{position:relative;min-height:120px}
+.res.hidden>*{filter:blur(12px);pointer-events:none;user-select:none}
+.res.hidden::after{content:attr(data-hidden);position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--navy);color:#fff;font-weight:800;border-radius:999px;padding:8px 18px}
+.bars{display:grid;gap:12px}
+.b{display:grid;grid-template-columns:minmax(6em,16em) minmax(0,1fr) 6.5em;gap:12px;align-items:center;font-size:20px}
+.b .lab{font-weight:800;overflow-wrap:anywhere}
+.b .track{height:36px;background:var(--line2);border-radius:9px;overflow:hidden}
+.b .track u{display:block;height:100%;background:var(--blue);border-radius:9px;text-decoration:none;transition:width .6s}
+.b.lead .track u{background:var(--good)}
+.b .n{text-align:right;font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap}
+.b .n small{font-weight:500;color:var(--ink3);font-size:15px}
+.avg{font-size:22px;font-weight:900;color:var(--navy);margin-top:12px}
+.cloud{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;justify-content:center;padding:20px 8px;min-height:180px}
+.cloud span{font-weight:900;line-height:1.1;white-space:nowrap}
+.cloud span small{font-size:.45em;font-weight:700;opacity:.6;margin-left:3px}
+.texts{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.texts div{background:var(--bg);border-radius:12px;padding:12px 14px;font-size:19px;white-space:pre-wrap;overflow-wrap:anywhere}
+.texts div b{display:block;font-size:14px;color:var(--ink3);margin-bottom:2px}
+.empty{color:var(--ink3);text-align:center;padding:30px 0}
+.join{display:flex;gap:12px;align-items:center;background:var(--blue-wash);border-radius:12px;padding:8px 12px}
+.join .qr{width:84px;height:84px;background:#fff;flex:0 0 auto}
+.join .qr svg{width:100%;height:100%;display:block}
+.join b{font-size:20px;color:var(--navy)}
+.url{font-size:14px;word-break:break-all}
+.modal{position:fixed;inset:0;background:rgba(16,42,86,.92);z-index:50;display:grid;place-items:center;padding:20px}
+.modal .box{background:#fff;border-radius:20px;padding:24px;text-align:center;max-width:620px;width:100%}
+.modal .bigqr{width:min(70vh,520px);max-width:100%;margin:0 auto}
+.modal .bigqr svg{width:100%;height:auto;display:block}
+.modal h2{font-size:clamp(24px,4vw,36px);margin-bottom:6px}
+body.present .bank,body.present .bar0 .ghost:not(#presentBtn):not(#qrBtn),body.present .ctrls .hideInPresent{display:none!important}
+body.present .layout{grid-template-columns:minmax(0,1fr)}
+body.present .cur .qtext{font-size:clamp(30px,4vw,52px)}
+body.present .b{font-size:26px} body.present .b .track{height:46px}
+body.present .texts div{font-size:22px}
+details{margin-top:24px} summary{cursor:pointer;font-weight:700;color:var(--blue)}
+@media (max-width:980px){.layout{grid-template-columns:minmax(0,1fr)}.list{max-height:none}}
+@media (max-width:560px){.b{grid-template-columns:minmax(4em,7em) minmax(0,1fr) 5.4em;font-size:17px}.join{flex-wrap:wrap}}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1 id="h1"></h1>
+  <div class="lang" role="group" aria-label="Language 語言"><button type="button" data-lang="zh">中文</button><button type="button" data-lang="en">EN</button></div>
+  <a href="./" target="_blank" rel="noopener" id="lnkStudent"></a>
+  <a href="../index.html" id="lnkHome"></a>
+</header>
+<main>
+  <section id="needSetup" hidden>
+    <h2 style="font-size:24px" data-t="setupH"></h2>
+    <p style="max-width:78ch;margin-top:6px" data-t="setupP"></p>
+    <div class="card" style="margin-top:12px"><ol class="setup" id="setupSteps"></ol></div>
+  </section>
+
+  <section id="login" hidden>
+    <h2 style="font-size:24px" data-t="loginH"></h2>
+    <form class="row" id="loginForm" style="margin-top:10px;align-items:flex-end">
+      <label class="f"><span data-t="clsL"></span><input type="text" id="cls" maxlength="20" placeholder="MON" autocomplete="off" required></label>
+      <label class="f"><span data-t="keyL"></span><input type="password" id="key" autocomplete="off" required></label>
+      <button class="btn" type="submit" data-t="connect"></button>
+      <span class="msg" id="loginMsg" role="status" aria-live="polite"></span>
+    </form>
+    <p class="small" style="margin-top:10px;max-width:80ch" data-t="loginP"></p>
+  </section>
+
+  <div id="live" hidden>
+    <div class="bar0">
+      <h2 id="clsTitle"></h2>
+      <div class="join" id="joinBox"><div class="qr" id="qrSmall" role="img"></div><div><b id="joinCode"></b><div class="url" id="url"></div></div></div>
+      <button class="ghost" type="button" id="qrBtn"></button>
+      <button class="ghost" type="button" id="presentBtn"></button>
+      <button class="ghost" type="button" id="copyUrl"></button>
+      <button class="ghost" type="button" id="leave"></button>
+    </div>
+    <div class="layout">
+      <section class="card bank">
+        <div class="row" style="justify-content:space-between"><h2 data-t="bankH"></h2><button class="ghost" type="button" id="newBtn"></button></div>
+        <form class="form" id="qform" hidden>
+          <label class="f"><span data-t="typeL"></span><select id="ftype"></select></label>
+          <label class="f"><span data-t="textL"></span><textarea id="ftext" rows="3" maxlength="500"></textarea></label>
+          <label class="f" id="optsBox"><span data-t="optsL"></span><textarea id="fopts" rows="4"></textarea><span class="small" data-t="optsP"></span></label>
+          <div class="row" id="scaleBox"><label class="f"><span data-t="loL"></span><input type="text" id="flo" maxlength="40" style="width:11rem"></label><label class="f"><span data-t="hiL"></span><input type="text" id="fhi" maxlength="40" style="width:11rem"></label></div>
+          <div class="row"><button class="btn go" type="button" id="savePub"></button><button class="btn" type="button" id="saveOnly"></button><button class="ghost" type="button" id="pubOnly"></button><button class="ghost" type="button" id="cancelForm"></button></div>
+          <span class="msg" id="formMsg" role="status"></span>
+        </form>
+        <div class="list" id="list"></div>
+      </section>
+      <section class="card cur" id="cur"></section>
+    </div>
+    <p class="small" style="margin-top:10px" id="stamp" role="status"></p>
+  </div>
+
+  <details id="setupAgain" hidden><summary data-t="setupAgain"></summary><div class="card" style="margin-top:8px"><ol class="setup" id="setupSteps2"></ol></div></details>
+</main>
+<div class="modal" id="modal" hidden><div class="box"><h2 id="mTitle"></h2><div class="bigqr" id="qrBig"></div><p class="url" id="mUrl" style="margin:10px 0 14px;font-size:18px"></p><button class="btn" type="button" id="mClose"></button></div></div>
+
+<script src="../assets/class-sync.js"></script>
+<script src="../assets/vendor/qrcode.js"></script>
+<script>
+(() => {
+'use strict';
+const T = {
+  zh: {
+    h1: '課堂即時問答<small>教師頁</small>', lnkStudent: '學生頁', lnkHome: '返回課程首頁',
+    setupH: '還沒有連上試算表', setupP: '課堂問答把回答存在您自己的 Google 試算表。下面的設定只需要做一次，之後每個班級、每個學期都用同一份。',
+    setupAgain: '試算表後端的設定與更新步驟',
+    steps: [
+      ['用個人 Gmail 帳號開一份 Google 試算表（網址列輸入 ', ['code', 'sheets.new'], '）。如果之前已經為課程遊戲建過，就用同一份。學校帳號有時不允許對外公開，學生會連不上。'],
+      ['在試算表按「擴充功能 → Apps Script」，把程式碼全部刪掉，貼上後端程式碼。', ['copy', '複製後端程式碼']],
+      ['第一次：按「部署 → 新增部署作業」，類型選「網頁應用程式」，執行身分「我」，誰可以存取「所有人」，按「部署」並依畫面授權。之後更新：按「部署 → 管理部署作業 → 編輯（鉛筆）→ 版本選『新版本』→ 部署」，網址不會變。'],
+      ['第一次部署時，把結尾是 ', ['code', '/exec'], ' 的網址貼進網站的 ', ['code', 'assets/class-sync.js'], '，再推送到 GitHub。'],
+      ['回到這一頁，輸入班級代碼和任意密碼按一次「連線」，試算表會出現「設定」分頁，裡面就是教師密碼。']
+    ],
+    copyCode: '複製後端程式碼', copied: '已複製，可以貼到 Apps Script', copyFail: '無法自動複製，已開啟程式碼檔案',
+    loginH: '連線到班級', clsL: '班級代碼', keyL: '教師密碼', connect: '連線', connecting: '連線中…',
+    loginP: '班級代碼由您自訂（英文字母、數字、底線、連字號），例如週一班 MON、週五班 FRI。教師密碼在試算表的「設定」分頁。',
+    badKey: '密碼不對。請到試算表的「設定」分頁查看教師密碼。', oldBackend: '試算表的後端是舊版本，還不支援課堂問答。請依下方步驟貼上新版程式碼並部署「新版本」。', noConn: '連不上試算表。請確認 Apps Script 已授權並部署，且「誰可以存取」選了「所有人」。', needCls: '請輸入班級代碼（英文字母或數字）。',
+    clsTitle: c => `班級 ${c}`, joinCode: c => `掃描加入・班級 ${c}`, qrBtn: '放大 QR Code', present: '投影模式', presentOff: '結束投影', copyUrl: '複製學生網址', urlCopied: '已複製', leave: '換班級',
+    mTitle: c => `掃描加入課堂問答・班級 ${c}`, mClose: '關閉',
+    bankH: '題庫', newQ: '＋ 新增題目', typeL: '題型', textL: '題目', optsL: '選項（一行一個，最多 8 個）', optsP: '單選、多選才需要選項。', loL: '1 分代表', hiL: '5 分代表',
+    savePub: '存入題庫並發布', saveOnly: '只存入題庫', pubOnly: '只發布（不存）', cancel: '取消', update: '更新題目', updatePub: '更新並發布',
+    needText: '請先輸入題目。', needOpts: '單選、多選至少要 2 個選項。', saved: '已存入題庫', working: '處理中…', failed: '沒有成功，請再按一次',
+    types: { single: '單選', multi: '多選', text: '簡答', words: '文字雲', scale: '評分 1–5' },
+    publish: '發布', edit: '編輯', del: '刪除', delConfirm: '確定刪除？', liveTag: '發布中',
+    bankEmpty: '題庫是空的。按「新增題目」，或直接打一題「只發布」。',
+    curEmptyH: '目前沒有發布題目', curEmptyP: '從左邊的題庫按「發布」，或新增一題。學生畫面會自動換成新題目。',
+    open: '作答中', closed: '已關閉作答', nAns: n => `${n} 人作答`,
+    closeA: '關閉作答', reopen: '重新開放', hide: '隱藏結果', show: '顯示結果', names: '顯示名字', namesOff: '隱藏名字', stop: '停止發布', restart: '重新發布（清空作答）', restartC: '確定清空重來？',
+    hidden: '結果已隱藏', noAns: '還沒有人作答。', avg: (a, n) => `平均 ${a} 分（${n} 人）`, people: n => `(${n})`,
+    stamp: s => `最後更新 ${s}`, stampBad: '更新失敗，稍後自動重試', anon: '（未署名）'
+  },
+  en: {
+    h1: 'Live Class Q&A<small>Teacher</small>', lnkStudent: 'Student page', lnkHome: 'Course home',
+    setupH: 'Not connected to a spreadsheet yet', setupP: 'Class Q&A stores answers in your own Google Sheet. You only need to do this once; every class and term uses the same sheet.',
+    setupAgain: 'Spreadsheet back-end setup and update steps',
+    steps: [
+      ['Open a Google Sheet with a personal Gmail account (type ', ['code', 'sheets.new'], ' in the address bar). If you already made one for the course games, use the same sheet. School accounts sometimes block public access.'],
+      ['In the sheet choose Extensions → Apps Script, delete everything and paste the back-end code.', ['copy', 'Copy back-end code']],
+      ['First time: Deploy → New deployment, type “Web app”, execute as “Me”, access “Anyone”, then Deploy and authorise. Later updates: Deploy → Manage deployments → Edit (pencil) → Version: New version → Deploy. The address stays the same.'],
+      ['First time only: paste the address ending in ', ['code', '/exec'], ' into ', ['code', 'assets/class-sync.js'], ' and push to GitHub.'],
+      ['Come back here, enter a class code and any password and press Connect once. A “設定” tab appears in the sheet with your teacher password.']
+    ],
+    copyCode: 'Copy back-end code', copied: 'Copied. Paste it into Apps Script.', copyFail: 'Could not copy; the code file has been opened.',
+    loginH: 'Connect to a class', clsL: 'Class code', keyL: 'Teacher password', connect: 'Connect', connecting: 'Connecting…',
+    loginP: 'Make up your own class code (letters, digits, _ or -), e.g. MON for Monday and FRI for Friday. The teacher password is on the “設定” tab of the sheet.',
+    badKey: 'Wrong password. Check the “設定” tab of the sheet.', oldBackend: 'The sheet’s back end is an older version without class Q&A. Paste the new code and deploy a new version (steps below).', noConn: 'Cannot reach the sheet. Check that Apps Script is authorised and deployed with access “Anyone”.', needCls: 'Enter a class code (letters or digits).',
+    clsTitle: c => `Class ${c}`, joinCode: c => `Scan to join · class ${c}`, qrBtn: 'Enlarge QR code', present: 'Present', presentOff: 'Stop presenting', copyUrl: 'Copy student link', urlCopied: 'Copied', leave: 'Change class',
+    mTitle: c => `Scan to join the class Q&A · class ${c}`, mClose: 'Close',
+    bankH: 'Question bank', newQ: '+ New question', typeL: 'Type', textL: 'Question', optsL: 'Options (one per line, up to 8)', optsP: 'Only single and multiple choice need options.', loL: '1 means', hiL: '5 means',
+    savePub: 'Save and publish', saveOnly: 'Save to bank', pubOnly: 'Publish only', cancel: 'Cancel', update: 'Update', updatePub: 'Update and publish',
+    needText: 'Type a question first.', needOpts: 'Choice questions need at least 2 options.', saved: 'Saved to the bank', working: 'Working…', failed: 'That did not work. Please try again.',
+    types: { single: 'Single choice', multi: 'Multiple choice', text: 'Short answer', words: 'Word cloud', scale: 'Rating 1–5' },
+    publish: 'Publish', edit: 'Edit', del: 'Delete', delConfirm: 'Really delete?', liveTag: 'Live',
+    bankEmpty: 'The bank is empty. Press “New question”, or type one and use “Publish only”.',
+    curEmptyH: 'No question is live', curEmptyP: 'Press “Publish” on a question in the bank, or add a new one. Student screens switch to it automatically.',
+    open: 'Open', closed: 'Closed', nAns: n => `${n} answer${n === 1 ? '' : 's'}`,
+    closeA: 'Close answering', reopen: 'Reopen', hide: 'Hide results', show: 'Show results', names: 'Show names', namesOff: 'Hide names', stop: 'Stop publishing', restart: 'Run again (clear answers)', restartC: 'Really start over?',
+    hidden: 'Results hidden', noAns: 'No answers yet.', avg: (a, n) => `Average ${a} (${n})`, people: n => `(${n})`,
+    stamp: s => `Last updated ${s}`, stampBad: 'Update failed, retrying', anon: '(no name)'
+  }
+};
+const TYPES = ['single', 'multi', 'text', 'words', 'scale'];
+const CLOUD = ['#1f5fb8', '#127a3d', '#a2264f', '#6a3fb5', '#a15c00', '#102a56', '#0f7c8c'];
+const SYNC_URL = /^https?:\/\//.test((window.CLASS_SYNC || {}).syncUrl || '') ? window.CLASS_SYNC.syncUrl : '';
+const LS = 'qa.teacher';
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const normClass = v => String(v || '').toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 20);
+let LANG = 'zh'; try { LANG = localStorage.getItem('qa.tlang') || 'zh'; } catch (e) { /* default */ }
+const t = () => T[LANG];
+const S = { cls: '', key: '', items: [], live: null, rows: [], hidden: false, names: false, present: false, editId: null, armed: null, timer: 0, busy: false };
+
+/* ---------- talking to the sheet ---------- */
+async function call(payload) {
+  const r = await fetch(SYNC_URL, { method: 'POST', body: JSON.stringify(Object.assign({ cls: S.cls, key: S.key }, payload)) });
+  const j = await r.json(); if (!j.ok) throw new Error(j.error || 'refused'); return j;
+}
+async function refresh() {
+  if (!S.live || S.busy) { stamp(true); return; }
+  try { const j = await call({ action: 'votes', act: 'qa', q: S.live.run }); S.rows = j.rows || []; drawCur(); stamp(true); }
+  catch (e) { stamp(false); }
+}
+function stamp(ok) { $('stamp').textContent = ok ? t().stamp(new Date().toLocaleTimeString(LANG === 'zh' ? 'zh-TW' : 'en-GB', { hour12: false })) : t().stampBad; }
+function loop() { clearTimeout(S.timer); if (!S.cls) return; S.timer = setTimeout(async () => { if (document.visibilityState === 'visible') await refresh(); loop(); }, 3000); }
+async function publish(q) {
+  S.busy = true;
+  try { const j = await call({ action: 'publish', q }); S.live = j.q; S.rows = []; S.armed = null; drawBank(); drawCur(); }
+  catch (e) { alertMsg(t().failed); }
+  S.busy = false; refresh();
+}
+function alertMsg(m) { const el = $('formMsg'); el.className = 'msg bad'; el.textContent = m; }
+const newRun = () => 'r' + Date.now().toString(36);
+
+/* ---------- question bank ---------- */
+function drawBank() {
+  const X = t(), list = $('list'); list.innerHTML = '';
+  if (!S.items.length) { list.innerHTML = `<p class="small">${X.bankEmpty}</p>`; return; }
+  for (const it of S.items.slice().reverse()) {
+    const live = S.live && S.live.id === it.id;
+    const d = document.createElement('div'); d.className = 'item' + (live ? ' live' : '');
+    d.innerHTML = `<div class="row"><span class="badge ${it.type}">${X.types[it.type] || it.type}</span>${live ? `<span class="badge words">${X.liveTag}</span>` : ''}</div><p>${esc(it.text)}</p>
+      <div class="row"><button class="btn go" type="button" data-act="pub" data-id="${it.id}">${X.publish}</button><button class="ghost" type="button" data-act="edit" data-id="${it.id}">${X.edit}</button><button class="ghost ${S.armed === 'del:' + it.id ? 'armed' : ''}" type="button" data-act="del" data-id="${it.id}">${S.armed === 'del:' + it.id ? X.delConfirm : X.del}</button></div>`;
+    list.appendChild(d);
+  }
+}
+function formQ() {
+  const type = $('ftype').value, text = $('ftext').value.trim();
+  const opts = $('fopts').value.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 8);
+  if (!text) { alertMsg(t().needText); return null; }
+  if ((type === 'single' || type === 'multi') && opts.length < 2) { alertMsg(t().needOpts); return null; }
+  return { id: S.editId || '', type, text, opts: type === 'single' || type === 'multi' ? opts : [], lo: type === 'scale' ? $('flo').value.trim() : '', hi: type === 'scale' ? $('fhi').value.trim() : '' };
+}
+function openForm(it) {
+  const X = t();
+  S.editId = it ? it.id : null;
+  $('qform').hidden = false; $('qform').classList.toggle('editing', !!it);
+  $('ftype').value = it ? it.type : 'single'; $('ftext').value = it ? it.text : ''; $('fopts').value = it ? (it.opts || []).join('\n') : ''; $('flo').value = it ? it.lo || '' : ''; $('fhi').value = it ? it.hi || '' : '';
+  $('savePub').textContent = it ? X.updatePub : X.savePub; $('saveOnly').textContent = it ? X.update : X.saveOnly;
+  $('formMsg').textContent = ''; syncForm(); $('ftext').focus();
+}
+function syncForm() { const ty = $('ftype').value; $('optsBox').hidden = !(ty === 'single' || ty === 'multi'); $('scaleBox').hidden = ty !== 'scale'; }
+async function saveForm(andPublish) {
+  const q = formQ(); if (!q) return;
+  const m = $('formMsg'); m.className = 'msg'; m.textContent = t().working;
+  try {
+    const before = new Set(S.items.map(i => i.id));
+    const j = await call({ action: 'saveq', item: q }); S.items = j.items || [];
+    const saved = q.id ? S.items.find(i => i.id === q.id) : S.items.find(i => !before.has(i.id)) || S.items[S.items.length - 1];
+    m.className = 'msg good'; m.textContent = t().saved; $('qform').hidden = true; S.editId = null; drawBank();
+    if (andPublish && saved) publish(Object.assign({}, saved, { run: newRun(), open: true }));
+  } catch (e) { m.className = 'msg bad'; m.textContent = t().failed; }
+}
+
+/* ---------- the live question and its results ---------- */
+function latest() { const m = new Map(); for (const r of S.rows) { const x = m.get(r.tid); if (!x || r.t >= x.t) m.set(r.tid, r); } return [...m.values()]; }
+function barsHtml(rows, total) {
+  const max = Math.max(1, ...rows.map(r => r.n));
+  return `<div class="bars">${rows.map(r => `<div class="b ${r.n === max && r.n > 0 ? 'lead' : ''}"><span class="lab">${esc(r.lab)}</span><div class="track"><u style="width:${total ? Math.round(r.n / total * 100) : 0}%"></u></div><span class="n">${total ? Math.round(r.n / total * 100) : 0}% <small>${t().people(r.n)}</small></span></div>`).join('')}</div>`;
+}
+function resultsHtml(q, ans) {
+  const X = t();
+  if (!ans.length) return `<p class="empty">${X.noAns}</p>`;
+  if (q.type === 'single' || q.type === 'multi') {
+    const c = q.opts.map(() => 0);
+    for (const a of ans) for (const i of String(a.v).split(',').map(Number)) if (i >= 0 && i < c.length) c[i]++;
+    return barsHtml(q.opts.map((o, i) => ({ lab: o, n: c[i] })), ans.length);
+  }
+  if (q.type === 'scale') {
+    const c = [0, 0, 0, 0, 0]; let sum = 0, n = 0;
+    for (const a of ans) { const v = Number(a.v); if (v >= 1 && v <= 5) { c[v - 1]++; sum += v; n++; } }
+    const labs = [1, 2, 3, 4, 5].map(v => v === 1 && q.lo ? `1 ${q.lo}` : v === 5 && q.hi ? `5 ${q.hi}` : String(v));
+    return barsHtml(labs.map((l, i) => ({ lab: l, n: c[i] })), n) + `<p class="avg">${X.avg(n ? (sum / n).toFixed(1) : '–', n)}</p>`;
+  }
+  if (q.type === 'words') {
+    const f = new Map(), shown = new Map();
+    for (const a of ans) for (const w of String(a.v).split('|')) { const k = w.trim().toLowerCase().replace(/\s+/g, ' '); if (!k) continue; f.set(k, (f.get(k) || 0) + 1); if (!shown.has(k)) shown.set(k, w.trim()); }
+    const words = [...f.entries()].sort((a, b) => b[1] - a[1]).slice(0, 40);
+    const max = words.length ? words[0][1] : 1;
+    const ordered = words.map((w, i) => [w, i]).sort((a, b) => ((a[1] * 7) % 11) - ((b[1] * 7) % 11));   // mix big and small words
+    return `<div class="cloud">${ordered.map(([[k, n], i]) => `<span style="font-size:${Math.round(18 + 46 * Math.sqrt(n / max))}px;color:${CLOUD[i % CLOUD.length]}">${esc(shown.get(k))}${n > 1 ? `<small>${n}</small>` : ''}</span>`).join('')}</div>`;
+  }
+  const list = ans.slice().sort((a, b) => b.t - a.t);
+  return `<div class="texts">${list.map(a => `<div>${S.names ? `<b>${esc(a.team || X.anon)}</b>` : ''}${esc(a.v)}</div>`).join('')}</div>`;
+}
+function drawCur() {
+  const X = t(), box = $('cur'), q = S.live;
+  if (!q) { box.innerHTML = `<h2>${X.curEmptyH}</h2><p class="small" style="margin-top:6px">${X.curEmptyP}</p>`; return; }
+  const ans = latest();
+  const keepScroll = box.querySelector('.res') ? box.querySelector('.res').scrollTop : 0;
+  box.innerHTML = `<div class="row"><span class="badge ${q.type}">${X.types[q.type]}</span><span class="status ${q.open ? '' : 'closed'}">${q.open ? X.open : X.closed}</span><span class="count">${X.nAns(ans.length)}</span></div>
+    <h2 class="qtext">${esc(q.text)}</h2>
+    <div class="ctrls">
+      <button class="btn ${q.open ? '' : 'go'}" type="button" data-act="toggleOpen">${q.open ? X.closeA : X.reopen}</button>
+      <button class="ghost ${S.hidden ? 'on' : ''}" type="button" data-act="hide">${S.hidden ? X.show : X.hide}</button>
+      ${q.type === 'text' ? `<button class="ghost ${S.names ? 'on' : ''}" type="button" data-act="names">${S.names ? X.namesOff : X.names}</button>` : ''}
+      <button class="ghost hideInPresent ${S.armed === 'restart' ? 'armed' : ''}" type="button" data-act="restart">${S.armed === 'restart' ? X.restartC : X.restart}</button>
+      <button class="ghost hideInPresent" type="button" data-act="stop">${X.stop}</button>
+    </div>
+    <div class="res ${S.hidden ? 'hidden' : ''}" data-hidden="${esc(X.hidden)}">${resultsHtml(q, ans)}</div>`;
+  if (keepScroll) box.querySelector('.res').scrollTop = keepScroll;
+}
+
+/* ---------- page chrome ---------- */
+function setupSteps(ol) {
+  ol.innerHTML = '';
+  for (const parts of t().steps) {
+    const li = document.createElement('li');
+    for (const p of parts) {
+      if (typeof p === 'string') li.appendChild(document.createTextNode(p));
+      else if (p[0] === 'code') { const c = document.createElement('code'); c.textContent = p[1]; li.appendChild(c); }
+      else {
+        const b = document.createElement('button'); b.className = 'ghost'; b.type = 'button'; b.textContent = p[1]; b.style.marginLeft = '8px';
+        const m = document.createElement('span'); m.className = 'msg'; m.style.marginLeft = '8px';
+        b.addEventListener('click', async () => { const src = '../backend/Code.gs'; try { const code = await (await fetch(src, { cache: 'no-store' })).text(); await navigator.clipboard.writeText(code); m.className = 'msg good'; m.textContent = t().copied; } catch (e) { m.className = 'msg bad'; m.textContent = t().copyFail; window.open(src, '_blank', 'noopener'); } });
+        li.appendChild(b); li.appendChild(m);
+      }
+    }
+    ol.appendChild(li);
+  }
+}
+function studentUrl() { return new URL('./', location.href).href + '?class=' + encodeURIComponent(S.cls); }
+function qrSvg(url, cell) { try { const q = qrcode(0, 'M'); q.addData(url, 'Byte'); q.make(); return q.createSvgTag({ cellSize: cell, margin: 2, scalable: true }); } catch (e) { return ''; } }
+function chrome() {
+  const X = t();
+  document.documentElement.lang = LANG === 'zh' ? 'zh-Hant' : 'en';
+  document.title = (LANG === 'zh' ? '課堂即時問答｜教師頁' : 'Live Class Q&A · Teacher');
+  $('h1').innerHTML = X.h1; $('lnkStudent').textContent = X.lnkStudent; $('lnkHome').textContent = X.lnkHome;
+  document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === LANG)));
+  document.querySelectorAll('[data-t]').forEach(el => { const v = X[el.dataset.t]; if (typeof v === 'string') el.textContent = v; });
+  setupSteps($('setupSteps')); setupSteps($('setupSteps2'));
+  $('ftype').innerHTML = TYPES.map(ty => `<option value="${ty}">${X.types[ty]}</option>`).join('');
+  $('newBtn').textContent = X.newQ; $('pubOnly').textContent = X.pubOnly; $('cancelForm').textContent = X.cancel;
+  $('savePub').textContent = S.editId ? X.updatePub : X.savePub; $('saveOnly').textContent = S.editId ? X.update : X.saveOnly;
+  $('qrBtn').textContent = X.qrBtn; $('presentBtn').textContent = S.present ? X.presentOff : X.present; $('copyUrl').textContent = X.copyUrl; $('leave').textContent = X.leave; $('mClose').textContent = X.mClose;
+  if (S.cls) { $('clsTitle').textContent = X.clsTitle(S.cls); $('joinCode').textContent = X.joinCode(S.cls); $('mTitle').textContent = X.mTitle(S.cls); }
+  drawBank(); drawCur();
+}
+function show(which) { ['needSetup', 'login', 'live'].forEach(id => { $(id).hidden = id !== which; }); $('setupAgain').hidden = which === 'needSetup'; }
+async function connect(cls, key, quiet) {
+  const X = t(); S.cls = cls; S.key = key;
+  const msg = $('loginMsg'); msg.className = 'msg'; msg.textContent = quiet ? '' : X.connecting;
+  try {
+    const [b, l] = await Promise.all([call({ action: 'bank' }), call({ action: 'live' })]);
+    S.items = b.items || []; S.live = l.q || null; S.rows = [];
+    try { localStorage.setItem(LS, JSON.stringify({ cls, key })); } catch (e) { /* none */ }
+    const url = studentUrl(); $('url').textContent = url; $('mUrl').textContent = url;
+    $('qrSmall').innerHTML = qrSvg(url, 3); $('qrBig').innerHTML = qrSvg(url, 8);
+    show('live'); chrome(); msg.textContent = ''; await refresh(); loop();
+  } catch (e) {
+    S.cls = ''; show('login'); $('cls').value = cls; msg.className = 'msg bad';
+    const m = String(e.message);
+    msg.textContent = m === 'bad key' ? X.badKey : m === 'unknown action' ? X.oldBackend : X.noConn;
+    $('setupAgain').hidden = false; if (m === 'unknown action') $('setupAgain').open = true;
+  }
+}
+
+/* ---------- wiring ---------- */
+$('loginForm').addEventListener('submit', ev => { ev.preventDefault(); const c = normClass($('cls').value); if (!c) { $('loginMsg').className = 'msg bad'; $('loginMsg').textContent = t().needCls; return; } connect(c, $('key').value.trim()); });
+$('ftype').addEventListener('change', syncForm);
+$('newBtn').addEventListener('click', () => openForm(null));
+$('cancelForm').addEventListener('click', () => { $('qform').hidden = true; S.editId = null; });
+$('savePub').addEventListener('click', () => saveForm(true));
+$('saveOnly').addEventListener('click', () => saveForm(false));
+$('pubOnly').addEventListener('click', () => { const q = formQ(); if (!q) return; q.id = 'adhoc'; $('qform').hidden = true; S.editId = null; publish(Object.assign(q, { run: newRun(), open: true })); });
+$('qrBtn').addEventListener('click', () => { $('modal').hidden = false; $('mClose').focus(); });
+$('mClose').addEventListener('click', () => { $('modal').hidden = true; });
+$('modal').addEventListener('click', e => { if (e.target === $('modal')) $('modal').hidden = true; });
+addEventListener('keydown', e => { if (e.key === 'Escape') $('modal').hidden = true; });
+$('presentBtn').addEventListener('click', () => { S.present = !S.present; document.body.classList.toggle('present', S.present); chrome(); });
+$('copyUrl').addEventListener('click', async () => { const b = $('copyUrl'); try { await navigator.clipboard.writeText(studentUrl()); b.textContent = t().urlCopied; } catch (e) { /* select by hand */ } setTimeout(() => { b.textContent = t().copyUrl; }, 1500); });
+$('leave').addEventListener('click', () => { clearTimeout(S.timer); S.cls = ''; try { localStorage.removeItem(LS); } catch (e) { /* none */ } show('login'); $('key').value = ''; });
+document.addEventListener('click', e => {
+  const lb = e.target.closest('[data-lang]');
+  if (lb) { LANG = lb.dataset.lang; try { localStorage.setItem('qa.tlang', LANG); } catch (er) { /* none */ } chrome(); return; }
+  const el = e.target.closest('[data-act]');
+  if (!el) { if (S.armed) { S.armed = null; drawBank(); drawCur(); } return; }
+  const a = el.dataset.act, id = el.dataset.id, it = S.items.find(i => i.id === id);
+  if (a !== 'del' && a !== 'restart' && S.armed) { S.armed = null; }
+  if (a === 'pub' && it) publish(Object.assign({}, it, { run: newRun(), open: true }));
+  else if (a === 'edit' && it) openForm(it);
+  else if (a === 'del') {
+    if (S.armed !== 'del:' + id) { S.armed = 'del:' + id; drawBank(); return; }
+    S.armed = null; call({ action: 'delq', id }).then(j => { S.items = j.items || []; drawBank(); }).catch(() => alertMsg(t().failed));
+  }
+  else if (a === 'toggleOpen' && S.live) publish(Object.assign({}, S.live, { open: !S.live.open }));
+  else if (a === 'hide') { S.hidden = !S.hidden; drawCur(); }
+  else if (a === 'names') { S.names = !S.names; drawCur(); }
+  else if (a === 'restart' && S.live) { if (S.armed !== 'restart') { S.armed = 'restart'; drawCur(); return; } publish(Object.assign({}, S.live, { run: newRun(), open: true })); }
+  else if (a === 'stop') publish(null);
+});
+
+chrome();
+if (!SYNC_URL) show('needSetup');
+else {
+  show('login');
+  const qs = new URLSearchParams(location.search);
+  let saved = null; try { saved = JSON.parse(localStorage.getItem(LS) || 'null'); } catch (e) { saved = null; }
+  const pre = normClass(qs.get('class') || (saved && saved.cls) || '');
+  if (pre) $('cls').value = pre;
+  if (saved && saved.cls && saved.cls === pre) { $('key').value = saved.key || ''; connect(saved.cls, saved.key || '', true); }
+}
+window.__qat = S;
+})();
+</script>
+</body>
+</html>

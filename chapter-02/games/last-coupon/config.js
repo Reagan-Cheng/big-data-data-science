@@ -1,6 +1,6 @@
 // 課堂同步設定 / Class-mode settings
-// 把 Apps Script 部署後得到的網址（結尾是 /exec）貼在引號裡。
-// 留空時，遊戲和教師頁都不會連線，遊戲以單機方式進行。
+// 網址現在統一寫在網站的 assets/class-sync.js，所有課堂互動共用同一個後端。
+// The address now lives in assets/class-sync.js, shared by every class activity.
 window.LAST_COUPON_CONFIG = {
-  syncUrl: 'https://script.google.com/macros/s/AKfycbyXdc2fktcCFNvD1EyxZueQRF1rsN9woyPQARqV9_xioL82QvlhGaJSWuwG57bN304O/exec'
+  syncUrl: (window.CLASS_SYNC && window.CLASS_SYNC.syncUrl) || ''
 };

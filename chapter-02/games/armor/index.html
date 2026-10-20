@@ -154,7 +154,7 @@ ol.qs li{margin:14px 0;font-size:19px}
 </header>
 <main id="main"></main>
 
-<script src="../last-coupon/config.js"></script>
+<script src="../../../assets/class-sync.js"></script>
 <script>
 (() => {
 'use strict';
@@ -406,8 +406,8 @@ const BASE = flyCount(MISSION, []);
 const back = PAST.filter(p => survives(p, [])), down = PAST.filter(p => !survives(p, []));
 const holesBack = back.flat(), holesLost = down.flat();
 const count = (hs, z) => hs.filter(h => h.z === z).length;
-/* ---------- class voting: only with ?class=CODE and an address in ../last-coupon/config.js ---------- */
-const CFG = window.LAST_COUPON_CONFIG || {};
+/* ---------- class voting: only with ?class=CODE and an address in assets/class-sync.js ---------- */
+const CFG = window.CLASS_SYNC || {};
 const SYNC_URL = /^https?:\/\//.test(CFG.syncUrl || '') ? CFG.syncUrl : '';
 const CLS = (qs.get('class') || '').toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 20);
 const CLASS = !!(SYNC_URL && CLS);

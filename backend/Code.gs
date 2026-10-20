@@ -1,16 +1,19 @@
 /**
- * 最後一張優惠券｜課堂同步後端（Google Apps Script）
+ * 課堂同步後端（Google Apps Script）
+ * 服務：課堂即時問答（qa/）、裝甲該裝在哪裡？投票、最後一張優惠券班級模式。
  *
  * 用法：在一份 Google 試算表裡開啟「擴充功能 → Apps Script」，把這個檔案的
  * 全部內容貼上，然後「部署 → 新增部署作業 → 網頁應用程式」：
  *   執行身分：我
  *   誰可以存取：所有人
- * 部署後得到的網址（結尾是 /exec）填進遊戲資料夾的 config.js。
+ * 部署後得到的網址（結尾是 /exec）填進網站的 assets/class-sync.js。
  *
  * 這支程式會自動在試算表裡建立這些分頁：
  *   各組提交：最後一張優惠券，每一組每一季一列（重複送出會覆蓋同一列）
  *   放行　　：最後一張優惠券，每個班級目前開放到第幾階段
- *   投票　　：其他課堂活動（例如「裝甲該裝在哪裡？」）各組的投票，每組每題一列
+ *   投票　　：課堂問答與其他活動的回答，每人（或每組）每題一列
+ *   問答發布：每個班級目前發布的題目
+ *   題庫　　：教師存下來的題目（所有班級共用）
  *   設定　　：教師密碼（第一次執行時自動產生，可以直接改）
  *
  * 更新程式碼後，要到「部署 → 管理部署作業 → 編輯（鉛筆）→ 版本：新版本 → 部署」，
@@ -22,7 +25,7 @@
  * @OnlyCurrentDoc
  */
 
-var VERSION = 2;
+var VERSION = 3;
 var TAB_SUB = '各組提交';
 var TAB_GATE = '放行';
 var TAB_CFG = '設定';
@@ -34,6 +37,11 @@ var KEY_COL = 15;
 var TAB_VOTE = '投票';
 var VOTE_HEAD = ['時間', '班級', '活動', '組名', '裝置代碼', '題目', '選擇', '語言', '索引鍵'];
 var VOTE_KEY_COL = 9;
+var TAB_LIVE = '問答發布';
+var LIVE_HEAD = ['班級', '目前題目（JSON）', '更新時間'];
+var TAB_BANK = '題庫';
+var BANK_HEAD = ['編號', '題型', '題目', '內容（JSON）', '更新時間'];
+var QTYPES = ['single', 'multi', 'text', 'words', 'scale'];
 
 function doGet(e) { return handle_((e && e.parameter) || {}); }
 
@@ -47,10 +55,21 @@ function handle_(p) {
   try {
     var a = String(p.action || 'ping');
     if (a === 'ping') return out_({ ok: true, v: VERSION });
+    if (a === 'bank' || a === 'saveq' || a === 'delq') {
+      if (String(p.key || '') !== teacherKey_()) return out_({ ok: false, error: 'bad key' });
+      if (a === 'saveq') saveQ_(p.item);
+      if (a === 'delq') delQ_(p.id);
+      return out_({ ok: true, items: bank_() });
+    }
     var cls = cls_(p.cls);
     if (!cls) return out_({ ok: false, error: 'no class' });
     if (a === 'gate') return out_({ ok: true, open: getGate_(cls) });
     if (a === 'vote') return out_(vote_(cls, p));
+    if (a === 'live') return out_({ ok: true, q: getLive_(cls) });
+    if (a === 'publish') {
+      if (String(p.key || '') !== teacherKey_()) return out_({ ok: false, error: 'bad key' });
+      return out_({ ok: true, q: setLive_(cls, p.q) });
+    }
     if (a === 'votes') {
       if (String(p.key || '') !== teacherKey_()) return out_({ ok: false, error: 'bad key' });
       return out_(votes_(cls, p));
@@ -193,7 +212,7 @@ function vote_(cls, p) {
   var tid = String(p.tid || '').replace(/[^a-z0-9]/gi, '').slice(0, 16);
   if (!tid) return { ok: false, error: 'no team id' };
   var key = cls + '|' + act + '|' + tid + '|' + q;
-  var values = [[new Date(), cls, act, text_(p.team, 40), tid, q, text_(p.v, 200), text_(p.lang, 5), key]];
+  var values = [[new Date(), cls, act, text_(p.team, 40), tid, q, text_(p.v, 600), text_(p.lang, 5), key]];
   var lock = LockService.getScriptLock();
   lock.waitLock(15000);
   try {
@@ -215,9 +234,95 @@ function votes_(cls, p) {
     var v = sh.getRange(2, 1, last - 1, VOTE_HEAD.length).getValues();
     for (var i = 0; i < v.length; i++) {
       var r = v[i];
-      if (String(r[1]) !== cls || (act && String(r[2]) !== act)) continue;
+      if (String(r[1]) !== cls || (act && String(r[2]) !== act) || (p.q && String(r[5]) !== act_(p.q))) continue;
       rows.push({ t: r[0] && r[0].getTime ? r[0].getTime() : 0, team: String(r[3]), tid: String(r[4]), q: String(r[5]), v: String(r[6]), lang: String(r[7]) });
     }
   }
   return { ok: true, v: VERSION, cls: cls, rows: rows, now: new Date().getTime() };
+}
+
+/* ---------- 課堂即時問答：題目 ---------- */
+function str_(v, n) { return String(v == null ? '' : v).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '').slice(0, n); }
+function cleanQ_(q) {
+  if (typeof q === 'string') { try { q = JSON.parse(q); } catch (e) { q = null; } }
+  if (!q || typeof q !== 'object') return null;
+  var type = QTYPES.indexOf(String(q.type)) >= 0 ? String(q.type) : 'text';
+  var opts = [];
+  if (q.opts && q.opts.length) for (var i = 0; i < q.opts.length && opts.length < 8; i++) { var o = str_(q.opts[i], 120).trim(); if (o) opts.push(o); }
+  return {
+    id: act_(q.id) || 'adhoc', run: act_(q.run) || '', type: type, text: str_(q.text, 500), opts: opts,
+    lo: str_(q.lo, 40), hi: str_(q.hi, 40), open: q.open !== false
+  };
+}
+function getLive_(cls) {
+  var cache = CacheService.getScriptCache(), hit = cache.get('live:' + cls);
+  if (hit) return hit === 'null' ? null : JSON.parse(hit);
+  var sh = tab_(TAB_LIVE, LIVE_HEAD), last = sh.getLastRow(), q = null;
+  if (last > 1) {
+    var rows = sh.getRange(2, 1, last - 1, 2).getValues();
+    for (var i = 0; i < rows.length; i++) if (String(rows[i][0]) === cls) { try { q = JSON.parse(String(rows[i][1])); } catch (e) { q = null; } break; }
+  }
+  cache.put('live:' + cls, q ? JSON.stringify(q) : 'null', 21600);
+  return q;
+}
+function setLive_(cls, raw) {
+  var q = cleanQ_(raw);
+  var lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    var sh = tab_(TAB_LIVE, LIVE_HEAD), last = sh.getLastRow(), row = last + 1;
+    if (last > 1) {
+      var rows = sh.getRange(2, 1, last - 1, 1).getValues();
+      for (var i = 0; i < rows.length; i++) if (String(rows[i][0]) === cls) { row = i + 2; break; }
+    }
+    sh.getRange(row, 1, 1, 3).setValues([[cls, q ? "'" + JSON.stringify(q) : '', new Date()]]);
+    CacheService.getScriptCache().put('live:' + cls, q ? JSON.stringify(q) : 'null', 21600);
+  } finally {
+    lock.releaseLock();
+  }
+  return q;
+}
+
+/* ---------- 課堂即時問答：題庫 ---------- */
+function bank_() {
+  var sh = tab_(TAB_BANK, BANK_HEAD), last = sh.getLastRow(), items = [];
+  if (last > 1) {
+    var v = sh.getRange(2, 1, last - 1, 4).getValues();
+    for (var i = 0; i < v.length; i++) {
+      if (!String(v[i][0])) continue;
+      var extra = {}; try { extra = JSON.parse(String(v[i][3])) || {}; } catch (e) { extra = {}; }
+      items.push({ id: String(v[i][0]), type: String(v[i][1]), text: String(v[i][2]), opts: extra.opts || [], lo: extra.lo || '', hi: extra.hi || '' });
+    }
+  }
+  return items;
+}
+function saveQ_(raw) {
+  var q = cleanQ_(raw); if (!q || !q.text) return;
+  if (!q.id || q.id === 'adhoc') q.id = 'q' + new Date().getTime().toString(36) + Math.floor(Math.random() * 1296).toString(36);
+  var lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    var sh = tab_(TAB_BANK, BANK_HEAD), last = sh.getLastRow(), row = last + 1;
+    if (last > 1) {
+      var ids = sh.getRange(2, 1, last - 1, 1).getValues();
+      for (var i = 0; i < ids.length; i++) if (String(ids[i][0]) === q.id) { row = i + 2; break; }
+    }
+    sh.getRange(row, 1, 1, 5).setValues([[q.id, q.type, text_(q.text, 500), "'" + JSON.stringify({ opts: q.opts, lo: q.lo, hi: q.hi }), new Date()]]);
+  } finally {
+    lock.releaseLock();
+  }
+}
+function delQ_(id) {
+  id = act_(id); if (!id) return;
+  var lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    var sh = tab_(TAB_BANK, BANK_HEAD), last = sh.getLastRow();
+    if (last > 1) {
+      var ids = sh.getRange(2, 1, last - 1, 1).getValues();
+      for (var i = ids.length - 1; i >= 0; i--) if (String(ids[i][0]) === id) sh.deleteRow(i + 2);
+    }
+  } finally {
+    lock.releaseLock();
+  }
 }

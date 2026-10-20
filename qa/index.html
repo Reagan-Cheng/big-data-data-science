@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#102a56">
+<title>課堂即時問答 | Live Class Q&amp;A</title>
+<meta name="description" content="大數據與資料科學課堂即時問答：輸入班級代碼，回答老師發布的題目。Live class Q&A: join with your class code and answer your teacher's question.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%23102a56%22/%3E%3Cpath%20d%3D%22M7%209h18v11H14l-5%204v-4H7z%22%20fill%3D%22%23ffffff%22/%3E%3C/svg%3E">
+<!-- ============================================================
+     課堂即時問答｜學生頁 · Live Class Q&A (students)
+     學生用老師給的網址（?class=班級代碼）進入，畫面會自動換成老師目前發布的題目。
+     回答存在教師的 Google 試算表；連線位址在 ../assets/class-sync.js。
+     ============================================================ -->
+<style>
+:root{--bg:#f3f1ec;--panel:#fff;--ink:#1b2433;--ink2:#4d5869;--ink3:#6f7988;--line:#dcd8cf;--navy:#102a56;--blue:#1f5fb8;--blue-wash:#e8f0fc;--good:#127a3d;--good-wash:#e6f5ec;--bad:#b4232c;--armor:#f2b705;--tap:52px}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",Arial,sans-serif;line-height:1.6;font-size:19px}
+html[lang="zh-Hant"] body{line-height:1.7}
+button,input,textarea{font:inherit;color:inherit}
+h1,h2,p{margin:0}
+:focus-visible{outline:3px solid var(--armor);outline-offset:2px;border-radius:6px}
+[hidden]{display:none!important}
+.top{position:sticky;top:0;z-index:5;background:var(--navy);color:#fff;min-height:calc(52px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 12px 0;display:flex;align-items:center;gap:10px}
+.top .name{font-weight:800;font-size:17px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill{font-size:13px;font-weight:700;border-radius:999px;padding:3px 10px;background:rgba(255,255,255,.16);white-space:nowrap}
+.pill.ok{background:var(--good)} .pill.bad{background:var(--bad)}
+.lang{display:flex;border:1px solid rgba(255,255,255,.5);border-radius:999px;overflow:hidden;flex-shrink:0}
+.lang button{border:0;background:transparent;color:#fff;padding:4px 12px;font-size:15px;cursor:pointer;min-height:36px}
+.lang button[aria-pressed="true"]{background:#fff;color:var(--navy);font-weight:700}
+main{max-width:680px;margin:0 auto;padding:18px 16px 48px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px}
+.stack>*+*{margin-top:14px}
+.kicker{font-size:15px;font-weight:800;color:var(--blue)}
+.q{font-size:clamp(22px,5.6vw,28px);font-weight:900;line-height:1.4;margin-top:4px;white-space:pre-wrap;overflow-wrap:anywhere}
+.small{font-size:15px;color:var(--ink3)}
+label.f{display:block;font-weight:800;margin-bottom:6px}
+input[type=text],textarea{width:100%;border:2px solid var(--ink3);border-radius:12px;padding:12px 14px;background:#fff;font-size:19px}
+textarea{min-height:140px;resize:vertical}
+.btn{border:0;border-radius:14px;background:var(--blue);color:#fff;font-weight:800;padding:14px 22px;min-height:var(--tap);cursor:pointer;font-size:19px;width:100%}
+.btn:hover{background:var(--navy)}
+.btn[disabled]{background:#b8c0cc;cursor:not-allowed}
+.link{background:none;border:0;color:var(--blue);text-decoration:underline;cursor:pointer;padding:6px 0;font-size:15px}
+.opts{display:grid;gap:10px}
+.opt{display:flex;gap:12px;align-items:center;border:2px solid var(--line);background:#fff;border-radius:14px;padding:12px 14px;cursor:pointer;min-height:var(--tap);text-align:left;width:100%;font-size:19px;line-height:1.45}
+.opt:hover{border-color:var(--blue)}
+.opt .mk{flex:0 0 auto;width:26px;height:26px;border:2px solid var(--ink3);border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:15px;color:#fff}
+.opt.multi .mk{border-radius:7px}
+.opt[aria-pressed="true"]{border-color:var(--blue);background:var(--blue-wash)}
+.opt[aria-pressed="true"] .mk{background:var(--blue);border-color:var(--blue)}
+.scale{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.scale button{border:2px solid var(--line);background:#fff;border-radius:14px;min-height:64px;font-size:26px;font-weight:900;cursor:pointer}
+.scale button[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.ends{display:flex;justify-content:space-between;gap:10px;font-size:15px;color:var(--ink2);margin-top:6px}
+.words{display:grid;gap:8px}
+.count{font-size:14px;color:var(--ink3);text-align:right}
+.done{background:var(--good-wash);border-radius:14px;padding:14px;font-weight:800;color:var(--good)}
+.wait{text-align:center;padding:36px 12px}
+.dots{display:inline-flex;gap:8px;margin-top:14px}
+.dots i{width:12px;height:12px;border-radius:50%;background:var(--blue);opacity:.25;animation:blink 1.2s infinite}
+.dots i:nth-child(2){animation-delay:.2s}.dots i:nth-child(3){animation-delay:.4s}
+@keyframes blink{50%{opacity:1}}
+.who{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:15px;color:var(--ink2);margin-bottom:10px;flex-wrap:wrap}
+.who b{color:var(--ink)}
+.err{color:var(--bad);font-weight:700;font-size:16px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="name" id="appname"></div>
+  <span class="pill" id="sync" hidden role="status"></span>
+  <div class="lang" role="group" aria-label="Language 語言">
+    <button type="button" data-lang="zh">中文</button>
+    <button type="button" data-lang="en">EN</button>
+  </div>
+</header>
+<main id="main"></main>
+
+<script src="../assets/class-sync.js"></script>
+<script>
+(() => {
+'use strict';
+const T = {
+  zh: {
+    app: '課堂即時問答',
+    noSetup: '老師還沒有設定問答系統，請稍後再試。',
+    joinH: '加入課堂問答',
+    clsL: '班級代碼（老師會給你）', clsPh: '例如 MON',
+    nameL: '你的名字或組名（老師會看到）', namePh: '例如：王小明／第 3 組',
+    join: '加入', change: '換名字或班級',
+    you: (n, c) => `${n}・班級 ${c}`,
+    waitH: '等待老師發布題目', waitP: '題目發布後會自動出現在這裡，不用重新整理。',
+    closed: '老師已經關閉這一題的作答。', closedSent: '老師已經關閉這一題的作答，你的回答已經送出。',
+    pickOne: '選一個答案', pickMany: '可以選多個答案', typeIt: '輸入你的回答', wordsIt: '輸入 1～3 個詞（每格一個）', rateIt: '選一個分數',
+    word: n => `詞 ${n}`,
+    send: '送出', resend: '更新我的回答', sending: '傳送中…',
+    sent: '已送出 ✓ 想改的話，改完再按一次「更新我的回答」。',
+    sOk: '已送出 ✓', sBusy: '傳送中…', sBad: '尚未送出，自動重試中', offline: '連不上伺服器，正在重試⋯⋯',
+    left: n => `還可以輸入 ${n} 字`
+  },
+  en: {
+    app: 'Live Class Q&A',
+    noSetup: 'Your teacher has not set up the Q&A system yet. Please try again later.',
+    joinH: 'Join the class Q&A',
+    clsL: 'Class code (from your teacher)', clsPh: 'e.g. MON',
+    nameL: 'Your name or team name (your teacher will see it)', namePh: 'e.g. Amy / Team 3',
+    join: 'Join', change: 'Change name or class',
+    you: (n, c) => `${n} · class ${c}`,
+    waitH: 'Waiting for your teacher’s question', waitP: 'It will appear here by itself. No need to refresh.',
+    closed: 'Your teacher has closed this question.', closedSent: 'Your teacher has closed this question. Your answer was sent.',
+    pickOne: 'Pick one answer', pickMany: 'Pick all that apply', typeIt: 'Type your answer', wordsIt: 'Type 1 to 3 words (one per box)', rateIt: 'Pick a score',
+    word: n => `Word ${n}`,
+    send: 'Send', resend: 'Update my answer', sending: 'Sending…',
+    sent: 'Sent ✓ To change it, edit and press “Update my answer” again.',
+    sOk: 'Sent ✓', sBusy: 'Sending…', sBad: 'Not sent yet, retrying', offline: 'Cannot reach the server, retrying…',
+    left: n => `${n} characters left`
+  }
+};
+const MAXTEXT = 300, MAXWORD = 24;
+const qs = new URLSearchParams(location.search);
+const store = { get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* no storage */ } } };
+let LANG = store.get('qa.lang', '');
+if (qs.get('lang') === 'en' || qs.get('lang') === 'zh') LANG = qs.get('lang');
+LANG = LANG === 'en' || LANG === 'zh' ? LANG : (/^zh/i.test(navigator.language || 'zh') ? 'zh' : 'en');
+const t = () => T[LANG];
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const SYNC_URL = /^https?:\/\//.test((window.CLASS_SYNC || {}).syncUrl || '') ? window.CLASS_SYNC.syncUrl : '';
+const normClass = v => String(v || '').toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 20);
+let CLS = normClass(qs.get('class') || store.get('qa.cls', ''));
+let NAME = store.get('qa.name', '');
+let TID = store.get('qa.tid', '');
+if (!/^[a-z0-9]{8,16}$/.test(TID)) { TID = (Math.random().toString(36).slice(2, 10) + Date.now().toString(36)).replace(/[^a-z0-9]/g, '').slice(0, 14); store.set('qa.tid', TID); }
+const S = { joined: !!(CLS && NAME), q: null, draft: null, sentRun: null, pending: null, sync: '', net: true, editing: false };
+const key = run => `qa.ans.${CLS}.${run}`;
+
+async function call(payload) {
+  const r = await fetch(SYNC_URL, { method: 'POST', body: JSON.stringify(Object.assign({ cls: CLS }, payload)) });   // text/plain: no preflight
+  const j = await r.json(); if (!j.ok) throw new Error(j.error || 'refused'); return j;
+}
+
+/* ---------- polling the live question ---------- */
+let pollTimer = 0;
+async function poll() {
+  clearTimeout(pollTimer);
+  if (!S.joined || !SYNC_URL) return;
+  if (document.visibilityState === 'visible') {
+    try {
+      const j = await call({ action: 'live' });
+      S.net = true;
+      const q = j.q, was = S.q;
+      const changed = JSON.stringify(q) !== JSON.stringify(was);
+      if (changed) {
+        const sameRun = q && was && q.run === was.run;
+        S.q = q;
+        if (q && !sameRun) { const prev = store.get(key(q.run), null); S.draft = prev != null ? decode(q, prev) : blank(q); S.sentRun = prev != null ? q.run : null; S.editing = false; }
+        render();
+      } else if (!S.net) render();
+    } catch (e) { if (S.net) { S.net = false; render(); } }
+  }
+  pollTimer = setTimeout(poll, 4000 + Math.random() * 1500);
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') poll(); });
+
+/* ---------- answers ---------- */
+function blank(q) { return q.type === 'multi' ? [] : q.type === 'words' ? ['', '', ''] : q.type === 'text' ? '' : null; }
+function decode(q, v) {
+  if (q.type === 'single' || q.type === 'scale') return v === '' ? null : Number(v);
+  if (q.type === 'multi') return v ? v.split(',').map(Number) : [];
+  if (q.type === 'words') { const w = v.split('|'); while (w.length < 3) w.push(''); return w.slice(0, 3); }
+  return v;
+}
+function encode(q, d) {
+  if (q.type === 'single' || q.type === 'scale') return d == null ? '' : String(d);
+  if (q.type === 'multi') return d.slice().sort((a, b) => a - b).join(',');
+  if (q.type === 'words') return d.map(w => w.replace(/\|/g, ' ').trim().slice(0, MAXWORD)).filter(Boolean).join('|');
+  return String(d || '').trim().slice(0, MAXTEXT);
+}
+const filled = (q, d) => encode(q, d) !== '';
+async function send() {
+  const q = S.q; if (!q || !q.open) return;
+  const v = encode(q, S.draft); if (!v) return;
+  S.pending = { run: q.run, v }; store.set(key(q.run), v); flush();
+}
+let retry = 0;
+async function flush() {
+  clearTimeout(retry);
+  if (!S.pending) return;
+  const p = S.pending; S.sync = 'busy'; drawSync();
+  try {
+    await call({ action: 'vote', act: 'qa', tid: TID, team: NAME, q: p.run, v: p.v, lang: LANG });
+    if (S.pending === p) S.pending = null;
+    S.sentRun = p.run; S.sync = 'ok'; S.editing = false;
+  } catch (e) { S.sync = 'bad'; retry = setTimeout(flush, 4000); }
+  drawSync(); render();
+}
+addEventListener('online', flush);
+function drawSync() {
+  const el = $('sync');
+  el.hidden = !S.sync;
+  el.className = 'pill ' + (S.sync === 'ok' ? 'ok' : S.sync === 'bad' ? 'bad' : '');
+  el.textContent = S.sync === 'ok' ? t().sOk : S.sync === 'busy' ? t().sBusy : t().sBad;
+}
+
+/* ---------- views ---------- */
+function vJoin() {
+  const X = t();
+  return `<div class="card stack"><h1 style="font-size:26px">${X.joinH}</h1>
+    <div><label class="f" for="cls">${X.clsL}</label><input type="text" id="cls" maxlength="20" autocomplete="off" autocapitalize="characters" placeholder="${esc(X.clsPh)}" value="${esc(CLS)}"></div>
+    <div><label class="f" for="nm">${X.nameL}</label><input type="text" id="nm" maxlength="30" autocomplete="off" placeholder="${esc(X.namePh)}" value="${esc(NAME)}"></div>
+    <button type="button" class="btn" data-act="join" id="joinBtn" ${normClass(CLS) && NAME.trim() ? '' : 'disabled'}>${X.join}</button></div>`;
+}
+function vQuestion() {
+  const X = t(), q = S.q, d = S.draft, sent = S.sentRun === q.run && !S.pending, ro = !q.open;
+  let body = '', hint = '';
+  if (q.type === 'single' || q.type === 'multi') {
+    hint = q.type === 'single' ? X.pickOne : X.pickMany;
+    body = `<div class="opts" role="${q.type === 'single' ? 'radiogroup' : 'group'}">${q.opts.map((o, i) => { const on = q.type === 'single' ? d === i : d.includes(i); return `<button type="button" class="opt ${q.type}" data-act="opt" data-v="${i}" aria-pressed="${on}" ${ro ? 'disabled' : ''}><span class="mk">${on ? '✓' : ''}</span><span>${esc(o)}</span></button>`; }).join('')}</div>`;
+  } else if (q.type === 'scale') {
+    hint = X.rateIt;
+    body = `<div class="scale" role="radiogroup">${[1, 2, 3, 4, 5].map(n => `<button type="button" data-act="rate" data-v="${n}" aria-pressed="${d === n}" ${ro ? 'disabled' : ''}>${n}</button>`).join('')}</div>
+      ${q.lo || q.hi ? `<div class="ends"><span>1 ${esc(q.lo)}</span><span>${esc(q.hi)} 5</span></div>` : ''}`;
+  } else if (q.type === 'words') {
+    hint = X.wordsIt;
+    body = `<div class="words">${d.map((w, i) => `<input type="text" data-word="${i}" maxlength="${MAXWORD}" aria-label="${esc(X.word(i + 1))}" placeholder="${esc(X.word(i + 1))}" value="${esc(w)}" ${ro ? 'disabled' : ''}>`).join('')}</div>`;
+  } else {
+    hint = X.typeIt;
+    body = `<textarea id="ta" maxlength="${MAXTEXT}" aria-label="${esc(X.typeIt)}" ${ro ? 'disabled' : ''}>${esc(d)}</textarea><div class="count" id="cnt">${X.left(MAXTEXT - String(d).length)}</div>`;
+  }
+  return `<div class="card stack"><div><p class="kicker">${esc(hint)}</p><h1 class="q">${esc(q.text)}</h1></div>${body}
+    ${ro ? `<p class="done" style="background:#fff4e0;color:#a15c00">${sent ? X.closedSent : X.closed}</p>`
+      : `${sent ? `<p class="done">${X.sent}</p>` : ''}<button type="button" class="btn" data-act="send" id="sendBtn" ${filled(q, d) && !(sent && !S.editing) ? '' : 'disabled'}>${S.pending ? X.sending : sent ? X.resend : X.send}</button>`}</div>`;
+}
+function vWait() {
+  const X = t();
+  return `<div class="card wait"><h1 style="font-size:24px">${X.waitH}</h1><p class="small" style="margin-top:8px">${X.waitP}</p><div class="dots" aria-hidden="true"><i></i><i></i><i></i></div></div>`;
+}
+function render() {
+  const X = t();
+  document.documentElement.lang = LANG === 'zh' ? 'zh-Hant' : 'en';
+  document.title = X.app; $('appname').textContent = X.app;
+  document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === LANG)));
+  const focused = document.activeElement && document.activeElement.id;
+  let html;
+  if (!SYNC_URL) html = `<div class="card"><p>${X.noSetup}</p></div>`;
+  else if (!S.joined) html = vJoin();
+  else html = `<div class="who"><span>${esc(X.you(NAME, CLS))}</span><button type="button" class="link" data-act="leave">${X.change}</button></div>
+    ${S.net ? '' : `<p class="err" style="margin-bottom:10px">${X.offline}</p>`}${S.q ? vQuestion() : vWait()}`;
+  $('main').innerHTML = html;
+  drawSync();
+  if (focused && $(focused)) { const el = $(focused); el.focus(); if (el.setSelectionRange && el.value) el.setSelectionRange(el.value.length, el.value.length); }
+}
+// typing should not re-render the whole page (it would lose the caret)
+document.addEventListener('input', e => {
+  const X = t();
+  if (e.target.id === 'cls' || e.target.id === 'nm') { const b = $('joinBtn'); if (b) b.disabled = !(normClass($('cls').value) && $('nm').value.trim()); return; }
+  if (!S.q) return;
+  if (e.target.id === 'ta') { S.draft = e.target.value; $('cnt').textContent = X.left(MAXTEXT - e.target.value.length); }
+  if (e.target.dataset.word != null) S.draft[+e.target.dataset.word] = e.target.value;
+  S.editing = true;
+  const b = $('sendBtn'); if (b) { b.disabled = !filled(S.q, S.draft); }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.target.id === 'cls' || e.target.id === 'nm')) { const b = $('joinBtn'); if (b && !b.disabled) b.click(); } });
+document.addEventListener('click', e => {
+  const lb = e.target.closest('[data-lang]');
+  if (lb) { LANG = lb.dataset.lang; store.set('qa.lang', LANG); render(); return; }
+  const el = e.target.closest('[data-act]'); if (!el || el.disabled) return;
+  const a = el.dataset.act, v = +el.dataset.v;
+  if (a === 'join') {
+    const c = normClass($('cls').value), n = $('nm').value.trim().slice(0, 30); if (!c || !n) return;
+    CLS = c; NAME = n; store.set('qa.cls', CLS); store.set('qa.name', NAME); S.joined = true; S.q = null; render(); poll();
+    if (normClass(qs.get('class')) !== CLS) { const u = new URL(location.href); u.searchParams.set('class', CLS); history.replaceState(null, '', u); }
+  }
+  else if (a === 'leave') { S.joined = false; clearTimeout(pollTimer); render(); }
+  else if (a === 'opt') { if (S.q.type === 'single') S.draft = v; else { const i = S.draft.indexOf(v); if (i >= 0) S.draft.splice(i, 1); else S.draft.push(v); } S.editing = true; render(); }
+  else if (a === 'rate') { S.draft = v; S.editing = true; render(); }
+  else if (a === 'send') send();
+});
+render();
+poll();
+window.__qa = { get S() { return S; }, get CLS() { return CLS; } };
+})();
+</script>
+</body>
+</html>
