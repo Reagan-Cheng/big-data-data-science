@@ -3,5 +3,5 @@
 // 把 Apps Script 部署後得到的網址（結尾是 /exec）貼在引號裡；留空時這些功能都不會連線。
 // Paste the Apps Script web-app address (ending in /exec) here. Leave it empty to stay offline.
 window.CLASS_SYNC = {
-  syncUrl: 'https://script.google.com/macros/s/AKfycbyXdc2fktcCFNvD1EyxZueQRF1rsN9woyPQARqV9_xioL82QvlhGaJSWuwG57bN304O/exec'
+  syncUrl: 'https://script.google.com/macros/s/AKfycbye8KH3EoU6KF7FPVWL6qOEW7n-F6b2H9C7BSe7VAlCKimNzmgsTX5rSOLLOGfXVrQ/exec'
 };
