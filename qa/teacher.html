@@ -120,8 +120,7 @@ details{margin-top:24px} summary{cursor:pointer;font-weight:700;color:var(--blue
   <section id="login" hidden>
     <h2 style="font-size:24px" data-t="loginH"></h2>
     <form class="row" id="loginForm" style="margin-top:10px;align-items:flex-end">
-      <label class="f"><span data-t="clsL"></span><input type="text" id="cls" maxlength="20" placeholder="MON" autocomplete="off" required></label>
-      <label class="f"><span data-t="keyL"></span><input type="password" id="key" autocomplete="off" required></label>
+      <label class="f"><span data-t="keyL"></span><input type="password" id="key" autocomplete="current-password" required minlength="4"></label>
       <button class="btn" type="submit" data-t="connect"></button>
       <span class="msg" id="loginMsg" role="status" aria-live="polite"></span>
     </form>
@@ -174,14 +173,14 @@ const T = {
       ['在試算表按「擴充功能 → Apps Script」，把程式碼全部刪掉，貼上後端程式碼。', ['copy', '複製後端程式碼']],
       ['第一次：按「部署 → 新增部署作業」，類型選「網頁應用程式」，執行身分「我」，誰可以存取「所有人」，按「部署」並依畫面授權。之後更新：按「部署 → 管理部署作業 → 編輯（鉛筆）→ 版本選『新版本』→ 部署」，網址不會變。'],
       ['第一次部署時，把結尾是 ', ['code', '/exec'], ' 的網址貼進網站的 ', ['code', 'assets/class-sync.js'], '，再推送到 GitHub。'],
-      ['回到這一頁，輸入班級代碼和任意密碼按一次「連線」，試算表會出現「設定」分頁，裡面就是教師密碼。']
+      ['回到這一頁輸入您想用的教師密碼（至少 4 個字元）登入。第一次登入的密碼會存在試算表的「設定」分頁，之後都用這組密碼。']
     ],
     copyCode: '複製後端程式碼', copied: '已複製，可以貼到 Apps Script', copyFail: '無法自動複製，已開啟程式碼檔案',
-    loginH: '連線到班級', clsL: '班級代碼', keyL: '教師密碼', connect: '連線', connecting: '連線中…',
-    loginP: '班級代碼由您自訂（英文字母、數字、底線、連字號），例如週一班 MON、週五班 FRI。教師密碼在試算表的「設定」分頁。',
-    badKey: '密碼不對。請到試算表的「設定」分頁查看教師密碼。', oldBackend: '試算表的後端是舊版本，還不支援課堂問答。請依下方步驟貼上新版程式碼並部署「新版本」。', noConn: '連不上試算表。請確認 Apps Script 已授權並部署，且「誰可以存取」選了「所有人」。', needCls: '請輸入班級代碼（英文字母或數字）。',
-    clsTitle: c => `班級 ${c}`, joinCode: c => `掃描加入・班級 ${c}`, qrBtn: '放大 QR Code', present: '投影模式', presentOff: '結束投影', copyUrl: '複製學生網址', urlCopied: '已複製', leave: '換班級',
-    mTitle: c => `掃描加入課堂問答・班級 ${c}`, mClose: '關閉',
+    loginH: '教師登入', keyL: '教師密碼', connect: '登入', connecting: '登入中…',
+    loginP: '第一次使用時，您輸入的密碼（至少 4 個字元）就會成為教師密碼，存在試算表的「設定」分頁，可以在那裡修改。這台電腦會記住密碼，下次打開就直接進入。',
+    badKey: '密碼不對（至少 4 個字元）。忘記的話，到試算表的「設定」分頁查看或修改。', oldBackend: '試算表的後端是舊版本，還不支援課堂問答。請依下方步驟貼上新版程式碼並部署「新版本」。', noConn: '連不上試算表。請確認 Apps Script 已授權並部署，且「誰可以存取」選了「所有人」。', needCls: '請輸入班級代碼（英文字母或數字）。',
+    clsTitle: c => c === 'ALL' ? '課堂即時問答' : `班級 ${c}`, joinCode: c => '學生掃描加入', qrBtn: '放大 QR Code', present: '投影模式', presentOff: '結束投影', copyUrl: '複製學生網址', urlCopied: '已複製', leave: '登出',
+    mTitle: c => '掃描加入課堂問答', mClose: '關閉',
     bankH: '題庫', newQ: '＋ 新增題目', typeL: '題型', textL: '題目', optsL: '選項（一行一個，最多 8 個）', optsP: '單選、多選才需要選項。', loL: '1 分代表', hiL: '5 分代表',
     savePub: '存入題庫並發布', saveOnly: '只存入題庫', pubOnly: '只發布（不存）', cancel: '取消', update: '更新題目', updatePub: '更新並發布',
     needText: '請先輸入題目。', needOpts: '單選、多選至少要 2 個選項。', saved: '已存入題庫', working: '處理中…', failed: '沒有成功，請再按一次',
@@ -203,14 +202,14 @@ const T = {
       ['In the sheet choose Extensions → Apps Script, delete everything and paste the back-end code.', ['copy', 'Copy back-end code']],
       ['First time: Deploy → New deployment, type “Web app”, execute as “Me”, access “Anyone”, then Deploy and authorise. Later updates: Deploy → Manage deployments → Edit (pencil) → Version: New version → Deploy. The address stays the same.'],
       ['First time only: paste the address ending in ', ['code', '/exec'], ' into ', ['code', 'assets/class-sync.js'], ' and push to GitHub.'],
-      ['Come back here, enter a class code and any password and press Connect once. A “設定” tab appears in the sheet with your teacher password.']
+      ['Come back here and log in with the teacher password you want (at least 4 characters). The first password used is saved on the “設定” tab and is your password from then on.']
     ],
     copyCode: 'Copy back-end code', copied: 'Copied. Paste it into Apps Script.', copyFail: 'Could not copy; the code file has been opened.',
-    loginH: 'Connect to a class', clsL: 'Class code', keyL: 'Teacher password', connect: 'Connect', connecting: 'Connecting…',
-    loginP: 'Make up your own class code (letters, digits, _ or -), e.g. MON for Monday and FRI for Friday. The teacher password is on the “設定” tab of the sheet.',
-    badKey: 'Wrong password. Check the “設定” tab of the sheet.', oldBackend: 'The sheet’s back end is an older version without class Q&A. Paste the new code and deploy a new version (steps below).', noConn: 'Cannot reach the sheet. Check that Apps Script is authorised and deployed with access “Anyone”.', needCls: 'Enter a class code (letters or digits).',
-    clsTitle: c => `Class ${c}`, joinCode: c => `Scan to join · class ${c}`, qrBtn: 'Enlarge QR code', present: 'Present', presentOff: 'Stop presenting', copyUrl: 'Copy student link', urlCopied: 'Copied', leave: 'Change class',
-    mTitle: c => `Scan to join the class Q&A · class ${c}`, mClose: 'Close',
+    loginH: 'Teacher log-in', keyL: 'Teacher password', connect: 'Log in', connecting: 'Logging in…',
+    loginP: 'The first time, the password you type (at least 4 characters) becomes the teacher password. It is saved on the “設定” tab of the sheet, where you can change it. This computer remembers it next time.',
+    badKey: 'Wrong password (at least 4 characters). If you forgot it, check or change it on the “設定” tab of the sheet.', oldBackend: 'The sheet’s back end is an older version without class Q&A. Paste the new code and deploy a new version (steps below).', noConn: 'Cannot reach the sheet. Check that Apps Script is authorised and deployed with access “Anyone”.', needCls: 'Enter a class code (letters or digits).',
+    clsTitle: c => c === 'ALL' ? 'Live Class Q&A' : `Class ${c}`, joinCode: c => 'Students scan to join', qrBtn: 'Enlarge QR code', present: 'Present', presentOff: 'Stop presenting', copyUrl: 'Copy student link', urlCopied: 'Copied', leave: 'Log out',
+    mTitle: c => 'Scan to join the class Q&A', mClose: 'Close',
     bankH: 'Question bank', newQ: '+ New question', typeL: 'Type', textL: 'Question', optsL: 'Options (one per line, up to 8)', optsP: 'Only single and multiple choice need options.', loL: '1 means', hiL: '5 means',
     savePub: 'Save and publish', saveOnly: 'Save to bank', pubOnly: 'Publish only', cancel: 'Cancel', update: 'Update', updatePub: 'Update and publish',
     needText: 'Type a question first.', needOpts: 'Choice questions need at least 2 options.', saved: 'Saved to the bank', working: 'Working…', failed: 'That did not work. Please try again.',
@@ -363,7 +362,7 @@ function setupSteps(ol) {
     ol.appendChild(li);
   }
 }
-function studentUrl() { return new URL('./', location.href).href + '?class=' + encodeURIComponent(S.cls); }
+function studentUrl() { return new URL('./', location.href).href + (S.cls === 'ALL' ? '' : '?class=' + encodeURIComponent(S.cls)); }
 function qrSvg(url, cell) { try { const q = qrcode(0, 'M'); q.addData(url, 'Byte'); q.make(); return q.createSvgTag({ cellSize: cell, margin: 2, scalable: true }); } catch (e) { return ''; } }
 function chrome() {
   const X = t();
@@ -387,12 +386,12 @@ async function connect(cls, key, quiet) {
   try {
     const [b, l] = await Promise.all([call({ action: 'bank' }), call({ action: 'live' })]);
     S.items = b.items || []; S.live = l.q || null; S.rows = [];
-    try { localStorage.setItem(LS, JSON.stringify({ cls, key })); } catch (e) { /* none */ }
+    try { localStorage.setItem(LS, JSON.stringify({ key })); } catch (e) { /* none */ }
     const url = studentUrl(); $('url').textContent = url; $('mUrl').textContent = url;
     $('qrSmall').innerHTML = qrSvg(url, 3); $('qrBig').innerHTML = qrSvg(url, 8);
     show('live'); chrome(); msg.textContent = ''; await refresh(); loop();
   } catch (e) {
-    S.cls = ''; show('login'); $('cls').value = cls; msg.className = 'msg bad';
+    S.cls = ''; show('login'); msg.className = 'msg bad';
     const m = String(e.message);
     msg.textContent = m === 'bad key' ? X.badKey : m === 'unknown action' ? X.oldBackend : X.noConn;
     $('setupAgain').hidden = false; if (m === 'unknown action') $('setupAgain').open = true;
@@ -400,7 +399,9 @@ async function connect(cls, key, quiet) {
 }
 
 /* ---------- wiring ---------- */
-$('loginForm').addEventListener('submit', ev => { ev.preventDefault(); const c = normClass($('cls').value); if (!c) { $('loginMsg').className = 'msg bad'; $('loginMsg').textContent = t().needCls; return; } connect(c, $('key').value.trim()); });
+// one shared room by default; ?class=CODE still gives a separate room if ever needed
+const ROOM = normClass(new URLSearchParams(location.search).get('class')) || 'ALL';
+$('loginForm').addEventListener('submit', ev => { ev.preventDefault(); connect(ROOM, $('key').value.trim()); });
 $('ftype').addEventListener('change', syncForm);
 $('newBtn').addEventListener('click', () => openForm(null));
 $('cancelForm').addEventListener('click', () => { $('qform').hidden = true; S.editId = null; });
@@ -413,7 +414,7 @@ $('modal').addEventListener('click', e => { if (e.target === $('modal')) $('moda
 addEventListener('keydown', e => { if (e.key === 'Escape') $('modal').hidden = true; });
 $('presentBtn').addEventListener('click', () => { S.present = !S.present; document.body.classList.toggle('present', S.present); chrome(); });
 $('copyUrl').addEventListener('click', async () => { const b = $('copyUrl'); try { await navigator.clipboard.writeText(studentUrl()); b.textContent = t().urlCopied; } catch (e) { /* select by hand */ } setTimeout(() => { b.textContent = t().copyUrl; }, 1500); });
-$('leave').addEventListener('click', () => { clearTimeout(S.timer); S.cls = ''; try { localStorage.removeItem(LS); } catch (e) { /* none */ } show('login'); $('key').value = ''; });
+$('leave').addEventListener('click', () => { clearTimeout(S.timer); S.cls = ''; S.present = false; document.body.classList.remove('present'); try { localStorage.removeItem(LS); } catch (e) { /* none */ } show('login'); $('key').value = ''; });
 document.addEventListener('click', e => {
   const lb = e.target.closest('[data-lang]');
   if (lb) { LANG = lb.dataset.lang; try { localStorage.setItem('qa.tlang', LANG); } catch (er) { /* none */ } chrome(); return; }
@@ -438,11 +439,8 @@ chrome();
 if (!SYNC_URL) show('needSetup');
 else {
   show('login');
-  const qs = new URLSearchParams(location.search);
-  let saved = null; try { saved = JSON.parse(localStorage.getItem(LS) || 'null'); } catch (e) { saved = null; }
-  const pre = normClass(qs.get('class') || (saved && saved.cls) || '');
-  if (pre) $('cls').value = pre;
-  if (saved && saved.cls && saved.cls === pre) { $('key').value = saved.key || ''; connect(saved.cls, saved.key || '', true); }
+  let saved = null; try { saved = JSON.parse(localStorage.getItem(LS) || localStorage.getItem('armor.teacher') || 'null'); } catch (e) { saved = null; }
+  if (saved && saved.key) { $('key').value = saved.key; connect(ROOM, saved.key, true); }
 }
 window.__qat = S;
 })();

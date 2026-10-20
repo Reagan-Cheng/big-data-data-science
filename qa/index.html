@@ -87,10 +87,9 @@ const T = {
     app: '課堂即時問答',
     noSetup: '老師還沒有設定問答系統，請稍後再試。',
     joinH: '加入課堂問答',
-    clsL: '班級代碼（老師會給你）', clsPh: '例如 MON',
     nameL: '你的名字或組名（老師會看到）', namePh: '例如：王小明／第 3 組',
-    join: '加入', change: '換名字或班級',
-    you: (n, c) => `${n}・班級 ${c}`,
+    join: '加入', change: '換名字',
+    you: (n, c) => c === 'ALL' ? `作答者：${n}` : `${n}・班級 ${c}`,
     waitH: '等待老師發布題目', waitP: '題目發布後會自動出現在這裡，不用重新整理。',
     closed: '老師已經關閉這一題的作答。', closedSent: '老師已經關閉這一題的作答，你的回答已經送出。',
     pickOne: '選一個答案', pickMany: '可以選多個答案', typeIt: '輸入你的回答', wordsIt: '輸入 1～3 個詞（每格一個）', rateIt: '選一個分數',
@@ -104,10 +103,9 @@ const T = {
     app: 'Live Class Q&A',
     noSetup: 'Your teacher has not set up the Q&A system yet. Please try again later.',
     joinH: 'Join the class Q&A',
-    clsL: 'Class code (from your teacher)', clsPh: 'e.g. MON',
     nameL: 'Your name or team name (your teacher will see it)', namePh: 'e.g. Amy / Team 3',
-    join: 'Join', change: 'Change name or class',
-    you: (n, c) => `${n} · class ${c}`,
+    join: 'Join', change: 'Change name',
+    you: (n, c) => c === 'ALL' ? `Answering as ${n}` : `${n} · class ${c}`,
     waitH: 'Waiting for your teacher’s question', waitP: 'It will appear here by itself. No need to refresh.',
     closed: 'Your teacher has closed this question.', closedSent: 'Your teacher has closed this question. Your answer was sent.',
     pickOne: 'Pick one answer', pickMany: 'Pick all that apply', typeIt: 'Type your answer', wordsIt: 'Type 1 to 3 words (one per box)', rateIt: 'Pick a score',
@@ -129,11 +127,12 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const SYNC_URL = /^https?:\/\//.test((window.CLASS_SYNC || {}).syncUrl || '') ? window.CLASS_SYNC.syncUrl : '';
 const normClass = v => String(v || '').toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 20);
-let CLS = normClass(qs.get('class') || store.get('qa.cls', ''));
+// everyone joins the same room unless the link carries ?class=CODE
+const CLS = normClass(qs.get('class')) || 'ALL';
 let NAME = store.get('qa.name', '');
 let TID = store.get('qa.tid', '');
 if (!/^[a-z0-9]{8,16}$/.test(TID)) { TID = (Math.random().toString(36).slice(2, 10) + Date.now().toString(36)).replace(/[^a-z0-9]/g, '').slice(0, 14); store.set('qa.tid', TID); }
-const S = { joined: !!(CLS && NAME), q: null, draft: null, sentRun: null, pending: null, sync: '', net: true, editing: false };
+const S = { joined: !!NAME, q: null, draft: null, sentRun: null, pending: null, sync: '', net: true, editing: false };
 const key = run => `qa.ans.${CLS}.${run}`;
 
 async function call(payload) {
@@ -208,9 +207,8 @@ function drawSync() {
 function vJoin() {
   const X = t();
   return `<div class="card stack"><h1 style="font-size:26px">${X.joinH}</h1>
-    <div><label class="f" for="cls">${X.clsL}</label><input type="text" id="cls" maxlength="20" autocomplete="off" autocapitalize="characters" placeholder="${esc(X.clsPh)}" value="${esc(CLS)}"></div>
     <div><label class="f" for="nm">${X.nameL}</label><input type="text" id="nm" maxlength="30" autocomplete="off" placeholder="${esc(X.namePh)}" value="${esc(NAME)}"></div>
-    <button type="button" class="btn" data-act="join" id="joinBtn" ${normClass(CLS) && NAME.trim() ? '' : 'disabled'}>${X.join}</button></div>`;
+    <button type="button" class="btn" data-act="join" id="joinBtn" ${NAME.trim() ? '' : 'disabled'}>${X.join}</button></div>`;
 }
 function vQuestion() {
   const X = t(), q = S.q, d = S.draft, sent = S.sentRun === q.run && !S.pending, ro = !q.open;
@@ -255,23 +253,22 @@ function render() {
 // typing should not re-render the whole page (it would lose the caret)
 document.addEventListener('input', e => {
   const X = t();
-  if (e.target.id === 'cls' || e.target.id === 'nm') { const b = $('joinBtn'); if (b) b.disabled = !(normClass($('cls').value) && $('nm').value.trim()); return; }
+  if (e.target.id === 'nm') { const b = $('joinBtn'); if (b) b.disabled = !$('nm').value.trim(); return; }
   if (!S.q) return;
   if (e.target.id === 'ta') { S.draft = e.target.value; $('cnt').textContent = X.left(MAXTEXT - e.target.value.length); }
   if (e.target.dataset.word != null) S.draft[+e.target.dataset.word] = e.target.value;
   S.editing = true;
   const b = $('sendBtn'); if (b) { b.disabled = !filled(S.q, S.draft); }
 });
-document.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.target.id === 'cls' || e.target.id === 'nm')) { const b = $('joinBtn'); if (b && !b.disabled) b.click(); } });
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'nm') { const b = $('joinBtn'); if (b && !b.disabled) b.click(); } });
 document.addEventListener('click', e => {
   const lb = e.target.closest('[data-lang]');
   if (lb) { LANG = lb.dataset.lang; store.set('qa.lang', LANG); render(); return; }
   const el = e.target.closest('[data-act]'); if (!el || el.disabled) return;
   const a = el.dataset.act, v = +el.dataset.v;
   if (a === 'join') {
-    const c = normClass($('cls').value), n = $('nm').value.trim().slice(0, 30); if (!c || !n) return;
-    CLS = c; NAME = n; store.set('qa.cls', CLS); store.set('qa.name', NAME); S.joined = true; S.q = null; render(); poll();
-    if (normClass(qs.get('class')) !== CLS) { const u = new URL(location.href); u.searchParams.set('class', CLS); history.replaceState(null, '', u); }
+    const n = $('nm').value.trim().slice(0, 30); if (!n) return;
+    NAME = n; store.set('qa.name', NAME); S.joined = true; S.q = null; render(); poll();
   }
   else if (a === 'leave') { S.joined = false; clearTimeout(pollTimer); render(); }
   else if (a === 'opt') { if (S.q.type === 'single') S.draft = v; else { const i = S.draft.indexOf(v); if (i >= 0) S.draft.splice(i, 1); else S.draft.push(v); } S.editing = true; render(); }

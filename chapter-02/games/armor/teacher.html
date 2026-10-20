@@ -89,25 +89,24 @@ summary{cursor:pointer;font-weight:700;color:var(--blue)}
   </section>
 
   <section id="login" hidden>
-    <h2 style="font-size:24px">連線到班級</h2>
+    <h2 style="font-size:24px">教師登入</h2>
     <form class="row" id="loginForm" style="margin-top:10px">
-      <label class="f"><span>班級代碼</span><input type="text" id="cls" maxlength="20" placeholder="例如 MON" autocomplete="off" required></label>
-      <label class="f"><span>教師密碼</span><input type="password" id="key" autocomplete="off" required></label>
-      <button class="btn" type="submit">連線</button>
+      <label class="f"><span>教師密碼</span><input type="password" id="key" autocomplete="current-password" required minlength="4"></label>
+      <button class="btn" type="submit">登入</button>
       <span class="msg" id="loginMsg" role="status" aria-live="polite"></span>
     </form>
-    <p class="small" style="margin-top:10px;max-width:78ch">班級代碼由您自訂（英文字母、數字、底線、連字號），換一個代碼就是新的班級。教師密碼在試算表的「設定」分頁。</p>
+    <p class="small" style="margin-top:10px;max-width:78ch">和「課堂即時問答」用同一組教師密碼。第一次使用時，您輸入的密碼（至少 4 個字元）就會成為教師密碼，存在試算表的「設定」分頁。每天的投票自動分成一場，今天只顯示今天的結果。</p>
   </section>
 
   <div id="live" hidden>
     <section class="card head">
       <div>
-        <h2 style="font-size:24px">班級 <span id="clsName"></span></h2>
+        <h2 style="font-size:24px"><span id="clsName"></span></h2>
         <div class="counts" id="counts"></div>
         <div class="foot">
           <button class="ghost" type="button" id="hideBtn">隱藏結果</button>
           <button class="ghost" type="button" id="pause">暫停自動更新</button>
-          <button class="ghost" type="button" id="leave">換班級</button>
+          <button class="ghost" type="button" id="leave">登出</button>
           <span class="small" id="stamp" role="status"></span>
         </div>
       </div>
@@ -166,7 +165,7 @@ function setupSteps(ol) {
     ['把編輯器裡的程式碼全部刪掉，貼上新版後端程式碼。', ['copy', '複製後端程式碼']],
     ['第一次部署：按「部署 → 新增部署作業」，類型選「網頁應用程式」，執行身分選「我」，誰可以存取選「所有人」，按「部署」並依畫面完成授權。已經部署過：按「部署 → 管理部署作業 → 編輯（鉛筆圖示）→ 版本選『新版本』→ 部署」，網址不會變。'],
     ['第一次部署時，把畫面上結尾是 ', ['code', '/exec'], ' 的網址貼進 ', ['code', 'assets/class-sync.js'], '，再推送到 GitHub。'],
-    ['回到這一頁，輸入班級代碼與密碼連線。教師密碼在試算表的「設定」分頁。']
+    ['回到這一頁輸入教師密碼登入（第一次輸入的密碼會成為教師密碼）。']
   ];
   ol.textContent = '';
   for (const parts of steps) {
@@ -274,7 +273,7 @@ function draw() {
 }
 function entry() {
   const url = new URL('.', location.href).href + '?class=' + encodeURIComponent(state.cls);
-  $('clsName').textContent = state.cls; $('url').textContent = url;
+  $('clsName').textContent = SESSION_LABEL; $('url').textContent = url;
   try { const q = qrcode(0, 'M'); q.addData(url, 'Byte'); q.make(); $('qr').innerHTML = q.createSvgTag({ cellSize: 4, margin: 2, scalable: true }); } catch (e) { $('qr').textContent = ''; }
 }
 
@@ -285,18 +284,22 @@ async function connect(cls, key, quiet) {
   const msg = $('loginMsg'); msg.className = 'msg'; msg.textContent = quiet ? '' : '連線中…';
   try {
     const j = await call({ action: 'votes' });
-    try { localStorage.setItem(LS, JSON.stringify({ cls, key })); } catch (e) { /* no storage */ }
+    try { localStorage.setItem(LS, JSON.stringify({ key })); } catch (e) { /* no storage */ }
     state.rows = j.rows || []; show('live'); entry(); draw(); loop(); msg.textContent = ''; $('stamp').textContent = '最後更新 ' + new Date().toLocaleTimeString('zh-TW', { hour12: false });
   } catch (e) {
-    state.cls = ''; show('login'); $('cls').value = cls; msg.className = 'msg bad';
+    state.cls = ''; show('login'); msg.className = 'msg bad';
     const m = String(e.message);
-    msg.textContent = m === 'bad key' ? '密碼不對。請到試算表的「設定」分頁查看教師密碼。'
+    msg.textContent = m === 'bad key' ? '密碼不對（至少 4 個字元）。忘記的話，到試算表的「設定」分頁查看或修改。'
       : m === 'unknown action' ? '試算表的後端是舊版本，還不支援投票。請依下方「設定與更新步驟」貼上新版程式碼並部署「新版本」。'
       : '連不上試算表。請確認 Apps Script 已授權並部署，且「誰可以存取」選了「所有人」。';
     $('setupAgain').hidden = false; if (m === 'unknown action') $('setupAgain').open = true;
   }
 }
-$('loginForm').addEventListener('submit', ev => { ev.preventDefault(); const c = normClass($('cls').value); if (!c) { $('loginMsg').className = 'msg bad'; $('loginMsg').textContent = '請輸入班級代碼（英文字母或數字）。'; return; } connect(c, $('key').value.trim()); });
+// each day is its own voting session (D + yymmdd), so Monday's and Friday's classes never mix; ?class=CODE overrides
+const today = new Date(), pad = n => String(n).padStart(2, '0');
+const SESSION = normClass(new URLSearchParams(location.search).get('class')) || ('D' + String(today.getFullYear()).slice(2) + pad(today.getMonth() + 1) + pad(today.getDate()));
+const SESSION_LABEL = /^D\d{6}$/.test(SESSION) ? `今天的投票（${today.getMonth() + 1} 月 ${today.getDate()} 日）` : `場次 ${SESSION}`;
+$('loginForm').addEventListener('submit', ev => { ev.preventDefault(); connect(SESSION, $('key').value.trim()); });
 $('copyUrl').addEventListener('click', async () => { const b = $('copyUrl'); try { await navigator.clipboard.writeText($('url').textContent); b.textContent = '已複製'; } catch (e) { b.textContent = '請手動選取網址'; } setTimeout(() => { b.textContent = '複製網址'; }, 1500); });
 $('leave').addEventListener('click', () => { clearTimeout(state.timer); state.cls = ''; try { localStorage.removeItem(LS); } catch (e) { /* none */ } show('login'); $('key').value = ''; });
 $('pause').addEventListener('click', () => { state.paused = !state.paused; $('pause').textContent = state.paused ? '恢復自動更新' : '暫停自動更新'; if (!state.paused) { refresh(); loop(); } else clearTimeout(state.timer); });
@@ -306,10 +309,8 @@ setupSteps($('setupSteps')); setupSteps($('setupSteps2'));
 if (!SYNC_URL) { show('needSetup'); return; }
 show('login');
 const qs = new URLSearchParams(location.search);
-let saved = null; try { saved = JSON.parse(localStorage.getItem(LS) || 'null'); } catch (e) { saved = null; }
-const preCls = normClass(qs.get('class') || (saved && saved.cls) || '');
-if (preCls) $('cls').value = preCls;
-if (saved && saved.cls && saved.cls === preCls) { $('key').value = saved.key || ''; connect(saved.cls, saved.key || '', true); }
+let saved = null; try { saved = JSON.parse(localStorage.getItem(LS) || localStorage.getItem('qa.teacher') || 'null'); } catch (e) { saved = null; }
+if (saved && saved.key) { $('key').value = saved.key; connect(SESSION, saved.key, true); }
 window.__teacher = state;
 })();
 </script>

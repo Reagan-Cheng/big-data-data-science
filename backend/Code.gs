@@ -14,7 +14,7 @@
  *   投票　　：課堂問答與其他活動的回答，每人（或每組）每題一列
  *   問答發布：每個班級目前發布的題目
  *   題庫　　：教師存下來的題目（所有班級共用）
- *   設定　　：教師密碼（第一次執行時自動產生，可以直接改）
+ *   設定　　：教師密碼（第一次登入教師頁時輸入的密碼；之後可以直接在這裡改）
  *
  * 更新程式碼後，要到「部署 → 管理部署作業 → 編輯（鉛筆）→ 版本：新版本 → 部署」，
  * 網址不會變。
@@ -56,7 +56,7 @@ function handle_(p) {
     var a = String(p.action || 'ping');
     if (a === 'ping') return out_({ ok: true, v: VERSION });
     if (a === 'bank' || a === 'saveq' || a === 'delq') {
-      if (String(p.key || '') !== teacherKey_()) return out_({ ok: false, error: 'bad key' });
+      if (!keyOk_(p.key)) return out_({ ok: false, error: 'bad key' });
       if (a === 'saveq') saveQ_(p.item);
       if (a === 'delq') delQ_(p.id);
       return out_({ ok: true, items: bank_() });
@@ -67,16 +67,16 @@ function handle_(p) {
     if (a === 'vote') return out_(vote_(cls, p));
     if (a === 'live') return out_({ ok: true, q: getLive_(cls) });
     if (a === 'publish') {
-      if (String(p.key || '') !== teacherKey_()) return out_({ ok: false, error: 'bad key' });
+      if (!keyOk_(p.key)) return out_({ ok: false, error: 'bad key' });
       return out_({ ok: true, q: setLive_(cls, p.q) });
     }
     if (a === 'votes') {
-      if (String(p.key || '') !== teacherKey_()) return out_({ ok: false, error: 'bad key' });
+      if (!keyOk_(p.key)) return out_({ ok: false, error: 'bad key' });
       return out_(votes_(cls, p));
     }
     if (a === 'submit') return out_(submit_(cls, p));
     if (a === 'board' || a === 'open') {
-      if (String(p.key || '') !== teacherKey_()) return out_({ ok: false, error: 'bad key' });
+      if (!keyOk_(p.key)) return out_({ ok: false, error: 'bad key' });
       if (a === 'open') setGate_(cls, p.open);
       return out_(board_(cls));
     }
@@ -114,14 +114,17 @@ function text_(v, n) {
 
 function num_(v) { var n = Number(v); return isFinite(n) ? Math.round(n) : ''; }
 
-function teacherKey_() {
+// 還沒有密碼時，第一次登入教師頁所輸入的密碼（至少 4 個字元）就成為教師密碼
+function keyOk_(given) {
+  given = String(given == null ? '' : given).trim();
   var sh = tab_(TAB_CFG, CFG_HEAD);
   var k = String(sh.getRange(2, 2).getValue() || '').trim();
   if (!k) {
-    k = String(Math.floor(100000 + Math.random() * 900000));
-    sh.getRange(2, 1, 1, 3).setValues([['教師密碼', k, '在教師頁輸入這組密碼。可以直接改成自己好記的。']]);
+    if (given.length < 4) return false;
+    sh.getRange(2, 1, 1, 3).setValues([['教師密碼', given, '第一次登入教師頁時設定的密碼。可以直接改成新的，改完在教師頁用新密碼登入。']]);
+    return true;
   }
-  return k;
+  return given === k;
 }
 
 /* ---------- 放行 ---------- */

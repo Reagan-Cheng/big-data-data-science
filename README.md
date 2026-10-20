@@ -60,7 +60,7 @@ predpol 另外加上手機與小平板的版面（螢幕寬度 850px 以下，�
 
 裝甲該裝在哪裡？位於 chapter-02/games/armor/（單一 index.html，無外部資源），對應第二章講義「正確解讀數據 & 問對問題」的二戰轟炸機彈痕例子（倖存者偏差）。流程：看返航飛機彈痕 → 選 2 片裝甲 → 100 架出任務 → 揭露被擊落飛機的彈孔 → 第二次選擇 → 3 題行銷資料倖存者偏差題 → 討論題。模擬使用固定亂數種子，同樣的選擇得到同樣的結果。右上角可切換中文與英文。
 
-裝甲遊戲的課堂投票：教師頁是 chapter-02/games/armor/teacher.html，輸入班級代碼與教師密碼後，學生用教師頁上的網址（`?class=班級代碼`）進入、填組名，第一輪、猜測、第二輪與行銷題的答案會自動送到 Google 試算表的「投票」分頁，教師頁每 4 秒更新長條圖與各組明細，也可以先隱藏結果。和最後一張優惠券、課堂即時問答共用同一個 Apps Script（backend/Code.gs，網址在 assets/class-sync.js）；更新程式碼後要在 Apps Script 部署「新版本」。沒有 `?class=` 的網址則照常單機遊玩，不送出任何資料。
+裝甲遊戲的課堂投票：教師頁是 chapter-02/games/armor/teacher.html，只要輸入教師密碼；每天自動成為一場投票（代碼 D+年月日），學生用教師頁上的網址或 QR Code 進入、填組名，第一輪、猜測、第二輪與行銷題的答案會自動送到 Google 試算表的「投票」分頁，教師頁每 4 秒更新長條圖與各組明細，也可以先隱藏結果。和最後一張優惠券、課堂即時問答共用同一個 Apps Script（backend/Code.gs，網址在 assets/class-sync.js）；更新程式碼後要在 Apps Script 部署「新版本」。沒有 `?class=` 的網址則照常單機遊玩，不送出任何資料。
 
 第三章有一個個案閱讀頁：刷卡被拒：信用額度不足位於 chapter-03/cases/card-declined/（單一 index.html，無外部資源），呈現講義 p.10–14 國泰世華個案的英文全文（逐字照講義，不摘要），最後附 p.9 的兩題討論題。每一句是一個 <span class="s" data-st="N">，讀到第幾句，旁邊的示意圖就畫到第 N 步；手機上示意圖固定在上方、原文在下方捲動。預設英文，右上角可切換中文（中文為英文個案的逐句翻譯，存在程式內的 ZH_S 陣列，插圖文字放在各元素的 data-zh）；網址加 ?lang=zh 或 ?lang=en 指定語言。投影時可用簡報筆（PageDown）或 ↓／Space 逐句前進，Spotlight／聚焦會淡化其他句子，A−／A+ 調整字體。
 
@@ -81,7 +81,8 @@ If the repository or hosting URL changes, update assets/qr-codes.js, the links i
 Bundled qrcode-generator is distributed under the MIT license; see assets/vendor/LICENSE.txt.
 
 ## 課堂即時問答 / Live Class Q&A
-- 學生頁：qa/（老師給的網址是 `qa/?class=班級代碼`）；教師頁：qa/teacher.html。課程首頁也有入口。
+- 學生頁：qa/（掃教師頁上的 QR Code，只要輸入名字）；教師頁：qa/teacher.html（只要輸入教師密碼，這台電腦會記住）。課程首頁也有入口。所有人共用同一個問答室；網址加 `?class=代碼` 可以另開一間。
+- 教師密碼：第一次登入教師頁時輸入的密碼（至少 4 個字元）就成為教師密碼，存在試算表「設定」分頁 B2，可直接修改。課堂問答、裝甲遊戲教師頁、最後一張優惠券教師頁共用這組密碼。
 - 教師頁可以建立題庫（單選、多選、簡答、文字雲、1–5 分評分），按「發布」後學生畫面自動換成這一題；回答每 3 秒更新成長條圖、平均分數、文字雲或簡答列表。可以關閉作答、隱藏結果、顯示或隱藏名字、投影模式、放大 QR Code。每次發布都是一輪新的作答，舊的回答留在試算表。
 - 全站課堂互動共用一個後端：backend/Code.gs（Google Apps Script），網址只寫在 assets/class-sync.js。試算表分頁：投票（所有回答）、問答發布（各班目前的題目）、題庫、設定（教師密碼）；最後一張優惠券另外使用「各組提交」「放行」。
 - 第一次設定：個人 Gmail 開試算表 → 擴充功能 → Apps Script → 貼上 backend/Code.gs → 部署為網頁應用程式（執行身分：我；存取：所有人）→ 授權 → 網址寫入 assets/class-sync.js。之後更新程式碼：管理部署作業 → 編輯 → 新版本，網址不變。
