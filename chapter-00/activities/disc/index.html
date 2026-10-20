@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>DISC 動物風格測驗</title>
+<style>
+  /* Layout: one narrow phone column — intro, 10 tappable question cards, then a result view (animal hero, bar chart, 2x2 style map). */
+  :root {
+    color-scheme: light;
+    --page: #eef1f6;
+    --card: #ffffff;
+    --ink: #14213a;
+    --ink-2: #4a566b;
+    --ink-3: #7a8598;
+    --line: #d5dbe6;
+    --navy: #0f2a5c;
+    --navy-ink: #ffffff;
+    --warn: #b3261e;
+    --warn-bg: #fdecea;
+    --d: #c2501b;
+    --i: #0e7f86;
+    --s: #4a7d32;
+    --c: #2f5aa8;
+    --x: #8a4fbf;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --page: #0e1420;
+      --card: #1a2233;
+      --ink: #f2f5fa;
+      --ink-2: #c0c8d6;
+      --ink-3: #8d97a8;
+      --line: #33405a;
+      --navy: #9db8f2;
+      --navy-ink: #0e1420;
+      --warn: #ff9f97;
+      --warn-bg: #3a1f1d;
+      --d: #f28b55;
+      --i: #45c6c9;
+      --s: #8cc56e;
+      --c: #93b4f2;
+      --x: #c79bf0;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", "Heiti TC", system-ui, sans-serif;
+    font-size: 19px;
+    line-height: 1.55;
+  }
+  .wrap {
+    max-width: 560px; margin: 0 auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-bottom: 48px;
+  }
+  .topline { display: flex; justify-content: flex-end; padding-top: calc(14px + env(safe-area-inset-top, 0px)); }
+  .lang { display: inline-flex; border: 2px solid var(--line); border-radius: 999px; overflow: hidden; }
+  .lang button {
+    font: inherit; font-size: 15px; font-weight: 700; padding: 6px 14px; border: 0;
+    background: transparent; color: var(--ink-2); min-height: 38px;
+  }
+  .lang button[aria-pressed="true"] { background: var(--navy); color: var(--navy-ink); }
+  .lang button:focus-visible { outline: 3px solid var(--c); outline-offset: -3px; }
+  h1 { font-size: 30px; line-height: 1.25; margin: 14px 0 6px; letter-spacing: .02em; text-wrap: balance; }
+  h2 { font-size: 23px; line-height: 1.3; margin: 0 0 12px; text-wrap: balance; }
+  p { margin: 0 0 12px; }
+  .lead { color: var(--ink-2); }
+  .how { background: var(--card); border-radius: 14px; padding: 16px 18px; margin: 16px 0 8px; }
+  .how ul { margin: 0; padding-left: 1.15em; }
+  .how li { margin: 4px 0; }
+
+  .bar {
+    position: sticky; top: 0; z-index: 5;
+    background: var(--navy); color: var(--navy-ink);
+    margin: 18px calc(-1 * max(16px, env(safe-area-inset-left, 0px))) 0;
+    padding: 12px max(16px, env(safe-area-inset-right, 0px)) 12px max(16px, env(safe-area-inset-left, 0px));
+    padding-top: calc(12px + env(safe-area-inset-top, 0px));
+  }
+  .bar .count { font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 12px; }
+  .bar .track { flex: 1; height: 7px; border-radius: 4px; background: color-mix(in srgb, var(--navy-ink) 25%, transparent); overflow: hidden; }
+  .bar .fill { height: 100%; width: 0; background: var(--navy-ink); border-radius: 4px; transition: width .2s; }
+
+  fieldset.q { border: 0; margin: 14px 0 0; padding: 18px 16px 16px; background: var(--card); border-radius: 14px; scroll-margin-top: 80px; min-width: 0; }
+  fieldset.q.miss { outline: 3px solid var(--warn); }
+  .q legend { float: left; width: 100%; padding: 0; font-size: 22px; font-weight: 700; line-height: 1.4; margin-bottom: 14px; }
+  .q legend .no { color: var(--ink-3); font-weight: 600; margin-right: .35em; font-variant-numeric: tabular-nums; }
+  .opts { clear: both; display: grid; gap: 10px; }
+  .opts label { position: relative; display: block; }
+  .opts input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+  .opts span {
+    display: flex; align-items: center; gap: 12px;
+    min-height: 58px; padding: 10px 14px; border-radius: 12px; border: 2px solid var(--line);
+    font-size: 19px; line-height: 1.4; color: var(--ink); background: var(--card);
+  }
+  .opts span::before {
+    content: ""; flex: none; width: 22px; height: 22px; border-radius: 50%;
+    border: 2px solid var(--ink-3); background: var(--card);
+  }
+  .opts input:checked + span { border-color: var(--navy); background: color-mix(in srgb, var(--navy) 10%, var(--card)); font-weight: 700; }
+  .opts input:checked + span::before { border-color: var(--navy); background: var(--navy); box-shadow: inset 0 0 0 4px var(--card); }
+  .opts input:focus-visible + span { outline: 3px solid var(--c); outline-offset: 2px; }
+
+  .send { margin-top: 22px; }
+  button.main {
+    display: block; width: 100%; min-height: 60px; border: 0; border-radius: 14px;
+    background: var(--navy); color: var(--navy-ink);
+    font: inherit; font-size: 22px; font-weight: 700; cursor: pointer;
+  }
+  button.ghost {
+    display: block; width: 100%; min-height: 54px; border-radius: 14px; margin-top: 10px;
+    background: transparent; color: var(--ink); border: 2px solid var(--line);
+    font: inherit; font-size: 19px; font-weight: 600; cursor: pointer;
+  }
+  button.main:focus-visible, button.ghost:focus-visible { outline: 3px solid var(--c); outline-offset: 3px; }
+  .alert { background: var(--warn-bg); color: var(--warn); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; font-weight: 600; }
+
+  /* result */
+  body.done .intro, body.done .bar, body.done #form { display: none; }
+  .panel { background: var(--card); border-radius: 14px; padding: 18px 16px; margin-top: 14px; }
+  .kicker { font-size: 16px; font-weight: 700; color: var(--ink-3); letter-spacing: .04em; margin: 0 0 4px; }
+  .heroes { display: grid; gap: 14px; margin-top: 14px; }
+  .heroes.two { grid-template-columns: 1fr 1fr; }
+  .hero { background: var(--card); border-radius: 18px; padding: 18px 16px 18px; text-align: center; border-top: 6px solid var(--tc); min-width: 0; }
+  .hero svg { display: block; width: 72%; max-width: 240px; height: auto; margin: 0 auto 8px; }
+  .heroes.two .hero svg { width: 92%; }
+  .hero .animal { font-size: 38px; font-weight: 800; line-height: 1.15; color: var(--tc); }
+  .heroes.two .hero .animal { font-size: 30px; }
+  .hero .type { display: inline-flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 18px; font-weight: 700; color: var(--ink-2); flex-wrap: wrap; justify-content: center; }
+  .letter {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 34px; height: 34px; padding: 0 8px; border-radius: 9px;
+    background: var(--tc); color: var(--card); font-weight: 800; font-size: 20px; letter-spacing: .02em;
+  }
+  .hero .desc { text-align: left; margin: 14px 0 0; font-size: 18px; color: var(--ink); }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 12px; }
+  .tags span { font-size: 15px; font-weight: 700; padding: 4px 12px; border-radius: 999px; color: var(--tc); background: color-mix(in srgb, var(--tc) 13%, var(--card)); }
+  .tie { margin-top: 10px; font-size: 17px; color: var(--ink-2); }
+
+  .bars { display: grid; gap: 12px; }
+  .brow { display: grid; grid-template-columns: 6.2em 1fr 3.2em; align-items: center; gap: 10px; }
+  .brow .lab { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 700; white-space: nowrap; }
+  .brow .lab .letter { min-width: 30px; height: 30px; font-size: 17px; }
+  .brow .trk { height: 22px; border-radius: 6px; background: color-mix(in srgb, var(--ink-3) 18%, var(--card)); overflow: hidden; }
+  .brow .bf { height: 100%; border-radius: 6px; background: var(--tc); opacity: .55; }
+  .brow.top .bf { opacity: 1; }
+  .brow .n { text-align: right; font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .brow .n small { font-size: 14px; font-weight: 600; color: var(--ink-3); }
+  .scale { display: grid; grid-template-columns: 6.2em 1fr 3.2em; gap: 10px; font-size: 13px; color: var(--ink-3); margin-top: 4px; }
+  .scale div { display: flex; justify-content: space-between; font-variant-numeric: tabular-nums; }
+
+  .map { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .map .ax { font-size: 15px; font-weight: 700; color: var(--ink-3); text-align: center; }
+  .map .row { grid-column: 1 / -1; font-size: 15px; font-weight: 700; color: var(--ink-3); display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+  .map .row::before, .map .row::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .cell { border-radius: 12px; padding: 10px 8px 12px; text-align: center; border: 2px solid var(--line); min-width: 0; }
+  .cell.me { border-color: var(--tc); background: color-mix(in srgb, var(--tc) 10%, var(--card)); }
+  .cell svg { display: block; width: 64px; height: 64px; margin: 0 auto 4px; }
+  .cell .nm { font-size: 18px; font-weight: 800; color: var(--tc); }
+  .cell .nm b { font-weight: 800; }
+  .cell .sh { font-size: 15px; color: var(--ink-2); line-height: 1.45; margin-top: 4px; }
+  .cham { display: flex; gap: 12px; align-items: center; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .cham svg { flex: none; width: 56px; height: 56px; }
+  .cham div { font-size: 16px; color: var(--ink-2); min-width: 0; }
+  .cham b { color: var(--tc); }
+  .remind { margin-top: 12px; font-size: 16px; color: var(--ink-2); }
+
+  footer { color: var(--ink-3); font-size: 14px; line-height: 1.6; margin-top: 26px; }
+  @media (max-width: 380px) { .heroes.two { grid-template-columns: 1fr; } }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topline">
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" id="btn-zh" aria-pressed="true">中文</button>
+      <button type="button" id="btn-en" aria-pressed="false">English</button>
+    </div>
+  </div>
+
+  <header class="intro">
+    <h1 data-t="title"></h1>
+    <p class="lead" data-t="lead"></p>
+    <div class="how">
+      <ul>
+        <li data-t="how1"></li>
+        <li data-t="how2"></li>
+        <li data-t="how3"></li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="bar" aria-live="polite">
+    <div class="count"><span id="count"></span><span class="track"><span class="fill" id="fill"></span></span></div>
+  </div>
+
+  <form id="form" novalidate>
+    <div id="items"></div>
+    <div class="send">
+      <div class="alert" id="alert" role="alert" hidden></div>
+      <button class="main" type="submit" data-t="submit"></button>
+    </div>
+  </form>
+
+  <section id="result" aria-live="polite" hidden></section>
+
+  <footer>
+    <span data-t="foot1"></span><br>
+    <span data-t="foot2"></span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- content ---------- */
+  var QUESTIONS = [
+    { zh: '在同事（同學）眼中，您是一位？', en: "In your coworkers' (classmates') eyes, you are someone who is…",
+      o: [['積極、熱情、有行動力的人。', 'Proactive, passionate and quick to act.'],
+          ['活潑、開朗、風趣幽默的人。', 'Lively, cheerful and funny.'],
+          ['忠誠、隨和、容易相處的人。', 'Loyal, easygoing and easy to get along with.'],
+          ['謹慎、冷靜、注意細節的人。', 'Careful, calm and attentive to detail.']] },
+    { zh: '您喜歡看哪一類型的雜誌？', en: 'What kind of magazines do you like to read?',
+      o: [['管理、財經、趨勢類。', 'Management, finance and trends.'],
+          ['旅遊、美食、時尚類。', 'Travel, food and fashion.'],
+          ['心靈、散文、家庭類。', 'Personal growth, essays and family.'],
+          ['科技、專業、藝術類。', 'Technology, professional fields and the arts.']] },
+    { zh: '您做決策的方式？', en: 'How do you make decisions?',
+      o: [['希望能立即有效。', 'I want something that works right away.'],
+          ['感覺重於一切。', 'How it feels matters most.'],
+          ['有時間考慮或尋求他人意見。', 'I like time to think it over or ask others.'],
+          ['要有詳細的資料評估。', 'I need detailed data to evaluate.']] },
+    { zh: '職務上哪種工作是您最擅長的？', en: 'At work, what are you best at?',
+      o: [['以目標為導向，有不服輸的精神。', 'Driving toward goals; I hate to lose.'],
+          ['良好的口才，能主動的與人建立友善關係。', 'Speaking well and building friendly relationships.'],
+          ['能配合團隊，扮演忠誠的擁護者。', 'Working with the team as a loyal supporter.'],
+          ['流程的掌握，注意到細節。', 'Managing the process and catching details.']] },
+    { zh: '當面對壓力時，您會？', en: 'Under pressure, you…',
+      o: [['用行動力去面對它，並且克服它。', 'take action and push through it.'],
+          ['希望找人傾吐，獲得認同。', 'want someone to talk to who understands you.'],
+          ['逆來順受，儘量避免衝突。', 'go along with it and avoid conflict.'],
+          ['重新思考緣由，必要時做精細的解說。', 'rethink the causes and explain them in detail if needed.']] },
+    { zh: '與同事（同學）之間的相處？', en: 'How do you get along with coworkers (classmates)?',
+      o: [['以公事為主，很少談到個人生活。', 'Mostly about work; I rarely talk about my personal life.'],
+          ['重視氣氛，能夠帶動團隊情趣。', 'I care about the mood and liven up the team.'],
+          ['良好的傾聽者，對人態度溫和友善。', 'I am a good listener, gentle and friendly.'],
+          ['被動，不會主動與人建立關係。', 'Reserved; I do not reach out first.']] },
+    { zh: '您希望別人如何與您溝通？', en: 'How do you want others to communicate with you?',
+      o: [['直接講重點，不要拐彎抹角。', 'Get to the point; do not beat around the bush.'],
+          ['輕鬆，不要太嚴肅。', 'Keep it light, not too serious.'],
+          ['不要一次說太多，要給予明確的支持。', 'Not too much at once, and show clear support.'],
+          ['凡事說清楚，講明白。', 'Make everything clear and explicit.']] },
+    { zh: '要完成一件事情時，您最在意的部份是？', en: 'When getting something done, what do you care about most?',
+      o: [['效果是否有達到。', 'Whether it got results.'],
+          ['過程是否快樂。', 'Whether the process was enjoyable.'],
+          ['前後是否有改變。', 'Whether things stay consistent from start to finish.'],
+          ['流程是否正確。', 'Whether the process was followed correctly.']] },
+    { zh: '什麼事情會讓您恐懼？', en: 'What do you fear most?',
+      o: [['呈現弱點，被人利用。', 'Showing weakness and being taken advantage of.'],
+          ['失去認同，被人排擠。', 'Losing approval and being left out.'],
+          ['過度變動，讓人無所適從。', 'Too much change, leaving me unsure what to do.'],
+          ['制度不清，標準不一。', 'Unclear rules and inconsistent standards.']] },
+    { zh: '哪些是您自覺的缺點？', en: 'Which do you see as your weakness?',
+      o: [['沒有耐心。', 'Impatience.'],
+          ['欠缺細心。', 'Not paying enough attention to detail.'],
+          ['沒有主見。', 'Not having strong opinions of my own.'],
+          ['欠缺風趣。', 'Not being much fun.']] }
+  ];
+  var ORDER = ['D', 'I', 'S', 'C'];
+  var TYPES = {
+    D: { animal: { zh: '獅子', en: 'Lion' }, name: { zh: '支配型', en: 'Dominance' },
+         desc: { zh: '重「事」、步調快。目標導向、果斷直接，喜歡掌握主導權，最在意成果。',
+                 en: 'Task-focused and fast-paced. Goal-driven, decisive and direct; likes to take charge and cares most about results.' },
+         short: { zh: '果斷直接，重成果', en: 'Decisive, results first' },
+         tags: { zh: ['果斷', '重成果', '主導'], en: ['Decisive', 'Results', 'Takes charge'] } },
+    I: { animal: { zh: '孔雀', en: 'Peacock' }, name: { zh: '影響型', en: 'Influence' },
+         desc: { zh: '重「人」、步調快。熱情樂觀、善於表達，喜歡帶動氣氛，也喜歡被看見。',
+                 en: 'People-focused and fast-paced. Warm, upbeat and expressive; likes to lift the mood and be seen.' },
+         short: { zh: '熱情外向，善表達', en: 'Warm, expressive' },
+         tags: { zh: ['熱情', '善表達', '帶動氣氛'], en: ['Enthusiastic', 'Expressive', 'Energizing'] } },
+    S: { animal: { zh: '無尾熊', en: 'Koala' }, name: { zh: '穩健型', en: 'Steadiness' },
+         desc: { zh: '重「人」、步調慢。溫和可靠、善於傾聽，重視團隊和諧與穩定。',
+                 en: 'People-focused and steady-paced. Gentle, dependable and a good listener; values harmony and stability.' },
+         short: { zh: '溫和可靠，重和諧', en: 'Gentle, steady' },
+         tags: { zh: ['溫和', '傾聽', '穩定'], en: ['Gentle', 'Listens', 'Steady'] } },
+    C: { animal: { zh: '貓頭鷹', en: 'Owl' }, name: { zh: '謹慎型', en: 'Conscientiousness' },
+         desc: { zh: '重「事」、步調慢。嚴謹細心，重視流程與標準，習慣依資料做判斷。',
+                 en: 'Task-focused and steady-paced. Careful and precise; values process and standards and decides from data.' },
+         short: { zh: '嚴謹細心，重標準', en: 'Careful, precise' },
+         tags: { zh: ['嚴謹', '重細節', '依資料'], en: ['Careful', 'Detail', 'Data-driven'] } },
+    X: { animal: { zh: '變色龍', en: 'Chameleon' }, name: { zh: '綜合型', en: 'Adaptive' },
+         desc: { zh: '三種以上的風格一樣明顯，會依對象和情境調整自己的做法，適應力強。',
+                 en: 'Three or more styles are equally strong. You adjust your approach to the people and the situation, and adapt easily.' },
+         short: { zh: '依情境調整，適應力強', en: 'Adapts to the situation' },
+         tags: { zh: ['彈性', '適應力', '多面向'], en: ['Flexible', 'Adaptable', 'Many-sided'] } }
+  };
+  var COLOR = { D: 'var(--d)', I: 'var(--i)', S: 'var(--s)', C: 'var(--c)', X: 'var(--x)' };
+
+  var T = {
+    zh: {
+      title: 'DISC 動物風格測驗',
+      lead: '共 10 題，約 3 分鐘。',
+      how1: '請想像您身處平常的工作環境，回答時想的是工作中的自己。',
+      how2: '這不是考試，沒有對錯，依直覺誠實回答就好。',
+      how3: '每一題都要選一個最符合您的答案。',
+      count: function (n) { return '已填 ' + n + '／10 題'; },
+      submit: '看我的結果',
+      missing: function (list) { return '還有 ' + list.length + ' 題沒選：第 ' + list.join('、') + ' 題。'; },
+      kicker1: '您最突出的風格', kicker2: '您有兩種同樣明顯的風格', kickerX: '您的風格',
+      tieX: function (ks) { return ks.join('、') + ' 三型的題數相同，沒有單一突出的風格。'; },
+      tie2: '兩型題數相同，兩種說明都可以參考。',
+      barsTitle: '四型各選了幾題', unit: '題',
+      mapTitle: '四種風格一覽', task: '重「事」', people: '重「人」', fast: '步調快', slow: '步調慢',
+      chamLine: '<b>變色龍</b>：三種以上的風格一樣明顯，會依情境調整自己。',
+      remind: 'DISC 是溝通風格的參考，不是替人貼標籤。詳細內容請聽講師說明。',
+      edit: '回去修改答案', reset: '清除答案，重新填寫',
+      foot1: '課堂用的簡易版風格測驗，依 DISC 理論改編，不是正式的 DISC 量表。',
+      foot2: '作答只留在這支手機上，不會上傳或儲存到任何地方。'
+    },
+    en: {
+      title: 'DISC Animal Style Quiz',
+      lead: '10 questions, about 3 minutes.',
+      how1: 'Picture yourself in your usual work setting and answer as you are at work.',
+      how2: 'This is not a test. There are no right or wrong answers, so go with your first instinct.',
+      how3: 'Pick the one answer that fits you best for every question.',
+      count: function (n) { return n + ' of 10 answered'; },
+      submit: 'See my result',
+      missing: function (list) { return list.length + (list.length === 1 ? ' question is' : ' questions are') + ' still unanswered: ' + list.join(', ') + '.'; },
+      kicker1: 'Your strongest style', kicker2: 'You have two equally strong styles', kickerX: 'Your style',
+      tieX: function (ks) { return ks.join(', ') + ' are tied, so no single style stands out.'; },
+      tie2: 'The two styles are tied, so both descriptions apply.',
+      barsTitle: 'How many answers went to each style', unit: '',
+      mapTitle: 'The four styles', task: 'Task-focused', people: 'People-focused', fast: 'Fast-paced', slow: 'Steady-paced',
+      chamLine: '<b>Chameleon</b>: three or more styles are equally strong; adjusts to the situation.',
+      remind: 'DISC describes communication styles. It is a reference, not a label. Your instructor will explain the details.',
+      edit: 'Change my answers', reset: 'Clear answers and start over',
+      foot1: 'A simplified classroom quiz adapted from DISC theory. It is not the official DISC assessment.',
+      foot2: 'Your answers stay on this phone and are never uploaded or stored anywhere else.'
+    }
+  };
+
+  /* ---------- illustrations (original drawings) ---------- */
+  var gid = 0;
+  function svgOpen(label) { return '<svg viewBox="0 0 200 200" role="img" aria-label="' + label + '" xmlns="http://www.w3.org/2000/svg">'; }
+  function lion(label) {
+    var s = svgOpen(label) + '<circle cx="100" cy="100" r="98" fill="#fde8d6"/>';
+    for (var k = 0; k < 14; k++) {
+      var a = k * Math.PI * 2 / 14;
+      s += '<circle cx="' + (100 + 58 * Math.cos(a)).toFixed(1) + '" cy="' + (104 + 58 * Math.sin(a)).toFixed(1) + '" r="24" fill="#c8611f"/>';
+    }
+    s += '<circle cx="100" cy="104" r="64" fill="#d9772b"/>' +
+      '<circle cx="64" cy="68" r="15" fill="#f4bd55"/><circle cx="64" cy="68" r="7" fill="#c8611f"/>' +
+      '<circle cx="136" cy="68" r="15" fill="#f4bd55"/><circle cx="136" cy="68" r="7" fill="#c8611f"/>' +
+      '<circle cx="100" cy="108" r="44" fill="#f4bd55"/>' +
+      '<path d="M76 89 Q84 84 92 89 M108 89 Q116 84 124 89" stroke="#8a4316" stroke-width="3.5" fill="none" stroke-linecap="round"/>' +
+      '<circle cx="84" cy="100" r="6" fill="#3b2412"/><circle cx="116" cy="100" r="6" fill="#3b2412"/>' +
+      '<circle cx="86" cy="98" r="2" fill="#ffffff"/><circle cx="118" cy="98" r="2" fill="#ffffff"/>' +
+      '<ellipse cx="100" cy="127" rx="22" ry="16" fill="#fde6b8"/>' +
+      '<path d="M90 116 Q100 111 110 116 L100 127 Z" fill="#5a2e17"/>' +
+      '<path d="M100 127 Q100 135 91 136 M100 127 Q100 135 109 136" stroke="#5a2e17" stroke-width="3" fill="none" stroke-linecap="round"/>';
+    return s + '</svg>';
+  }
+  function peacock(label) {
+    var s = svgOpen(label) + '<circle cx="100" cy="100" r="98" fill="#d9f1ef"/>';
+    for (var k = -4; k <= 4; k++) {
+      var ang = k * 17.5;
+      s += '<g transform="rotate(' + ang + ' 100 128)">' +
+        '<ellipse cx="100" cy="70" rx="15" ry="36" fill="#2e9e6b"/>' +
+        '<ellipse cx="100" cy="74" rx="8" ry="26" fill="#45b97f"/>' +
+        '<circle cx="100" cy="48" r="10" fill="#e8b931"/><circle cx="100" cy="48" r="7" fill="#13827a"/><circle cx="100" cy="48" r="3.8" fill="#1d3f8f"/></g>';
+    }
+    s += '<path d="M100 84 L90 66 M100 84 L100 62 M100 84 L110 66" stroke="#2a6fd8" stroke-width="2.5" stroke-linecap="round"/>' +
+      '<circle cx="90" cy="66" r="4" fill="#2a6fd8"/><circle cx="100" cy="62" r="4" fill="#2a6fd8"/><circle cx="110" cy="66" r="4" fill="#2a6fd8"/>' +
+      '<circle cx="90" cy="66" r="1.8" fill="#e8b931"/><circle cx="100" cy="62" r="1.8" fill="#e8b931"/><circle cx="110" cy="66" r="1.8" fill="#e8b931"/>' +
+      '<ellipse cx="100" cy="142" rx="21" ry="31" fill="#1f5fbf"/>' +
+      '<ellipse cx="100" cy="118" rx="11" ry="22" fill="#2a6fd8"/>' +
+      '<circle cx="100" cy="98" r="15" fill="#2a6fd8"/>' +
+      '<ellipse cx="94" cy="96" rx="4.2" ry="3.4" fill="#ffffff"/><ellipse cx="106" cy="96" rx="4.2" ry="3.4" fill="#ffffff"/>' +
+      '<circle cx="94.5" cy="96" r="2" fill="#10224a"/><circle cx="105.5" cy="96" r="2" fill="#10224a"/>' +
+      '<path d="M96 103 L104 103 L100 110 Z" fill="#e8a33a"/>' +
+      '<path d="M93 171 L90 182 M107 171 L110 182" stroke="#e8a33a" stroke-width="3.5" stroke-linecap="round"/>';
+    return s + '</svg>';
+  }
+  function koala(label) {
+    return svgOpen(label) + '<circle cx="100" cy="100" r="98" fill="#e3efd9"/>' +
+      '<path d="M146 178 Q170 150 186 150 Q176 176 146 178 Z" fill="#6aa84f"/>' +
+      '<circle cx="46" cy="72" r="32" fill="#8f99a5"/><circle cx="48" cy="74" r="19" fill="#f1e6ea"/>' +
+      '<circle cx="154" cy="72" r="32" fill="#8f99a5"/><circle cx="152" cy="74" r="19" fill="#f1e6ea"/>' +
+      '<ellipse cx="100" cy="112" rx="60" ry="54" fill="#a9b2bc"/>' +
+      '<circle cx="66" cy="130" r="9" fill="#f3b6c4" fill-opacity=".7"/><circle cx="134" cy="130" r="9" fill="#f3b6c4" fill-opacity=".7"/>' +
+      '<circle cx="74" cy="104" r="6.5" fill="#262b33"/><circle cx="126" cy="104" r="6.5" fill="#262b33"/>' +
+      '<circle cx="76" cy="102" r="2" fill="#ffffff"/><circle cx="128" cy="102" r="2" fill="#ffffff"/>' +
+      '<ellipse cx="100" cy="126" rx="15" ry="21" fill="#3a3f47"/>' +
+      '<ellipse cx="95" cy="118" rx="4" ry="6" fill="#ffffff" fill-opacity=".35"/>' +
+      '<path d="M90 153 Q100 159 110 153" stroke="#3a3f47" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+      '</svg>';
+  }
+  function owl(label) {
+    var s = svgOpen(label) + '<circle cx="100" cy="100" r="98" fill="#dfe7f6"/>' +
+      '<path d="M54 72 L58 30 L88 58 Z" fill="#4f6488"/><path d="M146 72 L142 30 L112 58 Z" fill="#4f6488"/>' +
+      '<ellipse cx="46" cy="130" rx="14" ry="36" fill="#4a5e86" transform="rotate(-12 46 130)"/>' +
+      '<ellipse cx="154" cy="130" rx="14" ry="36" fill="#4a5e86" transform="rotate(12 154 130)"/>' +
+      '<ellipse cx="100" cy="118" rx="58" ry="64" fill="#5b7099"/>' +
+      '<ellipse cx="100" cy="148" rx="34" ry="32" fill="#d7deea"/>';
+    var rows = [[136, [86, 100, 114]], [150, [79, 93, 107, 121]], [164, [86, 100, 114]]];
+    rows.forEach(function (r) { r[1].forEach(function (x) { s += '<path d="M' + (x - 5) + ' ' + r[0] + ' q5 6 10 0" stroke="#aab7cf" stroke-width="2.5" fill="none" stroke-linecap="round"/>'; }); });
+    s += '<circle cx="76" cy="96" r="25" fill="#eef1f7"/><circle cx="124" cy="96" r="25" fill="#eef1f7"/>' +
+      '<circle cx="76" cy="98" r="15" fill="#f0b429"/><circle cx="124" cy="98" r="15" fill="#f0b429"/>' +
+      '<circle cx="76" cy="98" r="8" fill="#1b2233"/><circle cx="124" cy="98" r="8" fill="#1b2233"/>' +
+      '<circle cx="79" cy="94" r="3" fill="#ffffff"/><circle cx="127" cy="94" r="3" fill="#ffffff"/>' +
+      '<path d="M52 78 Q76 64 100 82 Q124 64 148 78" stroke="#3f5276" stroke-width="4.5" fill="none" stroke-linecap="round"/>' +
+      '<path d="M93 112 L107 112 L100 126 Z" fill="#e89a2c"/>' +
+      '<ellipse cx="86" cy="181" rx="9" ry="4.5" fill="#e89a2c"/><ellipse cx="114" cy="181" rx="9" ry="4.5" fill="#e89a2c"/>';
+    return s + '</svg>';
+  }
+  function chameleon(label) {
+    var g = 'cg' + (++gid);
+    return svgOpen(label) +
+      '<defs><linearGradient id="' + g + '" x1="0" y1="0" x2="1" y2="0">' +
+      '<stop offset="0" stop-color="#3fae5a"/><stop offset=".4" stop-color="#9ccf3b"/>' +
+      '<stop offset=".72" stop-color="#f2b23a"/><stop offset="1" stop-color="#e9733a"/></linearGradient></defs>' +
+      '<circle cx="100" cy="100" r="98" fill="#efe3f8"/>' +
+      '<path d="M22 152 Q100 142 182 154" stroke="#8a5a35" stroke-width="8" fill="none" stroke-linecap="round"/>' +
+      '<path d="M164 150 Q176 132 190 138 Q182 152 164 150 Z" fill="#6aa84f"/>' +
+      '<path d="M54 118 C22 124 18 178 52 178 C78 178 80 150 61 150 C48 150 48 167 59 167" stroke="url(#' + g + ')" stroke-width="12" fill="none" stroke-linecap="round"/>' +
+      '<path d="M72 126 L66 148 M128 124 L134 148" stroke="#5aa83f" stroke-width="9" stroke-linecap="round"/>' +
+      '<path d="M48 116 C52 82 92 66 128 76 C142 80 150 90 150 104 C150 122 132 132 104 132 C76 132 50 130 48 116 Z" fill="url(#' + g + ')"/>' +
+      '<path d="M122 78 Q150 62 176 94 Q180 108 166 114 Q150 122 130 118 Z" fill="#e98a3a"/>' +
+      '<path d="M70 86 Q76 108 72 128 M92 76 Q98 102 94 131 M114 76 Q120 100 116 130" stroke="#ffffff" stroke-opacity=".45" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+      '<circle cx="150" cy="94" r="13" fill="#f6c85a" stroke="#d0802a" stroke-width="2"/>' +
+      '<circle cx="153" cy="94" r="5" fill="#1d2433"/><circle cx="155" cy="92" r="1.6" fill="#ffffff"/>' +
+      '<path d="M138 111 Q156 116 173 106" stroke="#7a3d17" stroke-width="2.5" fill="none" stroke-linecap="round"/>' +
+      '</svg>';
+  }
+  var DRAW = { D: lion, I: peacock, S: koala, C: owl, X: chameleon };
+
+  /* ---------- state ---------- */
+  var KEY = 'disc-answers-v1', LKEY = 'disc-lang', DKEY = 'disc-done-v1';
+  var answers = {};
+  try { answers = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { answers = {}; }
+  var lang = 'zh';
+  try { lang = localStorage.getItem(LKEY) || 'zh'; } catch (e) {}
+  var qp = (location.search.match(/[?&]lang=(zh|en)/) || [])[1];
+  if (qp) lang = qp;
+  if (lang !== 'en') lang = 'zh';
+  var done = false;
+  try { done = localStorage.getItem(DKEY) === '1'; } catch (e) {}
+
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(answers)); } catch (e) {} }
+  function filled() { return Object.keys(answers).filter(function (k) { return answers[k]; }).length; }
+  function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+  /* ---------- build questions ---------- */
+  var itemsEl = document.getElementById('items');
+  QUESTIONS.forEach(function (q, i) {
+    var n = i + 1;
+    var fs = document.createElement('fieldset');
+    fs.className = 'q'; fs.id = 'q' + n;
+    var html = '<legend><span class="no">' + n + '.</span><span class="qt"></span></legend><div class="opts">';
+    for (var v = 1; v <= 4; v++) {
+      html += '<label><input type="radio" id="q' + n + 'o' + v + '" name="q' + n + '" value="' + v + '"' +
+        (String(answers[n]) === String(v) ? ' checked' : '') + '><span class="ot"></span></label>';
+    }
+    fs.innerHTML = html + '</div>';
+    itemsEl.appendChild(fs);
+  });
+
+  itemsEl.addEventListener('change', function (e) {
+    var m = /^q(\d+)$/.exec(e.target.name || '');
+    if (!m) return;
+    answers[m[1]] = Number(e.target.value);
+    save();
+    document.getElementById('q' + m[1]).classList.remove('miss');
+    updateCount();
+    if (filled() === 10) document.getElementById('alert').hidden = true;
+  });
+
+  function updateCount() {
+    var n = filled();
+    document.getElementById('count').textContent = T[lang].count(n);
+    document.getElementById('fill').style.width = (n * 10) + '%';
+  }
+
+  /* ---------- scoring ---------- */
+  function score() {
+    var c = { D: 0, I: 0, S: 0, C: 0 };
+    for (var n = 1; n <= 10; n++) { var v = answers[n]; if (v >= 1 && v <= 4) c[ORDER[v - 1]]++; }
+    var max = Math.max(c.D, c.I, c.S, c.C);
+    var top = ORDER.filter(function (k) { return c[k] === max; });
+    var heroes = top.length >= 3 ? ['X'] : top;
+    return { counts: c, top: top, heroes: heroes };
+  }
+
+  /* ---------- result ---------- */
+  function L(o) { return o[lang]; }
+  function heroCard(k) {
+    var t = TYPES[k];
+    var label = L(t.animal) + (k === 'X' ? '' : ' ' + k);
+    return '<article class="hero" style="--tc:' + COLOR[k] + '">' + DRAW[k](esc(label)) +
+      '<div class="animal">' + esc(L(t.animal)) + '</div>' +
+      '<div class="type">' + (k === 'X' ? '' : '<span class="letter">' + k + '</span>') + '<span>' + esc(L(t.name)) + (lang === 'zh' && k !== 'X' ? ' ' + esc(t.name.en) : '') + '</span></div>' +
+      '<p class="desc">' + esc(L(t.desc)) + '</p>' +
+      '<div class="tags">' + L(t.tags).map(function (x) { return '<span>' + esc(x) + '</span>'; }).join('') + '</div>' +
+      '</article>';
+  }
+  function renderResult() {
+    var r = score(), tt = T[lang];
+    var kicker = r.heroes[0] === 'X' ? tt.kickerX : (r.heroes.length === 2 ? tt.kicker2 : tt.kicker1);
+    var html = '<h1>' + esc(tt.title) + '</h1>' +
+      '<p class="kicker">' + esc(kicker) + '</p>' +
+      '<div class="heroes' + (r.heroes.length === 2 ? ' two' : '') + '">' + r.heroes.map(heroCard).join('') + '</div>';
+    if (r.heroes[0] === 'X') html += '<p class="tie">' + esc(tt.tieX(r.top)) + '</p>';
+    else if (r.heroes.length === 2) html += '<p class="tie">' + esc(tt.tie2) + '</p>';
+
+    html += '<div class="panel"><h2>' + esc(tt.barsTitle) + '</h2><div class="bars">';
+    ORDER.forEach(function (k) {
+      var n = r.counts[k];
+      html += '<div class="brow' + (r.top.indexOf(k) >= 0 ? ' top' : '') + '" style="--tc:' + COLOR[k] + '">' +
+        '<div class="lab"><span class="letter">' + k + '</span>' + esc(L(TYPES[k].animal)) + '</div>' +
+        '<div class="trk"><div class="bf" style="width:' + (n * 10) + '%"></div></div>' +
+        '<div class="n">' + n + (tt.unit ? ' <small>' + tt.unit + '</small>' : '') + '</div></div>';
+    });
+    html += '</div><div class="scale" aria-hidden="true"><span></span><div><span>0</span><span>5</span><span>10</span></div><span></span></div></div>';
+
+    html += '<div class="panel"><h2>' + esc(tt.mapTitle) + '</h2><div class="map">' +
+      '<div class="ax">' + esc(tt.task) + '</div><div class="ax">' + esc(tt.people) + '</div>' +
+      '<div class="row">' + esc(tt.fast) + '</div>' + cell('D', r) + cell('I', r) +
+      '<div class="row">' + esc(tt.slow) + '</div>' + cell('C', r) + cell('S', r) +
+      '</div><div class="cham" style="--tc:var(--x)">' + chameleon(esc(L(TYPES.X.animal))) + '<div>' + tt.chamLine + '</div></div>' +
+      '<p class="remind">' + esc(tt.remind) + '</p></div>' +
+      '<button class="ghost" type="button" id="edit">' + esc(tt.edit) + '</button>' +
+      '<button class="ghost" type="button" id="reset">' + esc(tt.reset) + '</button>';
+
+    var el = document.getElementById('result');
+    el.innerHTML = html;
+    el.hidden = false;
+    document.getElementById('edit').onclick = function () { showForm(false); };
+    document.getElementById('reset').onclick = function () { showForm(true); };
+  }
+  function cell(k, r) {
+    var t = TYPES[k], me = r.heroes.indexOf(k) >= 0;
+    return '<div class="cell' + (me ? ' me' : '') + '" style="--tc:' + COLOR[k] + '">' + DRAW[k](esc(L(t.animal))) +
+      '<div class="nm"><b>' + k + '</b> ' + esc(L(t.animal)) + '</div>' +
+      '<div class="sh">' + esc(L(t.name)) + '<br>' + esc(L(t.short)).replace('，', '，<br>') + '</div></div>';
+  }
+
+  function setDone(v) { done = v; try { localStorage.setItem(DKEY, v ? '1' : '0'); } catch (e) {} }
+  function showForm(clear) {
+    if (clear) {
+      answers = {}; save();
+      document.querySelectorAll('#items input').forEach(function (i) { i.checked = false; });
+      updateCount();
+    }
+    setDone(false);
+    document.body.classList.remove('done');
+    document.getElementById('result').hidden = true;
+    window.scrollTo(0, 0);
+  }
+
+  document.getElementById('form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var missing = [];
+    for (var n = 1; n <= 10; n++) {
+      var el = document.getElementById('q' + n);
+      if (!answers[n]) { missing.push(n); el.classList.add('miss'); } else el.classList.remove('miss');
+    }
+    var alert = document.getElementById('alert');
+    if (missing.length) {
+      alert.textContent = T[lang].missing(missing);
+      alert.hidden = false;
+      document.getElementById('q' + missing[0]).scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    alert.hidden = true;
+    setDone(true);
+    document.body.classList.add('done');
+    renderResult();
+    window.scrollTo(0, 0);
+  });
+
+  /* ---------- language ---------- */
+  function applyLang() {
+    document.documentElement.lang = lang === 'zh' ? 'zh-Hant' : 'en';
+    document.title = T[lang].title;
+    document.querySelectorAll('[data-t]').forEach(function (el) { el.textContent = T[lang][el.getAttribute('data-t')]; });
+    QUESTIONS.forEach(function (q, i) {
+      var fs = document.getElementById('q' + (i + 1));
+      fs.querySelector('.qt').textContent = q[lang];
+      fs.querySelectorAll('.ot').forEach(function (s, j) { s.textContent = q.o[j][lang === 'zh' ? 0 : 1]; });
+    });
+    document.getElementById('btn-zh').setAttribute('aria-pressed', String(lang === 'zh'));
+    document.getElementById('btn-en').setAttribute('aria-pressed', String(lang === 'en'));
+    updateCount();
+    var alert = document.getElementById('alert');
+    if (!alert.hidden) {
+      var miss = []; for (var n = 1; n <= 10; n++) if (!answers[n]) miss.push(n);
+      if (miss.length) alert.textContent = T[lang].missing(miss); else alert.hidden = true;
+    }
+    if (document.body.classList.contains('done')) renderResult();
+  }
+  function setLang(l) { lang = l; try { localStorage.setItem(LKEY, l); } catch (e) {} applyLang(); }
+  document.getElementById('btn-zh').onclick = function () { setLang('zh'); };
+  document.getElementById('btn-en').onclick = function () { setLang('en'); };
+
+  if (done && filled() === 10) document.body.classList.add('done');
+  applyLang();
+})();
+</script>
+</body>
+</html>

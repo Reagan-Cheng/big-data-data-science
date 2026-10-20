@@ -33,7 +33,7 @@
     </div>
     <div class="card">
       <div class="num" id="currentLabel">目前開放</div>
-      <div style="font-size:42px;font-weight:950;margin-top:4px">3</div>
+      <div style="font-size:42px;font-weight:950;margin-top:4px">4</div>
       <div id="chapterCount">個章節 / Chapter</div>
       <div class="small" style="margin-top:10px" id="futureText">未來可持續加入新章節與活動。</div>
     </div>
@@ -47,6 +47,18 @@
   <section style="margin-top:24px">
     <div class="num" id="chaptersLabel">COURSE CHAPTERS</div>
     <div class="chapter-grid">
+      <article class="chapter">
+        <div class="num">CHAPTER 00</div>
+        <h2 id="ch0Title">業界演講用</h2>
+        <p id="ch0Desc">業界演講與企業內訓使用的互動活動：衝突風格自評與 DISC 動物風格測驗，學員用手機掃描 QR Code 即可作答。</p>
+        <div class="game-meta">
+          <span class="tag" id="ch0Activities">2 個互動活動</span>
+        </div>
+        <div class="actions">
+          <a class="button" href="chapter-00/index.html" id="enterCh0">進入第零章</a>
+        </div>
+      </article>
+
       <article class="chapter">
         <div class="num">CHAPTER 01</div>
         <h2 id="ch1Title">大數據概論</h2>
@@ -107,6 +119,12 @@
         <a class="qr-link" href="https://reagan-cheng.github.io/big-data-data-science/">https://reagan-cheng.github.io/big-data-data-science/</a>
         <a data-qr-zh="下載 PNG 圖片" data-qr-en="Download PNG" class="button secondary qr-download" href="assets/qr/home.png" download="big-data-home-qr.png">下載 PNG 圖片</a>
       </article>
+      <article class="qr-card" data-qr-path="/chapter-00/">
+        <h3 data-qr-zh="第零章｜業界演講用" data-qr-en="Chapter 0 | Industry Talks">第零章｜業界演講用</h3>
+        <img class="qr-image" src="assets/qr/chapter-00.png" width="192" height="192" alt="第零章｜業界演講用 QR Code" data-qr-zh="第零章｜業界演講用 QR Code" data-qr-en="Chapter 0 | Industry Talks QR Code">
+        <a class="qr-link" href="https://reagan-cheng.github.io/big-data-data-science/chapter-00/">https://reagan-cheng.github.io/big-data-data-science/chapter-00/</a>
+        <a data-qr-zh="下載 PNG 圖片" data-qr-en="Download PNG" class="button secondary qr-download" href="assets/qr/chapter-00.png" download="big-data-chapter-00-qr.png">下載 PNG 圖片</a>
+      </article>
       <article class="qr-card" data-qr-path="/chapter-01/">
         <h3 data-qr-zh="第一章｜大數據概論" data-qr-en="Chapter 1 | Introduction to Big Data">第一章｜大數據概論</h3>
         <img class="qr-image" src="assets/qr/chapter-01.png" width="192" height="192" alt="第一章｜大數據概論 QR Code" data-qr-zh="第一章｜大數據概論 QR Code" data-qr-en="Chapter 1 | Introduction to Big Data QR Code">
@@ -137,7 +155,10 @@ const copy={
   welcomeText:"本網站整合課程中的互動模擬與資料科學練習。學生可由教師提供的遊戲 QR Code 直接進入指定活動。",
   usageNotice:"本網站僅供國立台灣科技大學「大數據與資料科學」課程教學使用。",creatorNotice:"網站建立者：成力庚",
   currentLabel:"目前開放",chapterCount:"個章節",futureText:"未來可持續加入新章節與活動。",
-  chaptersLabel:"課程章節",ch1Title:"大數據概論",
+  chaptersLabel:"課程章節",
+  ch0Title:"業界演講用",ch0Desc:"業界演講與企業內訓使用的互動活動：衝突風格自評與 DISC 動物風格測驗，學員用手機掃描 QR Code 即可作答。",
+  ch0Activities:"2 個互動活動",enterCh0:"進入第零章",
+  ch1Title:"大數據概論",
   ch1Desc:"從預測、演算法偏誤、資料驅動決策到預測維護，理解大數據如何改變企業與社會決策。",
   fourActivities:"4 個互動活動",enterCh1:"進入第一章",ch2Title:"大數據行銷",
   ch2Desc:"透過旅人人格測驗、RFM 決策遊戲與動態標籤實戰，體驗個人化行銷、顧客分群與行銷預算配置。",
@@ -153,7 +174,10 @@ const copy={
   welcomeText:"This site integrates interactive simulations and data-science exercises used in class. Students can enter a specific activity directly from the QR code provided by the instructor.",
   usageNotice:"This website is for teaching use only in the Big Data & Data Science course at National Taiwan University of Science and Technology.",creatorNotice:"Website creator: 成力庚",
   currentLabel:"Currently available",chapterCount:"chapters",futureText:"Additional chapters and activities can be added later.",
-  chaptersLabel:"COURSE CHAPTERS",ch1Title:"Introduction to Big Data",
+  chaptersLabel:"COURSE CHAPTERS",
+  ch0Title:"Industry Talks",ch0Desc:"Interactive activities for industry talks and corporate training: a conflict style self-assessment and a DISC animal style quiz. Participants scan a QR Code with their phones to answer.",
+  ch0Activities:"2 interactive activities",enterCh0:"Enter Chapter 0",
+  ch1Title:"Introduction to Big Data",
   ch1Desc:"Explore prediction, algorithmic bias, data-driven decision making, and predictive maintenance to understand how big data changes business and social decisions.",
   fourActivities:"4 interactive activities",enterCh1:"Enter Chapter 1",ch2Title:"Big Data in Marketing",
   ch2Desc:"Experience personalization, customer segmentation, and marketing budget allocation through a traveler personality quiz, an RFM decision game, and a dynamic-label challenge.",

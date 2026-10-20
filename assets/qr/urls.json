@@ -7,6 +7,27 @@
     "url": "https://reagan-cheng.github.io/big-data-data-science/"
   },
   {
+    "file": "chapter-00",
+    "path": "/chapter-00/",
+    "zh": "第零章｜業界演講用",
+    "en": "Chapter 0 | Industry Talks",
+    "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-00/"
+  },
+  {
+    "file": "conflict-style",
+    "path": "/chapter-00/activities/conflict-style/",
+    "zh": "衝突風格自評",
+    "en": "Conflict Style Self-Assessment",
+    "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-00/activities/conflict-style/"
+  },
+  {
+    "file": "disc",
+    "path": "/chapter-00/activities/disc/",
+    "zh": "DISC 動物風格測驗",
+    "en": "DISC Animal Style Quiz",
+    "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-00/activities/disc/"
+  },
+  {
     "file": "chapter-01",
     "path": "/chapter-01/",
     "zh": "第一章｜大數據概論",

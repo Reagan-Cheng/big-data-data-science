@@ -8,6 +8,9 @@ This website is for teaching the Big Data & Data Science course at National Taiw
 ## 公開網站與活動 / Public website and activities
 
 - [課程首頁 / Course Home](https://reagan-cheng.github.io/big-data-data-science/)
+- [第零章｜業界演講用 / Chapter 0 | Industry Talks](https://reagan-cheng.github.io/big-data-data-science/chapter-00/)
+- [衝突風格自評 / Conflict Style Self-Assessment](https://reagan-cheng.github.io/big-data-data-science/chapter-00/activities/conflict-style/)
+- [DISC 動物風格測驗 / DISC Animal Style Quiz](https://reagan-cheng.github.io/big-data-data-science/chapter-00/activities/disc/)
 - [第一章｜大數據概論 / Chapter 1 | Introduction to Big Data](https://reagan-cheng.github.io/big-data-data-science/chapter-01/)
 - [Titanic 生存預測 / Titanic Survival Prediction](https://reagan-cheng.github.io/big-data-data-science/chapter-01/games/titanic/)
 - [預測式巡邏：偏誤迴圈 / Predictive Policing: Bias Loop](https://reagan-cheng.github.io/big-data-data-science/chapter-01/games/predpol/)
@@ -27,14 +30,17 @@ This website is for teaching the Big Data & Data Science course at National Taiw
 首頁提供課程首頁與各章的 QR Code；各章頁面提供該章每個活動的 QR Code，皆可下載 PNG 圖片。
 The home page carries QR Codes for the course home and each chapter; each chapter page carries the QR Codes for its own activities. All can be downloaded as PNG.
 
-## 其他頁面 / Other pages
+## 第零章｜業界演講用 / Chapter 0 | Industry Talks
 
-- [衝突風格自評 / Conflict Style Self-Assessment](https://reagan-cheng.github.io/big-data-data-science/conflict-style/)：不屬於本課程，供另一門「團隊溝通與衝突溝通」培訓課使用，未列在首頁與各章頁面。位於 conflict-style/index.html，單一檔案、不連外部資源；20 題作答後在手機上計分並畫出雷達圖，答案不會上傳。
-  Not part of this course; used in a separate training session and not linked from the home or chapter pages. A single self-contained file at conflict-style/index.html: 20 items, scored on the phone and shown as a radar chart; answers are never uploaded.
+第零章（chapter-00/index.html）收錄業界演講與企業內訓用的活動，不屬於「大數據與資料科學」課程內容，但與各章同一層、列在首頁。目前用於「團隊溝通與衝突溝通」課程：
+Chapter 0 holds activities for industry talks and corporate training. They are not part of the course content but sit at the same level as the chapters and are listed on the home page.
+
+- 衝突風格自評位於 chapter-00/activities/conflict-style/（單一檔案、不連外部資源）：20 題 DUTCH 量表，作答後在手機上計分並畫出雷達圖，答案不會上傳。原本的網址 conflict-style/ 保留為轉址頁，舊的 QR Code 仍可使用。
+- DISC 動物風格測驗位於 chapter-00/activities/disc/（單一檔案、不連外部資源，插圖為內嵌 SVG）：10 題四選一，選項 1–4 依序計為 D、I、S、C。最多的一型為結果；兩型並列最高時顯示兩種動物；三型以上並列時顯示變色龍。結果頁有四型題數長條圖與四種風格一覽（重事／重人 × 步調快／慢）。右上角可切換中文與英文，?lang=en 或 ?lang=zh 指定語言。答案只存在學員自己的瀏覽器（localStorage），不會上傳。
 
 ## 網站架構 / Structure
 
-首頁為 index.html，第一章為 chapter-01/index.html，第二章為 chapter-02/index.html，第三章為 chapter-03/index.html。
+首頁為 index.html，第零章為 chapter-00/index.html，第一章為 chapter-01/index.html，第二章為 chapter-02/index.html，第三章為 chapter-03/index.html。
 
 第一章的四個互動遊戲分別位於 chapter-01/games/ 下的 titanic、predpol、decision-lab、airline-survival。
 titanic、decision-lab、airline-survival 的 HTML 與提供的原始 ZIP 完全一致，保留原有遊戲邏輯與語言功能。
