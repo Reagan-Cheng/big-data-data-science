@@ -28,6 +28,20 @@
     "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-00/activities/disc/"
   },
   {
+    "file": "mu-ding-hotpot",
+    "path": "/chapter-00/cases/mu-ding-hotpot/",
+    "zh": "個案閱讀：沐鼎鮮鍋",
+    "en": "Case Reading: Mu Ding Hot Pot",
+    "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-00/cases/mu-ding-hotpot/"
+  },
+  {
+    "file": "abc-bath-living-zh",
+    "path": "/chapter-03/cases/abc-bath-living/?lang=zh",
+    "zh": "個案閱讀：ABC 衛浴生活館（中文版）",
+    "en": "Case Reading: ABC Bath Living (Chinese)",
+    "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-03/cases/abc-bath-living/?lang=zh"
+  },
+  {
     "file": "chapter-01",
     "path": "/chapter-01/",
     "zh": "第一章｜大數據概論",

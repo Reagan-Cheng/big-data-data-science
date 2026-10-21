@@ -11,6 +11,7 @@ This website is for teaching the Big Data & Data Science course at National Taiw
 - [第零章｜業界演講用 / Chapter 0 | Industry Talks](https://reagan-cheng.github.io/big-data-data-science/chapter-00/)
 - [衝突風格自評 / Conflict Style Self-Assessment](https://reagan-cheng.github.io/big-data-data-science/chapter-00/activities/conflict-style/)
 - [DISC 動物風格測驗 / DISC Animal Style Quiz](https://reagan-cheng.github.io/big-data-data-science/chapter-00/activities/disc/)
+- [個案閱讀：沐鼎鮮鍋 / Case Reading: Mu Ding Hot Pot](https://reagan-cheng.github.io/big-data-data-science/chapter-00/cases/mu-ding-hotpot/)
 - [第一章｜大數據概論 / Chapter 1 | Introduction to Big Data](https://reagan-cheng.github.io/big-data-data-science/chapter-01/)
 - [Titanic 生存預測 / Titanic Survival Prediction](https://reagan-cheng.github.io/big-data-data-science/chapter-01/games/titanic/)
 - [預測式巡邏：偏誤迴圈 / Predictive Policing: Bias Loop](https://reagan-cheng.github.io/big-data-data-science/chapter-01/games/predpol/)
@@ -32,11 +33,13 @@ The home page carries QR Codes for the course home and each chapter; each chapte
 
 ## 第零章｜業界演講用 / Chapter 0 | Industry Talks
 
-第零章（chapter-00/index.html）收錄業界演講與企業內訓用的活動，不屬於「大數據與資料科學」課程內容，但與各章同一層、列在首頁。目前用於「團隊溝通與衝突溝通」課程：
+第零章（chapter-00/index.html）收錄業界演講與企業內訓用的活動與線上個案，不屬於「大數據與資料科學」課程內容，但與各章同一層、列在首頁。目前用於「團隊溝通與衝突溝通」與「AI 導入專案規劃與策略」課程：
 Chapter 0 holds activities for industry talks and corporate training. They are not part of the course content but sit at the same level as the chapters and are listed on the home page.
 
 - 衝突風格自評位於 chapter-00/activities/conflict-style/（單一檔案、不連外部資源）：20 題 DUTCH 量表，作答後在手機上計分並畫出雷達圖，答案不會上傳。原本的網址 conflict-style/ 保留為轉址頁，舊的 QR Code 仍可使用。
 - DISC 動物風格測驗位於 chapter-00/activities/disc/（單一檔案、不連外部資源，插圖為內嵌 SVG）：10 題四選一，選項 1–4 依序計為 D、I、S、C。最多的一型為結果；兩型並列最高時顯示兩種動物；三型以上並列時顯示變色龍。結果頁有四型題數長條圖與四種風格一覽（重事／重人 × 步調快／慢）。右上角可切換中文與英文，?lang=en 或 ?lang=zh 指定語言。答案只存在學員自己的瀏覽器（localStorage），不會上傳。
+- 個案閱讀：沐鼎鮮鍋位於 chapter-00/cases/mu-ding-hotpot/（單一檔案、不連外部資源，插圖為內嵌 SVG）：個案全文依授課講義原文分四段呈現，未經增刪；每一句是一個步驟，讀到哪一句，旁邊的示意圖就畫到哪一步，最後列出兩題討論問題。版面與 ABC 衛浴生活館相同：電腦上圖在左、文字在右；手機上圖固定在上方、文字在下方。右上角 A−／A+ 調整字體大小，「聚焦」只亮出目前這一句；可捲動、點句子、按右下角箭頭或簡報筆（↓／→／空白鍵／PageDown）前進。字體大小與聚焦設定存在學員自己的瀏覽器。
+- ABC 衛浴生活館與第三章共用 chapter-03/cases/abc-bath-living/，第零章的連結與 QR Code（assets/qr/abc-bath-living-zh.png）帶 ?lang=zh，直接開啟中文版。
 
 ## 網站架構 / Structure
 
