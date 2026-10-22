@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>部門文化診斷</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page: #eef1f6;
+    --card: #ffffff;
+    --ink: #14213a;
+    --ink-2: #4a566b;
+    --ink-3: #7a8598;
+    --line: #d5dbe6;
+    --navy: #0f2a5c;
+    --navy-ink: #ffffff;
+    --ok: #1d6b3a;
+    --ok-bg: #e6f4ea;
+    --warn: #b3261e;
+    --warn-bg: #fdecea;
+    --surface-1: #ffffff;
+    --grid: #d9dee8;
+    --series-1: #2a78d6;
+    --series-2: #eb6834;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --page: #0e1420;
+      --card: #1a2233;
+      --ink: #f2f5fa;
+      --ink-2: #c0c8d6;
+      --ink-3: #8d97a8;
+      --line: #33405a;
+      --navy: #9db8f2;
+      --navy-ink: #0e1420;
+      --ok: #8fd6a4;
+      --ok-bg: #1d3326;
+      --warn: #ff9f97;
+      --warn-bg: #3a1f1d;
+      --surface-1: #1a2233;
+      --grid: #3a4763;
+      --series-1: #3987e5;
+      --series-2: #d95926;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", "Heiti TC", system-ui, sans-serif;
+    font-size: 19px;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 0 16px 48px; }
+  h1 { font-size: 30px; line-height: 1.25; margin: 28px 0 6px; letter-spacing: .02em; }
+  h2 { font-size: 23px; line-height: 1.3; margin: 0 0 10px; }
+  p { margin: 0 0 12px; }
+  .lead { color: var(--ink-2); }
+  .how { background: var(--card); border-radius: 14px; padding: 16px 18px; margin: 16px 0 8px; }
+  .how ul { margin: 0; padding-left: 1.15em; }
+  .how li { margin: 4px 0; }
+
+  .bar {
+    position: sticky; top: 0; z-index: 5;
+    background: var(--navy); color: var(--navy-ink);
+    margin: 18px -16px 0; padding: 12px 16px 10px;
+    padding-top: calc(12px + env(safe-area-inset-top));
+  }
+  .bar .stem { font-size: 20px; font-weight: 700; line-height: 1.35; }
+  .bar .count { font-size: 16px; opacity: .85; margin-top: 4px; display: flex; align-items: center; gap: 10px; }
+  .bar .track { flex: 1; height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--navy-ink) 25%, transparent); overflow: hidden; }
+  .bar .fill { height: 100%; width: 0; background: var(--navy-ink); border-radius: 3px; transition: width .2s; }
+
+  .dim { margin: 14px 0 0; padding: 18px 16px 14px; background: var(--card); border-radius: 14px; scroll-margin-top: 110px; }
+  .dim.miss { outline: 3px solid var(--warn); }
+  .dim h3 { font-size: 22px; line-height: 1.35; margin: 0 0 2px; }
+  .dim h3 .no { color: var(--ink-3); font-weight: 600; margin-right: .3em; }
+  .dim .ask { color: var(--ink-2); font-size: 17px; margin: 0 0 8px; }
+  .row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+  .row:first-of-type { border-top: 0; }
+  .row .t { font-size: 18px; line-height: 1.4; }
+  .row .t b { display: block; font-size: 15px; color: var(--ink-3); font-weight: 700; letter-spacing: .03em; }
+  .step { display: flex; align-items: center; gap: 4px; }
+  .step button {
+    width: 44px; height: 48px; border-radius: 10px; border: 2px solid var(--line);
+    background: var(--card); color: var(--ink); font: inherit; font-size: 24px; font-weight: 700; line-height: 1;
+  }
+  .step input {
+    width: 64px; height: 48px; border-radius: 10px; border: 2px solid var(--line);
+    background: var(--card); color: var(--ink); text-align: center;
+    font: inherit; font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums;
+    -moz-appearance: textfield;
+  }
+  .step input::-webkit-outer-spin-button, .step input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .step input:focus-visible, .step button:focus-visible { outline: 3px solid var(--series-1); outline-offset: 1px; }
+  .sum { margin-top: 8px; padding: 8px 12px; border-radius: 10px; font-size: 17px; font-weight: 700; background: var(--warn-bg); color: var(--warn); }
+  .sum.ok { background: var(--ok-bg); color: var(--ok); }
+
+  .send { margin-top: 22px; }
+  button.main {
+    display: block; width: 100%; min-height: 60px; border: 0; border-radius: 14px;
+    background: var(--navy); color: var(--navy-ink);
+    font: inherit; font-size: 22px; font-weight: 700;
+  }
+  button.ghost {
+    display: block; width: 100%; min-height: 54px; border-radius: 14px; margin-top: 10px;
+    background: transparent; color: var(--ink); border: 2px solid var(--line);
+    font: inherit; font-size: 19px; font-weight: 600;
+  }
+  .alert { display: none; background: var(--warn-bg); color: var(--warn); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; font-weight: 600; }
+  .alert.on { display: block; }
+  .phase-note { background: var(--card); border-radius: 14px; padding: 14px 16px; margin-top: 14px; font-size: 18px; }
+
+  #result { display: none; }
+  body.done #form, body.done .intro, body.done .bar { display: none; }
+  body.done #result { display: block; }
+  .panel { background: var(--card); border-radius: 14px; padding: 18px 16px; margin-top: 14px; }
+  .top { font-size: 20px; line-height: 1.6; }
+  .top b { font-weight: 800; }
+  .legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 17px; color: var(--ink-2); margin: 0 0 4px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend svg { width: 28px; height: 12px; }
+  svg.radar { display: block; width: 100%; height: auto; }
+  .radar .ring { fill: none; stroke: var(--grid); stroke-width: 1; }
+  .radar .spoke { stroke: var(--grid); stroke-width: 1; }
+  .radar .tick { fill: var(--ink-3); font-size: 11px; }
+  .radar .a1 { fill: var(--series-1); fill-opacity: .16; stroke: var(--series-1); stroke-width: 2; stroke-linejoin: round; }
+  .radar .a2 { fill: var(--series-2); fill-opacity: .12; stroke: var(--series-2); stroke-width: 2; stroke-dasharray: 6 4; stroke-linejoin: round; }
+  .radar .d1 { fill: var(--series-1); stroke: var(--surface-1); stroke-width: 2; }
+  .radar .d2 { fill: var(--series-2); stroke: var(--surface-1); stroke-width: 2; }
+  .radar .name { fill: var(--ink); font-size: 19px; font-weight: 700; }
+  .radar .val { fill: var(--ink-2); font-size: 14px; font-weight: 600; }
+  table.scores { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  .scores th, .scores td { padding: 10px 4px; border-top: 1px solid var(--line); text-align: right; }
+  .scores thead th { border-top: 0; font-size: 15px; color: var(--ink-3); font-weight: 700; }
+  .scores th.k, .scores td.k { text-align: left; }
+  .scores td.k { font-size: 19px; font-weight: 700; }
+  .scores td { font-size: 20px; font-weight: 700; }
+  .scores td.g small { display: block; font-size: 13px; font-weight: 700; color: var(--warn); }
+  .read ul { margin: 0; padding-left: 1.15em; }
+  .read li { margin: 6px 0; }
+  footer { color: var(--ink-3); font-size: 14px; line-height: 1.6; margin-top: 26px; }
+  @media (max-width: 380px) {
+    .step button { width: 38px; }
+    .step input { width: 54px; }
+    .row .t { font-size: 17px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="intro">
+    <h1>部門文化診斷</h1>
+    <p class="lead">組織文化評估工具（OCAI）簡化版，共 6 個面向，約 8 分鐘。</p>
+    <div class="how">
+      <ul>
+        <li>請以<b>你所在的部門</b>為對象作答。</li>
+        <li>每個面向有 A 到 D 四種描述，請把 <b>100 分</b>分給這四種描述：越像你的部門，分數越高，可以給 0 分。</li>
+        <li>每個面向的四格合計必須剛好 100 分。</li>
+        <li>先填<b>「現在」</b>部門實際的樣子，再填<b>「期望」</b>你希望 3 到 5 年後的樣子。</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="bar" aria-live="polite">
+    <div class="stem" id="stem">第一部分：現在的部門</div>
+    <div class="count"><span id="count">已完成 0／6 個面向</span><span class="track"><span class="fill" id="fill"></span></span></div>
+  </div>
+
+  <form id="form" novalidate>
+    <div class="phase-note" id="phaseNote"></div>
+    <div id="dims"></div>
+    <div class="send">
+      <div class="alert" id="alert" role="alert"></div>
+      <button class="main" type="submit" id="next">下一步：填「期望」</button>
+      <button class="ghost" type="button" id="back" hidden>回到「現在」</button>
+    </div>
+  </form>
+
+  <section id="result" aria-live="polite">
+    <h1>我的部門文化</h1>
+    <div class="panel top" id="top"></div>
+    <div class="panel">
+      <h2>現在 vs 期望</h2>
+      <div class="legend" aria-hidden="true">
+        <span><svg viewBox="0 0 28 12"><line x1="1" y1="6" x2="27" y2="6" stroke="var(--series-1)" stroke-width="3"/></svg>現在</span>
+        <span><svg viewBox="0 0 28 12"><line x1="1" y1="6" x2="27" y2="6" stroke="var(--series-2)" stroke-width="3" stroke-dasharray="6 4"/></svg>期望</span>
+      </div>
+      <div id="chart"></div>
+      <p class="lead" style="font-size:15px;margin:6px 0 0">每一型的分數是 6 個面向的平均；四型合計 100 分。</p>
+    </div>
+    <div class="panel">
+      <table class="scores" id="scores" aria-label="四種文化類型的分數"></table>
+    </div>
+    <div class="panel read">
+      <h2>結果怎麼看</h2>
+      <ul>
+        <li><b>家族型</b>重合作與人才發展；<b>創新型</b>重冒險與應變；<b>市場型</b>重競爭與目標達成；<b>層級型</b>重效率與依程序做事。</li>
+        <li>分數最高的類型，是部門目前的主導文化。</li>
+        <li>「現在」與「期望」差距 <b>10 分以上</b>的類型，是優先要調整的方向。</li>
+        <li>文化類型沒有好壞，要看是否符合部門要面對的環境與策略。</li>
+        <li>可以和同部門的夥伴比一比：大家看到的「現在」一樣嗎？</li>
+      </ul>
+    </div>
+    <button class="ghost" type="button" id="edit">回去修改分數</button>
+    <button class="ghost" type="button" id="reset">清除分數，重新填寫</button>
+  </section>
+
+  <footer>
+    架構：Cameron, K. S., &amp; Quinn, R. E. 的競值架構與組織文化評估工具（OCAI）。各面向描述為課程用簡化改寫，非原版題目。<br>
+    分數只留在這支手機上，不會上傳或儲存到任何地方。
+  </footer>
+</div>
+
+<script>
+(function () {
+  var TYPES = [
+    { key: 'A', name: '家族型' },
+    { key: 'B', name: '創新型' },
+    { key: 'C', name: '市場型' },
+    { key: 'D', name: '層級型' }
+  ];
+  var DIMS = [
+    { name: '主要特徵', ask: '我的部門給人的感覺是……',
+      opts: ['像一個大家庭，大家彼此分享', '有活力、有創業精神，勇於冒險', '結果導向，重視把事情做出成果', '制度嚴謹，大家按程序做事'] },
+    { name: '領導風格', ask: '部門的領導方式通常是……',
+      opts: ['像導師、促進者，協助大家成長', '像創業家、創新者，帶頭嘗試新做法', '強勢、要求績效，聚焦結果', '協調、組織，確保運作順暢有效率'] },
+    { name: '員工管理', ask: '部門帶人的方式強調……',
+      opts: ['團隊合作、共識與參與', '鼓勵個人冒險、創新與自由', '高競爭、高要求、重達成', '工作穩定、一致、可預期'] },
+    { name: '凝聚力', ask: '讓大家凝聚在一起的是……',
+      opts: ['忠誠與互信', '對創新與發展的承諾', '達成目標、打贏競爭', '正式的規章與政策'] },
+    { name: '策略重點', ask: '部門最重視的方向是……',
+      opts: ['人才發展、高度信任與開放', '找新機會、迎接新挑戰', '在市場競爭中勝出、達成目標', '穩定、效率、流程順暢'] },
+    { name: '成功標準', ask: '部門認定的「成功」是……',
+      opts: ['人才發展、團隊合作、彼此關心', '推出最新、最獨特的產品或服務', '市占率、打敗對手、成為領先者', '準時交付、低成本、穩定可靠'] }
+  ];
+  var PHASES = { now: '現在', want: '期望' };
+  var KEY = 'ocai-answers-v1';
+  var store = { now: {}, want: {} };
+  try {
+    var saved = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (saved && saved.now && saved.want) store = saved;
+  } catch (e) {}
+  var phase = 'now';
+
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} }
+  function val(p, d, k) { var r = store[p][d]; return r && typeof r[k] === 'number' ? r[k] : 0; }
+  function sum(p, d) { var s = 0; for (var k = 0; k < 4; k++) s += val(p, d, k); return s; }
+  function complete(p) { var c = 0; for (var d = 0; d < DIMS.length; d++) if (sum(p, d) === 100) c++; return c; }
+
+  var dimsEl = document.getElementById('dims');
+
+  function render() {
+    var html = '';
+    DIMS.forEach(function (dim, d) {
+      html += '<section class="dim" id="d' + d + '"><h3><span class="no">' + (d + 1) + '.</span>' + dim.name + '</h3>' +
+              '<p class="ask">' + dim.ask + '</p>';
+      dim.opts.forEach(function (t, k) {
+        var id = 'v' + d + '_' + k;
+        html += '<div class="row"><label class="t" for="' + id + '"><b>' + TYPES[k].key + '</b>' + t + '</label>' +
+                '<div class="step">' +
+                '<button type="button" data-d="' + d + '" data-k="' + k + '" data-step="-5" aria-label="' + TYPES[k].key + ' 減 5 分">−</button>' +
+                '<input id="' + id + '" type="number" inputmode="numeric" min="0" max="100" step="5" data-d="' + d + '" data-k="' + k + '" value="' + (val(phase, d, k) || '') + '" placeholder="0">' +
+                '<button type="button" data-d="' + d + '" data-k="' + k + '" data-step="5" aria-label="' + TYPES[k].key + ' 加 5 分">+</button>' +
+                '</div></div>';
+      });
+      html += '<div class="sum" id="s' + d + '"></div></section>';
+    });
+    dimsEl.innerHTML = html;
+    DIMS.forEach(function (_, d) { updateSum(d); });
+    document.getElementById('stem').textContent = phase === 'now' ? '第一部分：現在的部門' : '第二部分：期望 3 到 5 年後的部門';
+    document.getElementById('phaseNote').innerHTML = phase === 'now'
+      ? '請依部門<b>現在實際</b>的樣子分配分數。'
+      : '請依你<b>希望部門 3 到 5 年後</b>的樣子分配分數。<button class="ghost" type="button" id="copy">先帶入「現在」的分數，再調整</button>';
+    document.getElementById('next').textContent = phase === 'now' ? '下一步：填「期望」' : '看結果';
+    document.getElementById('back').hidden = phase === 'now';
+    var copy = document.getElementById('copy');
+    if (copy) copy.addEventListener('click', function () {
+      store.want = JSON.parse(JSON.stringify(store.now)); save(); render();
+    });
+    progress();
+  }
+
+  function updateSum(d) {
+    var s = sum(phase, d), el = document.getElementById('s' + d);
+    el.className = 'sum' + (s === 100 ? ' ok' : '');
+    el.textContent = s === 100 ? '合計 100 分 ✓' : (s < 100 ? '合計 ' + s + ' 分，還差 ' + (100 - s) + ' 分' : '合計 ' + s + ' 分，超過 ' + (s - 100) + ' 分');
+    if (s === 100) document.getElementById('d' + d).classList.remove('miss');
+  }
+  function progress() {
+    var c = complete(phase);
+    document.getElementById('count').textContent = '已完成 ' + c + '／6 個面向';
+    document.getElementById('fill').style.width = (c / 6 * 100) + '%';
+    if (c === 6) document.getElementById('alert').classList.remove('on');
+  }
+  function setVal(d, k, v) {
+    v = Math.max(0, Math.min(100, Math.round(v)));
+    if (!store[phase][d]) store[phase][d] = [0, 0, 0, 0];
+    store[phase][d][k] = v;
+    save(); updateSum(d); progress();
+  }
+
+  dimsEl.addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-step]');
+    if (!b) return;
+    var d = +b.dataset.d, k = +b.dataset.k;
+    var nv = Math.max(0, Math.min(100, val(phase, d, k) + Number(b.dataset.step)));
+    setVal(d, k, nv);
+    document.getElementById('v' + d + '_' + k).value = nv || '';
+  });
+  dimsEl.addEventListener('input', function (e) {
+    var t = e.target;
+    if (t.tagName !== 'INPUT') return;
+    var n = t.value === '' ? 0 : Number(t.value);
+    if (isNaN(n)) return;
+    setVal(+t.dataset.d, +t.dataset.k, n);
+  });
+  dimsEl.addEventListener('change', function (e) {
+    var t = e.target;
+    if (t.tagName !== 'INPUT') return;
+    var v = val(phase, +t.dataset.d, +t.dataset.k);
+    t.value = v || '';
+  });
+
+  document.getElementById('form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var bad = [];
+    DIMS.forEach(function (_, d) {
+      var el = document.getElementById('d' + d);
+      if (sum(phase, d) !== 100) { bad.push(d + 1); el.classList.add('miss'); } else el.classList.remove('miss');
+    });
+    var alert = document.getElementById('alert');
+    if (bad.length) {
+      alert.textContent = '第 ' + bad.join('、') + ' 個面向的合計還不是 100 分。';
+      alert.classList.add('on');
+      document.getElementById('d' + (bad[0] - 1)).scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    alert.classList.remove('on');
+    if (phase === 'now') { phase = 'want'; render(); window.scrollTo(0, 0); }
+    else showResult();
+  });
+  document.getElementById('back').addEventListener('click', function () { phase = 'now'; render(); window.scrollTo(0, 0); });
+  document.getElementById('edit').addEventListener('click', function () {
+    phase = 'now'; render(); document.body.classList.remove('done'); window.scrollTo(0, 0);
+  });
+  document.getElementById('reset').addEventListener('click', function () {
+    store = { now: {}, want: {} }; save(); phase = 'now'; render();
+    document.body.classList.remove('done'); window.scrollTo(0, 0);
+  });
+
+  function averages(p) {
+    return TYPES.map(function (_, k) {
+      var s = 0; for (var d = 0; d < DIMS.length; d++) s += val(p, d, k);
+      return Math.round(s / DIMS.length * 10) / 10;
+    });
+  }
+  function fmt(x) { return (Math.round(x * 10) / 10).toFixed(1).replace(/\.0$/, ''); }
+
+  // 四軸依競值架構位置：家族左上、創新右上、市場右下、層級左下
+  var ANG = [-135, -45, 45, 135].map(function (a) { return a * Math.PI / 180; });
+  function radar(now, want) {
+    var W = 360, H = 350, cx = 180, cy = 178, R = 150;
+    var top = Math.max.apply(null, now.concat(want));
+    var MAX = Math.max(50, Math.ceil(top / 10) * 10);
+    function pt(i, v) { var r = v / MAX * R; return [cx + r * Math.cos(ANG[i]), cy + r * Math.sin(ANG[i])]; }
+    function poly(vals) { return vals.map(function (v, i) { return pt(i, v).map(function (x) { return x.toFixed(1); }).join(','); }).join(' '); }
+    var s = '<svg class="radar" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="四種文化類型的雷達圖。' +
+      TYPES.map(function (t, i) { return t.name + '：現在 ' + fmt(now[i]) + ' 分，期望 ' + fmt(want[i]) + ' 分'; }).join('；') + '">';
+    for (var v = 10; v <= MAX; v += 10) s += '<polygon class="ring" points="' + poly([v, v, v, v]) + '"/>';
+    for (var i = 0; i < 4; i++) { var p = pt(i, MAX); s += '<line class="spoke" x1="' + cx + '" y1="' + cy + '" x2="' + p[0].toFixed(1) + '" y2="' + p[1].toFixed(1) + '"/>'; }
+    [MAX / 2, MAX].forEach(function (v) { s += '<text class="tick" x="' + (cx + 4) + '" y="' + (cy - v / MAX * R * Math.SQRT1_2 + 4).toFixed(1) + '">' + v + '</text>'; });
+    s += '<polygon class="a1" points="' + poly(now) + '"/>';
+    s += '<polygon class="a2" points="' + poly(want) + '"/>';
+    [[now, 'd1', '現在'], [want, 'd2', '期望']].forEach(function (set) {
+      set[0].forEach(function (v, i) {
+        var q = pt(i, v);
+        s += '<circle class="' + set[1] + '" cx="' + q[0].toFixed(1) + '" cy="' + q[1].toFixed(1) + '" r="5"><title>' + TYPES[i].name + '（' + set[2] + '）：' + fmt(v) + ' 分</title></circle>';
+      });
+    });
+    TYPES.forEach(function (t, i) {
+      var lx = cx + (R + 14) * Math.cos(ANG[i]), ly = cy + (R + 14) * Math.sin(ANG[i]);
+      var anchor = Math.cos(ANG[i]) > 0 ? 'start' : 'end';
+      var y0 = Math.sin(ANG[i]) < 0 ? ly - 24 : ly + 14;
+      s += '<text class="name" text-anchor="' + anchor + '" x="' + lx.toFixed(1) + '" y="' + y0.toFixed(1) + '">' + t.name + '</text>';
+      s += '<text class="val" text-anchor="' + anchor + '" x="' + lx.toFixed(1) + '" y="' + (y0 + 19).toFixed(1) + '">' + fmt(now[i]) + '→' + fmt(want[i]) + '</text>';
+    });
+    return s + '</svg>';
+  }
+
+  function showResult() {
+    var now = averages('now'), want = averages('want');
+    function best(arr) { var m = Math.max.apply(null, arr); return TYPES.filter(function (_, i) { return arr[i] === m; }).map(function (t) { return t.name; }).join('、') + '（' + fmt(m) + ' 分）'; }
+    var gaps = TYPES.map(function (t, i) { return { name: t.name, g: Math.round((want[i] - now[i]) * 10) / 10 }; })
+      .filter(function (x) { return Math.abs(x.g) >= 10; })
+      .sort(function (a, b) { return Math.abs(b.g) - Math.abs(a.g); });
+    var html = '現在的主導文化：<b>' + best(now) + '</b><br>期望的主導文化：<b>' + best(want) + '</b><br>';
+    html += gaps.length
+      ? '優先調整：' + gaps.map(function (x) { return '<b>' + x.name + (x.g > 0 ? '要加強' : '要減少') + '</b>（' + (x.g > 0 ? '+' : '') + fmt(x.g) + '）'; }).join('、')
+      : '四型的現在與期望差距都在 10 分以內，現況與期望大致一致。';
+    document.getElementById('top').innerHTML = html;
+    document.getElementById('chart').innerHTML = radar(now, want);
+    var t = '<thead><tr><th class="k" scope="col">類型</th><th scope="col">現在</th><th scope="col">期望</th><th scope="col">差距</th></tr></thead><tbody>';
+    TYPES.forEach(function (ty, i) {
+      var g = Math.round((want[i] - now[i]) * 10) / 10;
+      t += '<tr><td class="k">' + ty.name + '</td><td>' + fmt(now[i]) + '</td><td>' + fmt(want[i]) + '</td><td class="g">' +
+           (g > 0 ? '+' : '') + fmt(g) + (Math.abs(g) >= 10 ? '<small>優先調整</small>' : '') + '</td></tr>';
+    });
+    document.getElementById('scores').innerHTML = t + '</tbody>';
+    document.body.classList.add('done');
+    window.scrollTo(0, 0);
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
