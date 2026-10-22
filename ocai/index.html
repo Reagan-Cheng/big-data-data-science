@@ -47,6 +47,7 @@
     }
   }
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
   html { -webkit-text-size-adjust: 100%; }
   body {
     margin: 0;
@@ -100,6 +101,12 @@
   .step input:focus-visible, .step button:focus-visible { outline: 3px solid var(--series-1); outline-offset: 1px; }
   .sum { margin-top: 8px; padding: 8px 12px; border-radius: 10px; font-size: 17px; font-weight: 700; background: var(--warn-bg); color: var(--warn); }
   .sum.ok { background: var(--ok-bg); color: var(--ok); }
+  .sum.idle { background: transparent; color: var(--ink-2); border: 2px dashed var(--line); }
+  .dim.miss .sum.idle { background: var(--warn-bg); color: var(--warn); border-color: transparent; }
+  .note { display: none; margin-top: 6px; font-size: 16px; font-weight: 600; color: var(--warn); }
+  .note.on { display: block; }
+  .rule { display: inline-block; font-size: 15px; font-weight: 700; color: var(--ink-2); background: var(--page); border-radius: 8px; padding: 2px 8px; margin-bottom: 4px; }
+  .alert ul { margin: 6px 0 0; padding-left: 1.2em; font-weight: 600; }
 
   .send { margin-top: 22px; }
   button.main {
@@ -261,7 +268,7 @@
     var html = '';
     DIMS.forEach(function (dim, d) {
       html += '<section class="dim" id="d' + d + '"><h3><span class="no">' + (d + 1) + '.</span>' + dim.name + '</h3>' +
-              '<p class="ask">' + dim.ask + '</p>';
+              '<p class="ask">' + dim.ask + '</p><span class="rule">四格合計剛好 100 分</span>';
       dim.opts.forEach(function (t, k) {
         var id = 'v' + d + '_' + k;
         html += '<div class="row"><label class="t" for="' + id + '"><b>' + TYPES[k].key + '</b>' + t + '</label>' +
@@ -271,7 +278,7 @@
                 '<button type="button" data-d="' + d + '" data-k="' + k + '" data-step="5" aria-label="' + TYPES[k].key + ' 加 5 分">+</button>' +
                 '</div></div>';
       });
-      html += '<div class="sum" id="s' + d + '"></div></section>';
+      html += '<div class="sum" id="s' + d + '" aria-live="polite"></div><div class="note" id="n' + d + '" role="status"></div></section>';
     });
     dimsEl.innerHTML = html;
     DIMS.forEach(function (_, d) { updateSum(d); });
@@ -290,15 +297,23 @@
 
   function updateSum(d) {
     var s = sum(phase, d), el = document.getElementById('s' + d);
-    el.className = 'sum' + (s === 100 ? ' ok' : '');
-    el.textContent = s === 100 ? '合計 100 分 ✓' : (s < 100 ? '合計 ' + s + ' 分，還差 ' + (100 - s) + ' 分' : '合計 ' + s + ' 分，超過 ' + (s - 100) + ' 分');
+    var touched = !!store[phase][d];
+    el.className = 'sum' + (s === 100 ? ' ok' : (!touched ? ' idle' : ''));
+    el.textContent = s === 100 ? '合計 100 分 ✓ 這個面向完成了'
+      : !touched ? '尚未填寫：請把 100 分分給 A–D'
+      : s < 100 ? '合計 ' + s + ' 分：還差 ' + (100 - s) + ' 分，請再分給 A–D'
+      : '合計 ' + s + ' 分：超過 ' + (s - 100) + ' 分，請把某幾格調低';
     if (s === 100) document.getElementById('d' + d).classList.remove('miss');
   }
   function progress() {
     var c = complete(phase);
-    document.getElementById('count').textContent = '已完成 ' + c + '／6 個面向';
+    document.getElementById('count').textContent = '已完成 ' + c + '／6 個面向' + (c === 6 ? ' ✓' : '');
     document.getElementById('fill').style.width = (c / 6 * 100) + '%';
     if (c === 6) document.getElementById('alert').classList.remove('on');
+  }
+  function note(d, msg) {
+    var n = document.getElementById('n' + d);
+    n.textContent = msg || ''; n.classList.toggle('on', !!msg);
   }
   function setVal(d, k, v) {
     v = Math.max(0, Math.min(100, Math.round(v)));
@@ -311,16 +326,32 @@
     var b = e.target.closest('button[data-step]');
     if (!b) return;
     var d = +b.dataset.d, k = +b.dataset.k;
-    var nv = Math.max(0, Math.min(100, val(phase, d, k) + Number(b.dataset.step)));
+    var cur = val(phase, d, k), step = Number(b.dataset.step), nv;
+    if (step > 0) {
+      var room = 100 - sum(phase, d);
+      if (room <= 0) { note(d, '合計已經 100 分了；要加這一格，請先把其他格調低。'); return; }
+      nv = cur + Math.min(step, room);
+    } else {
+      if (cur <= 0) { note(d, '這一格已經是 0 分，不能再減。'); return; }
+      nv = Math.max(0, cur + step);
+    }
+    note(d, '');
     setVal(d, k, nv);
     document.getElementById('v' + d + '_' + k).value = nv || '';
   });
   dimsEl.addEventListener('input', function (e) {
     var t = e.target;
     if (t.tagName !== 'INPUT') return;
-    var n = t.value === '' ? 0 : Number(t.value);
-    if (isNaN(n)) return;
-    setVal(+t.dataset.d, +t.dataset.k, n);
+    var d = +t.dataset.d, k = +t.dataset.k;
+    if (t.validity && t.validity.badInput) { note(d, '請輸入 0 到 100 的整數。'); return; }
+    var n = t.value === '' ? 0 : Number(t.value), msg = '';
+    if (isNaN(n)) { note(d, '請輸入 0 到 100 的整數。'); return; }
+    if (n < 0) { n = 0; msg = '分數不能是負數，已改為 0。'; }
+    else if (n > 100) { n = 100; msg = '單一格最多 100 分，已改為 100。'; }
+    else if (n !== Math.round(n)) { n = Math.round(n); msg = '請填整數，已改為 ' + n + ' 分。'; }
+    if (msg) t.value = n;
+    note(d, msg);
+    setVal(d, k, n);
   });
   dimsEl.addEventListener('change', function (e) {
     var t = e.target;
@@ -334,13 +365,18 @@
     var bad = [];
     DIMS.forEach(function (_, d) {
       var el = document.getElementById('d' + d);
-      if (sum(phase, d) !== 100) { bad.push(d + 1); el.classList.add('miss'); } else el.classList.remove('miss');
+      var s = sum(phase, d);
+      if (s !== 100) {
+        bad.push({ d: d, msg: !store[phase][d] ? '還沒填' : (s < 100 ? '合計 ' + s + ' 分，還差 ' + (100 - s) + ' 分' : '合計 ' + s + ' 分，超過 ' + (s - 100) + ' 分') });
+        el.classList.add('miss');
+      } else el.classList.remove('miss');
     });
     var alert = document.getElementById('alert');
     if (bad.length) {
-      alert.textContent = '第 ' + bad.join('、') + ' 個面向的合計還不是 100 分。';
+      alert.innerHTML = '還不能送出：每個面向的四格合計都要剛好 100 分。以下面向需要修正（已用紅框標出）：<ul>' +
+        bad.map(function (b) { return '<li>' + (b.d + 1) + '. ' + DIMS[b.d].name + '：' + b.msg + '</li>'; }).join('') + '</ul>';
       alert.classList.add('on');
-      document.getElementById('d' + (bad[0] - 1)).scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.getElementById('d' + bad[0].d).scrollIntoView({ behavior: 'smooth', block: 'start' });
       return;
     }
     alert.classList.remove('on');
