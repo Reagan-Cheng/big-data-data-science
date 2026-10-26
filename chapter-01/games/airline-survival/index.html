@@ -2,18 +2,18 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Airline Survival: Predictive Maintenance Game</title>
 <style>
-:root{--bg:#f4f7fb;--card:#fff;--ink:#172b4d;--muted:#6b778c;--line:#d9e2ef;--blue:#2563eb;--good:#15803d;--warn:#b45309;--bad:#b91c1c;--soft:#eef5ff}
-*{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+:root{--k:1;--bg:#f4f7fb;--card:#fff;--ink:#172b4d;--muted:#6b778c;--line:#d9e2ef;--blue:#2563eb;--good:#15803d;--warn:#b45309;--bad:#b91c1c;--soft:#eef5ff}
+*{box-sizing:border-box} html{-webkit-text-size-adjust:100%} body{margin:0;font-size:calc(16px*var(--k));font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
 header{background:linear-gradient(135deg,#102a56,#1f5fb8);color:white;padding:20px 18px}.wrap{max-width:1180px;margin:auto}
-.top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap}h1{margin:0;font-size:clamp(26px,4vw,42px)}h2,h3{margin-top:0}
+.top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap}h1{margin:0;font-size:calc((clamp(26px,4vw,42px))*var(--k))}h2,h3{margin-top:0}
 .lang{display:flex;gap:7px;align-items:center;background:#ffffff1f;padding:7px;border-radius:12px}.lang button{border:1px solid #ffffff55;background:transparent;color:#fff;padding:8px 11px;border-radius:9px;font-weight:800}.lang button.active{background:#fff;color:#183153}
 main{padding:20px 14px 56px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;margin:15px 0;box-shadow:0 8px 22px #0f172a0d}.hide{display:none!important}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 @media(max-width:900px){.grid2,.grid3,.grid4{grid-template-columns:1fr}.top{display:block}.lang{margin-top:12px;width:max-content}}
-.metric{border:1px solid var(--line);background:#f8fafc;border-radius:14px;padding:13px}.metric .n{font-size:26px;font-weight:900}.small{font-size:12px;color:var(--muted)}
+.metric{border:1px solid var(--line);background:#f8fafc;border-radius:14px;padding:13px}.metric .n{font-size:calc((26px)*var(--k));font-weight:900}.small{font-size:calc((12px)*var(--k));color:var(--muted)}
 .rules{border-left:5px solid var(--blue);background:#f5f9ff;padding:14px 16px;border-radius:12px}.danger{border-left:5px solid var(--bad);background:#fff1f2;padding:14px 16px;border-radius:12px;color:#881337}
 .goodbox{border-left:5px solid var(--good);background:#f0fdf4;padding:14px 16px;border-radius:12px}
 button{font:inherit}.primary,.secondary,.ghost,.choice{border-radius:11px;font-weight:800;cursor:pointer}.primary{border:0;background:var(--blue);color:#fff;padding:11px 16px}.secondary{border:0;background:#e8eef9;color:#16305f;padding:11px 16px}.ghost{border:1px solid var(--line);background:#fff;color:var(--ink);padding:11px 16px}button:disabled{opacity:.5;cursor:not-allowed}
@@ -24,21 +24,64 @@ button{font:inherit}.primary,.secondary,.ghost,.choice{border-radius:11px;font-w
 .progress{height:10px;background:#e5eaf2;border-radius:99px;overflow:hidden}.progress>div{height:100%;background:linear-gradient(90deg,#2563eb,#0ea5e9)}
 .log{border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:14px}.logrow{padding:11px 13px;border-bottom:1px solid var(--line);background:#fff}.logrow:last-child{border-bottom:0}.logrow.fail{background:#fff1f2}.logrow.ok{background:#f0fdf4}.logrow.maint{background:#eff6ff}
 .table{width:100%;border-collapse:collapse}.table th,.table td{padding:9px;border-bottom:1px solid var(--line);text-align:left}.table th{background:#f8fafc}.center{text-align:center}
-.bigscore{font-size:46px;font-weight:950}.badge{display:inline-block;background:#eaf2ff;color:#1e40af;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:850}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-.flyanim{display:flex;align-items:center;gap:9px;font-weight:850;padding:10px 0}.planeicon{font-size:28px;display:inline-block;animation:move 1s ease-in-out infinite alternate}@keyframes move{from{transform:translateX(0)}to{transform:translateX(24px)}}@media(prefers-reduced-motion:reduce){.planeicon{animation:none}}
+.bigscore{font-size:calc((46px)*var(--k));font-weight:950}.badge{display:inline-block;background:#eaf2ff;color:#1e40af;border-radius:999px;padding:5px 10px;font-size:calc((12px)*var(--k));font-weight:850}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.flyanim{display:flex;align-items:center;gap:9px;font-weight:850;padding:10px 0}.planeicon{font-size:calc((28px)*var(--k));display:inline-block;animation:move 1s ease-in-out infinite alternate}@keyframes move{from{transform:translateX(0)}to{transform:translateX(24px)}}@media(prefers-reduced-motion:reduce){.planeicon{animation:none}}
 
 .introHero{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;align-items:start}
 .introPanel{border:1px solid var(--line);background:#fbfdff;border-radius:16px;padding:18px}
-.introSectionTitle{font-size:18px;font-weight:900;margin:0 0 8px}
+.introSectionTitle{font-size:calc((18px)*var(--k));font-weight:900;margin:0 0 8px}
 .ruleList{margin:8px 0 0;padding-left:20px}
 .ruleList li{margin:7px 0}
 .modelCard{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fff}
 @media(max-width:900px){.introHero{grid-template-columns:1fr}}
 
+/* text size (A− / A+) */
+.ctl{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.fs{display:flex;gap:6px;align-items:center;background:#ffffff1f;padding:7px;border-radius:12px}
+.fs button{border:1px solid #ffffff55;background:transparent;color:#fff;min-width:40px;padding:8px 10px;border-radius:9px;font-weight:900;cursor:pointer}
+.fs .fsl{font-size:calc(13px*var(--k));opacity:.85;padding:0 2px}
+/* FLY / MAINTAIN pair */
+.choices{display:grid;grid-template-columns:1fr;gap:0}
+button,.choice{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.choice.selected:disabled{opacity:1}
+.plane.need{outline:3px solid #f59e0b;outline-offset:2px}
+/* action bar: count of chosen aircraft + main button */
+.gameActions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px}
+.gameActions .status{font-weight:800;color:var(--muted)}
+.gameActions .status b{color:var(--ink)}
+.gameActions .errmsg{flex-basis:100%;color:var(--bad);font-weight:800}
+/* phones */
+@media(max-width:700px){
+ header{padding:14px 14px 12px;padding-top:max(14px,env(safe-area-inset-top))}
+ h1{font-size:calc(24px*var(--k));line-height:1.2}
+ .lang,.fs{padding:5px}
+ .lang button,.fs button{padding:7px 9px}
+ .ctl{margin-top:10px}
+ .top .ctl .lang{margin-top:0}
+ main{padding:10px 10px 24px}
+ .card{padding:14px;border-radius:14px;margin:10px 0}
+ .dashboard{grid-template-columns:1fr 1fr;gap:8px}
+ .dashboard .metric:first-child{grid-column:1/-1;display:flex;justify-content:space-between;align-items:baseline}
+ .metric{padding:9px 11px}
+ .metric .n{font-size:calc(21px*var(--k))}
+ .small{font-size:calc(13px*var(--k))}
+ .grid4{gap:10px}
+ .plane{padding:13px}
+ .choices{grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+ .choice{margin-top:0;min-height:56px;text-align:center;font-size:calc(17px*var(--k))}
+ .choice .small,.choice br{display:none}
+ .gameActions{position:sticky;bottom:0;z-index:10;margin:12px -10px 0;padding:10px 12px;padding-bottom:calc(10px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--line);box-shadow:0 -6px 16px #0f172a14}
+ .gameActions .status{flex:1;min-width:0;font-size:calc(14px*var(--k))}
+ .gameActions .primary,.gameActions .secondary{flex:none;min-height:50px;padding:12px 18px;font-size:calc(17px*var(--k))}
+ .actions .primary,.actions .secondary,.actions .ghost{min-height:50px;flex:1}
+ .bigscore{font-size:calc(38px*var(--k))}
+ .table th,.table td{padding:7px;white-space:nowrap}
+ .introPanel{padding:14px}
+}
 </style>
 </head>
 <body>
-<header><div class="wrap top"><div><h1 id="title"></h1><div id="subtitle"></div></div><div class="lang"><span id="langLabel"></span><button id="enBtn" type="button">English</button><button id="zhBtn" type="button">繁體中文</button></div></div></header>
+<header><div class="wrap top"><div><h1 id="title"></h1><div id="subtitle"></div></div><div class="ctl"><div class="lang"><span id="langLabel"></span><button id="enBtn" type="button">English</button><button id="zhBtn" type="button">繁體中文</button></div><div class="fs" role="group" aria-label="字體大小 / Text size"><span class="fsl" id="fsLabel">字體</span><button type="button" id="aMinus" aria-label="字體縮小 / Smaller text">A−</button><button type="button" id="aPlus" aria-label="字體放大 / Larger text">A+</button></div></div></div></header>
 <main class="wrap">
 <section id="intro" class="card"></section>
 <section id="game" class="hide"></section>
@@ -74,7 +117,7 @@ bankrupt:"COMPANY BANKRUPT",bankruptAt:"Your cash fell below $0 in",model1Fail:"
 retry:"Restart Game",retryM2:"Retry Model 2",finalTitle:"You survived all 10 rounds",compare:"Model comparison",phase:"Phase",failures:"Major Failures",maintCount:"Maintenance Actions",net:"Net Cash Change",
 lesson:"What did the game show?",lessonText:"Model 1 forces you to make maintenance decisions with incomplete information. Model 2 does not remove risk, but it helps you direct maintenance toward the aircraft that need it most. The value of big data is not simply collecting more data—it is <b>reducing uncertainty and improving decisions</b>.",
 finishCash:"Final Cash",
-back:"Play Again"
+back:"Play Again",fsLabel:"Text",chosen:"Chosen"
 },
 zh:{
 title:"航空公司生存戰：預測維護遊戲",subtitle:"經營四架飛機、挑戰 10 回合。先求生存，再追求獲利。",lang:"語言切換",
@@ -101,7 +144,7 @@ bankrupt:"公司破產",bankruptAt:"你的現金在以下回合跌破 $0：",mod
 retry:"重新開始",retryM2:"重新挑戰 Model 2",finalTitle:"你成功撐過全部 10 回合",compare:"兩種模式比較",phase:"階段",failures:"重大故障",maintCount:"維護次數",net:"現金淨變化",
 lesson:"這個遊戲想讓你看到什麼？",lessonText:"Model 1 迫使你在資訊不足下決定要不要維護；Model 2 並沒有消除風險，而是讓你把維護資源更準確地放在真正需要的飛機上。大數據的價值不只是蒐集更多資料，而是<b>降低不確定性、改善決策</b>。",
 finishCash:"最終現金",
-back:"再玩一次"
+back:"再玩一次",fsLabel:"字體",chosen:"已選"
 }};
 const ROUTES=[
 {id:"A",en:"Taipei–Osaka",zh:"台北–大阪",rev:180,hours:3,wear:.9},
@@ -110,7 +153,7 @@ const ROUTES=[
 {id:"D",en:"Taipei–Los Angeles",zh:"台北–洛杉磯",rev:450,hours:12,wear:1.35}
 ];
 const START_CASH=2100, MAINT=180, FAILURE=1500;
-let lang="zh", round=1, cash=START_CASH, planes=[], choices={}, logs=[], roundDone=false, running=false;
+let needMark=false, lang="zh", round=1, cash=START_CASH, planes=[], choices={}, logs=[], roundDone=false, running=false;
 let stats=[freshStats(),freshStats()], phase2Snapshot=null, currentRoundChange=0;
 function freshStats(){return{revenue:0,maint:0,failLoss:0,success:0,failures:0,maintCount:0,startCash:0,endCash:0}}
 function L(){return I[lang]} function money(v){return "$"+Math.round(v).toLocaleString()+"K"}
@@ -152,21 +195,21 @@ function init(){
  prepareRound(); show("intro"); render();
 }
 function prepareRound(){
- choices={};logs=[];roundDone=false;currentRoundChange=0;
+ choices={};logs=[];roundDone=false;currentRoundChange=0;needMark=false;
  planes.forEach(p=>{
    p.report=pilotReport(p);
    p.telemetry=phase()===1?makeTelemetry(p):null;
  })
 }
 function show(id){["intro","game","transition","gameover","final"].forEach(x=>document.getElementById(x).classList.toggle("hide",x!==id))}
-function renderHeader(){document.getElementById("title").textContent=L().title;document.getElementById("subtitle").textContent=L().subtitle;document.getElementById("langLabel").textContent=L().lang;document.getElementById("enBtn").classList.toggle("active",lang==="en");document.getElementById("zhBtn").classList.toggle("active",lang==="zh")}
+function renderHeader(){document.getElementById("title").textContent=L().title;document.getElementById("subtitle").textContent=L().subtitle;document.getElementById("langLabel").textContent=L().lang;document.getElementById("enBtn").classList.toggle("active",lang==="en");document.getElementById("zhBtn").classList.toggle("active",lang==="zh");document.getElementById("fsLabel").textContent=L().fsLabel}
 function renderIntro(){
  const t=L(); document.getElementById("intro").innerHTML=`
  <div class="introHero">
    <div>
      <span class="badge">${t.mission}</span>
      <h2 style="margin:10px 0 8px">${t.introTitle}</h2>
-     <p style="font-size:17px;margin-top:0">${t.introText}</p>
+     <p style="font-size:calc(17px*var(--k));margin-top:0">${t.introText}</p>
      <div class="goodbox"><div class="introSectionTitle">${t.mission}</div>${t.missionText}</div>
      <div class="danger" style="margin-top:14px"><b>${t.note}</b><br>${t.noteText}</div>
    </div>
@@ -208,11 +251,11 @@ function renderPlane(p){
    </div><div style="margin-top:8px"><b>${t.recommend}:</b> <span class="${rec==="maint"?"badtext":"goodtext"}">${rec==="maint"?t.recMaint:t.recFly}</span></div>`
  }
  if(p.grounded>0)return `<div class="plane risk"><h3>✈ Aircraft ${p.id}</h3><div class="route">${lang==="zh"?r.zh:r.en}</div><div class="badtext" style="margin-top:12px">🔧 ${t.grounded}</div></div>`;
- return `<div class="plane"><h3>✈ Aircraft ${p.id}</h3><div class="route">${lang==="zh"?r.zh:r.en}</div><div class="money">${t.routeRevenue}: ${money(r.rev)}</div>
+ return `<div class="plane${needMark&&!ch?" need":""}" id="plane-${p.id}"><h3>✈ Aircraft ${p.id}</h3><div class="route">${lang==="zh"?r.zh:r.en}</div><div class="money">${t.routeRevenue}: ${money(r.rev)}</div>
  <div class="small" style="margin-top:8px">${t.hours}: <b>${Math.round(p.flightHours)}</b><br>${t.since}: <b>${p.since}</b><br>${t.pilot}: <b>${t.pilotReports[p.report]}</b></div>
  ${model2}
- <button class="choice ${ch==="fly"?"selected":""}" ${disabled?"disabled":""} data-id="${p.id}" data-choice="fly"><b>✈ ${t.fly}</b><br><span class="small">${t.flyDesc}</span></button>
- <button class="choice ${ch==="maint"?"selected":""}" ${disabled?"disabled":""} data-id="${p.id}" data-choice="maint"><b>🔧 ${t.maintain}</b><br><span class="small">${t.maintDesc}</span></button></div>`
+ <div class="choices"><button class="choice ${ch==="fly"?"selected":""}" ${disabled?"disabled":""} data-id="${p.id}" data-choice="fly"><b>✈ ${t.fly}</b><br><span class="small">${t.flyDesc}</span></button>
+ <button class="choice ${ch==="maint"?"selected":""}" ${disabled?"disabled":""} data-id="${p.id}" data-choice="maint"><b>🔧 ${t.maintain}</b><br><span class="small">${t.maintDesc}</span></button></div></div>`
 }
 function renderLog(){
  const t=L(); if(!logs.length)return "";
@@ -227,19 +270,23 @@ function renderGame(){
  const t=L(),ph=phase(),pct=(round-1)/10*100;
  document.getElementById("game").innerHTML=`<div class="card">${dashboard()}<div style="margin-top:12px"><b>${t.model[ph]}</b> · ${t.round} <b>${round}/10</b><div class="progress" style="margin-top:7px"><div style="width:${pct}%"></div></div></div></div>
  <div class="grid4">${planes.map(renderPlane).join("")}</div>
- <div id="msg" class="danger hide" style="margin-top:14px"></div>
- ${running?`<div class="card center"><div class="flyanim" style="justify-content:center"><span class="planeicon">✈️</span>${t.processing}</div></div>`:""}
+ ${running?`<div class="card center" id="runCard"><div class="flyanim" style="justify-content:center"><span class="planeicon">✈️</span>${t.processing}</div></div>`:""}
  ${renderLog()}
- <div class="actions">${!roundDone?`<button class="primary" id="dispatchBtn" ${running?"disabled":""}>${t.dispatch}</button>`:`<button class="secondary" id="nextBtn">${t.nextRound}</button>`}</div>`;
- document.querySelectorAll(".choice").forEach(b=>b.onclick=()=>{choices[b.dataset.id]=b.dataset.choice;renderGame()});
+ <div class="gameActions"><div class="status">${t.round} <b>${round}/10</b> · ${t.cash} <b>${money(cash)}</b>${!roundDone?` · ${t.chosen} <b>${chosenCount()}/${available()}</b>`:""}</div>${!roundDone?`<button class="primary" id="dispatchBtn" ${running?"disabled":""}>${t.dispatch}</button>`:`<button class="secondary" id="nextBtn">${t.nextRound}</button>`}<div id="msg" class="errmsg hide"></div></div>`;
+ document.querySelectorAll(".choice").forEach(b=>b.onclick=()=>{choices[b.dataset.id]=b.dataset.choice;if(requiredChosen())needMark=false;renderGame()});
  const d=document.getElementById("dispatchBtn");if(d)d.onclick=dispatch;
  const n=document.getElementById("nextBtn");if(n)n.onclick=advance;
 }
 function requiredChosen(){return planes.filter(p=>p.grounded===0).every(p=>choices[p.id])}
+function available(){return planes.filter(p=>p.grounded===0).length}
+function chosenCount(){return planes.filter(p=>p.grounded===0&&choices[p.id]).length}
+const phoneMQ=window.matchMedia("(max-width:700px)");
 function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
 async function dispatch(){
- if(!requiredChosen()){const m=document.getElementById("msg");m.textContent=L().chooseAll;m.classList.remove("hide");return}
- running=true;logs=[];renderGame();const ph=phase(),s=stats[ph];
+ if(!requiredChosen()){needMark=true;renderGame();const m=document.getElementById("msg");m.textContent=L().chooseAll;m.classList.remove("hide");
+   const first=planes.find(p=>p.grounded===0&&!choices[p.id]);if(first)document.getElementById("plane-"+first.id).scrollIntoView({behavior:"smooth",block:"center"});return}
+ needMark=false;running=true;logs=[];renderGame();
+ if(phoneMQ.matches){const rc=document.getElementById("runCard");if(rc)rc.scrollIntoView({behavior:"smooth",block:"center"})}const ph=phase(),s=stats[ph];
  for(const p of planes){
    await sleep(430);
    if(p.grounded>0){logs.push({id:p.id,type:"repair"});p.grounded=0;p.health=90;p.since=0;renderGame();continue}
@@ -266,7 +313,7 @@ function advance(){
  if(cash<0){showBankrupt();return}
  if(round===5){stats[0].endCash=cash;phase2Snapshot=JSON.parse(JSON.stringify({cash,planes,stats0:stats[0]}));showTransition();return}
  if(round===10){stats[1].endCash=cash;showFinal();return}
- round++;prepareRound();renderGame()
+ round++;prepareRound();renderGame();window.scrollTo({top:0,behavior:"smooth"})
 }
 function showTransition(){
  const t=L();show("transition");document.getElementById("transition").innerHTML=`<div class="center"><span class="badge">${t.survived}</span><h2 style="margin-top:12px">${t.survived}</h2><div class="bigscore">${money(cash)}</div><p>${t.surviveText}</p></div>
@@ -274,7 +321,7 @@ function showTransition(){
  document.getElementById("activateBtn").onclick=()=>{round=6;stats[1]=freshStats();stats[1].startCash=cash;prepareRound();show("game");renderGame()}
 }
 function showBankrupt(){
- const t=L(),ph=phase();show("gameover");document.getElementById("gameover").innerHTML=`<div class="center"><div style="font-size:56px">💥</div><h2>${t.bankrupt}</h2><div class="bigscore">${money(cash)}</div><p>${t.bankruptAt} <b>${t.round} ${round}</b></p><div class="danger">${ph===0?t.model1Fail:t.model2Fail}</div></div>
+ const t=L(),ph=phase();show("gameover");document.getElementById("gameover").innerHTML=`<div class="center"><div style="font-size:calc(56px*var(--k))">💥</div><h2>${t.bankrupt}</h2><div class="bigscore">${money(cash)}</div><p>${t.bankruptAt} <b>${t.round} ${round}</b></p><div class="danger">${ph===0?t.model1Fail:t.model2Fail}</div></div>
  <div class="actions" style="justify-content:center">${ph===1&&phase2Snapshot?`<button class="secondary" id="retryM2">${t.retryM2}</button>`:""}<button class="primary" id="restart">${t.retry}</button></div>`;
  document.getElementById("restart").onclick=()=>init();
  const rm=document.getElementById("retryM2");if(rm)rm.onclick=()=>{cash=phase2Snapshot.cash;planes=JSON.parse(JSON.stringify(phase2Snapshot.planes));stats[0]=JSON.parse(JSON.stringify(phase2Snapshot.stats0));stats[1]=freshStats();stats[1].startCash=cash;round=6;prepareRound();show("game");renderGame()}
@@ -297,6 +344,11 @@ function render(){
 }
 document.getElementById("enBtn").onclick=()=>{lang="en";document.documentElement.lang="en";render()};
 document.getElementById("zhBtn").onclick=()=>{lang="zh";document.documentElement.lang="zh-Hant";render()};
+const FSKEY="airline-survival:k";let fk=1;try{fk=parseFloat(localStorage.getItem(FSKEY))||1}catch(e){}
+function setK(v){fk=Math.max(.85,Math.min(1.6,Math.round(v*100)/100));document.documentElement.style.setProperty("--k",fk);try{localStorage.setItem(FSKEY,fk)}catch(e){}}
+document.getElementById("aPlus").onclick=()=>setK(fk+.1);
+document.getElementById("aMinus").onclick=()=>setK(fk-.1);
+setK(fk);
 init();
 })();
 </script>
