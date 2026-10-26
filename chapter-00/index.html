@@ -84,6 +84,30 @@
     </article>
 
     <article class="game">
+      <div class="num">ACTIVITY 03</div>
+      <h2 id="g5Title">企業AI準備度自我檢核</h2>
+      <p id="g5Desc">六個構面（策略與領導、資料、技術與基礎設施、人才與技能、流程與組織、治理與風險）各以 1–5 分自評，送出後顯示平均分數、雷達圖、建議的下一步，以及優先補強構面的具體做法。用於「AI 導入專案規劃與策略」課程（單元一）。</p>
+      <div class="game-meta">
+        <span class="tag" data-zh="自評量表" data-en="Self-assessment">自評量表</span>
+        <span class="tag" data-zh="AI 導入" data-en="AI Adoption">AI 導入</span>
+        <span class="tag" data-zh="手機" data-en="Phone">手機</span>
+      </div>
+      <p class="hint" id="g5Note">約 3 分鐘。右上角 A−／A+ 調整字體大小；結果可一鍵複製貼到群組討論。作答只存在學員自己的手機，不會上傳。</p>
+      <div class="urlbox" id="url5"></div>
+      <div class="qr-code" data-qr-path="/chapter-00/activities/ai-readiness/">
+        <img class="qr-image" src="../assets/qr/ai-readiness.png" width="192" height="192" alt="企業AI準備度自我檢核 QR Code" data-qr-zh="企業AI準備度自我檢核 QR Code" data-qr-en="AI Readiness Self-Assessment QR Code">
+        <div>
+          <div data-qr-zh="掃描後直接進入活動" data-qr-en="Scan to open the activity directly" class="qr-help">掃描後直接進入活動</div>
+          <a data-qr-zh="下載 PNG 圖片" data-qr-en="Download PNG" class="button secondary qr-download" href="../assets/qr/ai-readiness.png" download="big-data-ai-readiness-qr.png">下載 PNG 圖片</a>
+        </div>
+      </div>
+      <div class="actions">
+        <a class="button" href="activities/ai-readiness/" target="_blank" id="open5">開啟活動</a>
+        <button class="button secondary" type="button" data-copy="5" id="copy5">複製網址</button>
+      </div>
+    </article>
+
+    <article class="game">
       <div class="num">CASE 01</div>
       <h2 id="g3Title">個案閱讀：沐鼎鮮鍋</h2>
       <p id="g3Desc">個案全文分四段逐句呈現，讀到哪一句，旁邊的示意圖就畫到哪一步；最後列出個案討論問題。用於「AI 導入專案規劃與策略」課程（單元一）。</p>
@@ -146,8 +170,8 @@
 <footer id="footer">Chapter 0｜業界演講用</footer>
 
 <script>
-const COUNT=4;
-const paths=["activities/conflict-style/","activities/disc/","cases/mu-ding-hotpot/","../chapter-03/cases/abc-bath-living/?lang=zh"];
+const COUNT=5;
+const paths=["activities/conflict-style/","activities/disc/","cases/mu-ding-hotpot/","../chapter-03/cases/abc-bath-living/?lang=zh","activities/ai-readiness/"];
 function gameUrl(i){ return new URL(paths[i-1], window.location.href).href; }
 function refreshUrls(){for(let i=1;i<=COUNT;i++)document.getElementById("url"+i).textContent=gameUrl(i)}
 async function copyUrl(i){
@@ -177,7 +201,10 @@ zh:{
  g4Title:"個案閱讀：ABC 衛浴生活館",
  g4Desc:"個案全文逐句呈現並搭配示意動畫，附顧客旅程地圖練習與討論問題。與第三章共用同一頁，這裡的連結直接開啟中文版。用於「AI 導入專案規劃與策略」課程（單元五）。",
  g4Note:"約 10 分鐘。手機與電腦都能讀；右上角 A−／A+ 調整字體大小，也可切換中文與英文。",
- open1:"開啟活動",open2:"開啟活動",open3:"開啟個案",open4:"開啟個案",copy:"複製網址",qrTitle:"QR Code 圖片下載",
+ g5Title:"企業AI準備度自我檢核",
+ g5Desc:"六個構面（策略與領導、資料、技術與基礎設施、人才與技能、流程與組織、治理與風險）各以 1–5 分自評，送出後顯示平均分數、雷達圖、建議的下一步，以及優先補強構面的具體做法。用於「AI 導入專案規劃與策略」課程（單元一）。",
+ g5Note:"約 3 分鐘。右上角 A−／A+ 調整字體大小；結果可一鍵複製貼到群組討論。作答只存在學員自己的手機，不會上傳。",
+ open1:"開啟活動",open2:"開啟活動",open3:"開啟個案",open4:"開啟個案",open5:"開啟活動",copy:"複製網址",qrTitle:"QR Code 圖片下載",
  qrText:"每個活動與個案的 QR Code 已自動建立，掃描後可直接進入該頁。按「下載 PNG 圖片」即可保存圖片；課程首頁另提供本章的 QR Code。",
  homeBtn:"返回課程首頁",footer:"Chapter 0｜業界演講用"
 },
@@ -196,14 +223,17 @@ en:{
  g4Title:"Case Reading: ABC Bath Living",
  g4Desc:"The full case one sentence at a time with animated illustrations, plus a customer journey map exercise and discussion questions. Shared with Chapter 3; this link opens the Chinese version. Used in the AI Adoption Planning and Strategy course (Unit 5).",
  g4Note:"About 10 minutes. Works on phones and computers; A− / A+ at the top right change the text size, and you can switch between Chinese and English.",
- open1:"Open Activity",open2:"Open Activity",open3:"Open Case",open4:"Open Case",copy:"Copy URL",qrTitle:"Download QR Code Images",
+ g5Title:"AI Readiness Self-Assessment",
+ g5Desc:"Rate six dimensions (strategy and leadership, data, technology and infrastructure, talent and skills, process and organization, governance and risk) from 1 to 5. The result shows the average score, a radar chart, suggested next steps and concrete actions for the weakest dimensions. Used in the AI Adoption Planning and Strategy course (Unit 1). In Chinese.",
+ g5Note:"About 3 minutes. A− / A+ at the top right change the text size; the result can be copied with one tap to paste into a group chat. Answers stay on each participant's phone and are never uploaded.",
+ open1:"Open Activity",open2:"Open Activity",open3:"Open Case",open4:"Open Case",open5:"Open Activity",copy:"Copy URL",qrTitle:"Download QR Code Images",
  qrText:"Each activity and case has an automatically generated QR Code that opens it directly. Select Download PNG to save the image. A QR Code for this chapter is also available on the course home page.",
  homeBtn:"Back to Course Home",footer:"Chapter 0 | Industry Talks"
 }};
 let current="zh";
 function setLang(l){
  current=l; document.documentElement.lang=l==="zh"?"zh-Hant":"en"; const t=lang[l];
- ["title","subtitle","langLabel","teacherNote","g1Title","g1Desc","g1Note","g2Title","g2Desc","g2Note","g3Title","g3Desc","g3Note","g4Title","g4Desc","g4Note","open1","open2","open3","open4","qrTitle","qrText","homeBtn","footer"].forEach(k=>{
+ ["title","subtitle","langLabel","teacherNote","g1Title","g1Desc","g1Note","g2Title","g2Desc","g2Note","g3Title","g3Desc","g3Note","g4Title","g4Desc","g4Note","g5Title","g5Desc","g5Note","open1","open2","open3","open4","open5","qrTitle","qrText","homeBtn","footer"].forEach(k=>{
    const e=document.getElementById(k); if(e)e.textContent=t[k];
  });
  for(let i=1;i<=COUNT;i++)document.getElementById("copy"+i).textContent=t.copy;

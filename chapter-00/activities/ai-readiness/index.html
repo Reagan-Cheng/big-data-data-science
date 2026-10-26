@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0f2a5c">
+<title>企業AI準備度自我檢核</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%23102a56%22/%3E%3Cpath%20d%3D%22M8%2024V17h4v7zm6%200V11h4v13zm6%200V6h4v18z%22%20fill%3D%22%23ffffff%22/%3E%3C/svg%3E">
+<!-- ============================================================
+     企業AI準備度（成熟度）自我檢核 — AI 導入專案規劃與策略（業界演講／企業內訓）
+     One file, no external resources. Answers stay in the participant's browser (localStorage).
+     Six dimensions rated 1–5 (wording unchanged from the course slides).
+     Result: average + band (≤2 / 2–3.5 / ≥3.5, from the slides), radar chart,
+     next steps for the band, and actions for the weakest dimensions — all taken from the course handout.
+     A− / A+ change the text size.
+     ============================================================ -->
+<style>
+  :root {
+    color-scheme: light;
+    --k: 1;
+    --page: #eef1f6; --card: #ffffff; --ink: #14213a; --ink-2: #4a566b; --ink-3: #7a8598; --line: #d5dbe6;
+    --navy: #0f2a5c; --navy-ink: #ffffff; --accent: #2f5aa8;
+    --warn: #b3261e; --warn-bg: #fdecea;
+    --b1: #c2501b; --b2: #b07d00; --b3: #2e7d32;
+    --mark: #ffe58a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --page: #0e1420; --card: #1a2233; --ink: #f2f5fa; --ink-2: #c0c8d6; --ink-3: #8d97a8; --line: #33405a;
+      --navy: #9db8f2; --navy-ink: #0e1420; --accent: #93b4f2;
+      --warn: #ff9f97; --warn-bg: #3a1f1d;
+      --b1: #f28b55; --b2: #e6b84a; --b3: #7cc47f;
+      --mark: #6b5a12;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--page); color: var(--ink);
+    font-family: "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", "Heiti TC", system-ui, sans-serif;
+    font-size: calc(18px * var(--k)); line-height: 1.6;
+  }
+  .wrap {
+    max-width: 620px; margin: 0 auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-bottom: 48px;
+  }
+
+  /* top bar with progress and text-size buttons */
+  .bar {
+    position: sticky; top: 0; z-index: 5; background: var(--navy); color: var(--navy-ink);
+    margin: 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px)));
+    padding: calc(10px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px));
+    display: flex; align-items: center; gap: 12px;
+  }
+  .bar .count { font-size: 16px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .bar .track { flex: 1; height: 7px; border-radius: 4px; background: color-mix(in srgb, var(--navy-ink) 25%, transparent); overflow: hidden; }
+  .bar .fill { height: 100%; width: 0; background: var(--navy-ink); border-radius: 4px; transition: width .2s; }
+  .fs { display: flex; gap: 6px; }
+  .fs button {
+    font: inherit; font-size: 15px; font-weight: 800; min-width: 42px; height: 38px; border-radius: 10px; cursor: pointer;
+    background: color-mix(in srgb, var(--navy-ink) 14%, transparent); color: var(--navy-ink);
+    border: 1px solid color-mix(in srgb, var(--navy-ink) 35%, transparent);
+  }
+  .fs button:focus-visible { outline: 3px solid var(--mark); outline-offset: 2px; }
+
+  h1 { font-size: 1.6em; line-height: 1.3; margin: 18px 0 8px; letter-spacing: .02em; text-wrap: balance; }
+  h2 { font-size: 1.25em; line-height: 1.35; margin: 0 0 12px; text-wrap: balance; }
+  h3 { font-size: 1.08em; margin: 0 0 8px; }
+  p { margin: 0 0 12px; }
+  .lead { color: var(--ink-2); }
+  .how { background: var(--card); border-radius: 14px; padding: 14px 18px; margin: 14px 0 6px; }
+  .how ul { margin: 0; padding-left: 1.15em; }
+  .how li { margin: 4px 0; }
+
+  /* question cards */
+  fieldset.q { border: 0; margin: 14px 0 0; padding: 18px 16px 16px; background: var(--card); border-radius: 14px; scroll-margin-top: 70px; min-width: 0; }
+  fieldset.q.miss { outline: 3px solid var(--warn); }
+  .q legend { float: left; width: 100%; padding: 0; margin-bottom: 14px; }
+  .q .dim { display: flex; align-items: center; gap: 10px; font-size: .95em; font-weight: 800; color: var(--accent); margin-bottom: 6px; }
+  .q .dim .no {
+    display: inline-flex; align-items: center; justify-content: center; width: 1.7em; height: 1.7em; border-radius: 50%;
+    background: var(--navy); color: var(--navy-ink); font-size: .9em; font-variant-numeric: tabular-nums;
+  }
+  .q .text { display: block; font-size: 1.12em; font-weight: 700; line-height: 1.5; }
+  .scale5 { clear: both; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .scale5 label { position: relative; display: block; }
+  .scale5 input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+  .scale5 span {
+    display: flex; align-items: center; justify-content: center; min-height: 56px; border-radius: 12px;
+    border: 2px solid var(--line); background: var(--card); font-size: 1.25em; font-weight: 800; font-variant-numeric: tabular-nums;
+  }
+  .scale5 input:checked + span { border-color: var(--navy); background: var(--navy); color: var(--navy-ink); }
+  .scale5 input:focus-visible + span { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .ends { display: flex; justify-content: space-between; font-size: .82em; color: var(--ink-3); margin-top: 6px; }
+
+  .send { margin-top: 22px; }
+  button.main {
+    display: block; width: 100%; min-height: 58px; border: 0; border-radius: 14px; background: var(--navy); color: var(--navy-ink);
+    font: inherit; font-size: 1.15em; font-weight: 800; cursor: pointer;
+  }
+  button.ghost {
+    display: block; width: 100%; min-height: 52px; border-radius: 14px; margin-top: 10px; background: transparent; color: var(--ink);
+    border: 2px solid var(--line); font: inherit; font-weight: 700; cursor: pointer;
+  }
+  button.main:focus-visible, button.ghost:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+  .alert { background: var(--warn-bg); color: var(--warn); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; font-weight: 700; }
+
+  /* result */
+  #result { display: none; }
+  body.done #intro, body.done #form { display: none; }
+  body.done #result { display: block; }
+  .panel { background: var(--card); border-radius: 14px; padding: 18px 16px; margin-top: 14px; }
+  .kicker { font-size: .85em; font-weight: 800; color: var(--ink-3); letter-spacing: .05em; margin: 0 0 6px; }
+  .score { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .score .big { font-size: 3.2em; font-weight: 900; line-height: 1; color: var(--bc); font-variant-numeric: tabular-nums; }
+  .score .of { font-size: 1em; color: var(--ink-3); font-weight: 700; }
+  .verdict { font-size: 1.35em; font-weight: 900; color: var(--bc); margin: 10px 0 0; line-height: 1.35; }
+  .bands { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 16px; }
+  .band { border: 2px solid var(--line); border-radius: 12px; padding: 10px 8px; text-align: center; min-width: 0; opacity: .55; }
+  .band .r { font-size: .85em; font-weight: 800; color: var(--tc); }
+  .band .a { font-size: .85em; font-weight: 700; line-height: 1.4; margin-top: 4px; }
+  .band.me { opacity: 1; border-color: var(--tc); background: color-mix(in srgb, var(--tc) 12%, var(--card)); }
+
+  .radar svg { display: block; width: 100%; max-width: 560px; height: auto; margin: 0 auto; }
+  .radar text { font-family: inherit; }
+  .rows { display: grid; gap: 8px; margin-top: 10px; }
+  .row { display: grid; grid-template-columns: 7.6em 1fr 1.6em; gap: 10px; align-items: center; font-size: .95em; }
+  .row .nm { font-weight: 700; white-space: nowrap; font-size: .95em; }
+  .row .trk { height: 14px; border-radius: 7px; background: color-mix(in srgb, var(--ink-3) 18%, var(--card)); overflow: hidden; }
+  .row .bf { height: 100%; border-radius: 7px; background: var(--accent); }
+  .row.low .bf { background: var(--b1); }
+  .row .n { text-align: right; font-weight: 900; font-variant-numeric: tabular-nums; }
+
+  ol.steps { margin: 0; padding: 0; list-style: none; counter-reset: s; }
+  ol.steps li { counter-increment: s; position: relative; padding: 12px 0 12px 2.6em; border-top: 1px solid var(--line); }
+  ol.steps li:first-child { border-top: 0; padding-top: 4px; }
+  ol.steps li::before {
+    content: counter(s); position: absolute; left: 0; top: 10px; width: 1.8em; height: 1.8em; border-radius: 50%;
+    background: var(--bc); color: var(--card); font-weight: 900; display: flex; align-items: center; justify-content: center; font-size: .9em;
+  }
+  ol.steps li:first-child::before { top: 2px; }
+  ol.steps b { display: block; margin-bottom: 2px; }
+  .dimcard { border-left: 5px solid var(--b1); padding: 4px 0 4px 14px; margin-top: 16px; }
+  .dimcard:first-of-type { margin-top: 6px; }
+  .dimcard h3 { display: flex; justify-content: space-between; gap: 10px; }
+  .dimcard h3 span { color: var(--b1); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .dimcard ul { margin: 0; padding-left: 1.15em; }
+  .dimcard li { margin: 6px 0; }
+  .note { background: color-mix(in srgb, var(--b1) 12%, var(--card)); border-radius: 12px; padding: 12px 14px; font-weight: 700; margin-top: 14px; }
+  .muted { color: var(--ink-2); font-size: .92em; }
+  .copied { text-align: center; color: var(--b3); font-weight: 800; min-height: 1.6em; margin-top: 8px; }
+
+  footer { color: var(--ink-3); font-size: 14px; line-height: 1.6; margin-top: 26px; }
+  @media (max-width: 400px) {
+    .bands { gap: 6px; }
+    .band { padding: 8px 4px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+  @media print { .bar, .send, #again, #edit, #copy { display: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="bar">
+    <div class="count" id="count">已填 0／6</div>
+    <div class="track" aria-hidden="true"><div class="fill" id="fill"></div></div>
+    <div class="fs"><button type="button" id="aMinus" aria-label="字體縮小">A−</button><button type="button" id="aPlus" aria-label="字體放大">A+</button></div>
+  </div>
+
+  <header id="intro">
+    <h1>企業AI準備度（成熟度）自我檢核</h1>
+    <p class="lead">請依貴公司（或您所在部門）目前的實際狀況，為以下六個構面打分。</p>
+    <div class="how">
+      <ul>
+        <li>1＝完全沒有，5＝已全面落實。</li>
+        <li>填完後會顯示平均分數、各構面分數，以及建議的下一步。</li>
+        <li>約 3 分鐘。作答只存在您自己的手機，不會上傳。</li>
+      </ul>
+    </div>
+  </header>
+
+  <form id="form" novalidate>
+    <div id="qs"></div>
+    <div class="send">
+      <div class="alert" id="alert" hidden></div>
+      <button class="main" type="submit">看結果與建議</button>
+    </div>
+  </form>
+
+  <section id="result" aria-live="polite">
+    <div class="panel" id="scorePanel">
+      <p class="kicker">您的準備度</p>
+      <div class="score"><span class="big" id="avg"></span><span class="of">／ 5（六個構面平均）</span></div>
+      <p class="verdict" id="verdict"></p>
+      <div class="bands" id="bands"></div>
+    </div>
+
+    <div class="panel radar">
+      <p class="kicker">各構面分數</p>
+      <svg id="radar" viewBox="-90 0 580 340" role="img" aria-label="六個構面的雷達圖"></svg>
+      <div class="rows" id="rows"></div>
+    </div>
+
+    <div class="panel" id="nextPanel">
+      <p class="kicker">建議的下一步</p>
+      <h2 id="nextTitle"></h2>
+      <ol class="steps" id="nextSteps"></ol>
+    </div>
+
+    <div class="panel" id="weakPanel">
+      <p class="kicker">優先補強的構面</p>
+      <p class="muted" id="weakIntro"></p>
+      <div id="weakList"></div>
+      <div class="note" id="gapNote" hidden></div>
+    </div>
+
+    <div class="send">
+      <button class="main" type="button" id="copy">複製結果（可貼到群組討論）</button>
+      <div class="copied" id="copied"></div>
+      <button class="ghost" type="button" id="edit">回到題目修改分數</button>
+      <button class="ghost" type="button" id="again">清除重新填寫</button>
+    </div>
+  </section>
+
+  <footer>
+    <p>題目與建議內容整理自「AI 導入專案規劃與策略」課程講義；講義部分內容引用自沈柏延（2026/09/17），〈下一個競爭差距：企業的AI轉型能力—企業領導者必須掌握的八大關鍵〉。</p>
+    <p>僅供業界演講與企業內訓教學使用｜授課講師：成力庚</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- six dimensions (question wording unchanged from the slides) ---------- */
+  var DIMS = [
+    { id: "strategy", name: "策略與領導", q: "AI 目標是否連結營運目標？是否有高階主管支持並當責？",
+      acts: [
+        "先回答：未來三年的成長來自哪裡？哪些核心能力需要 AI 強化？AI 要優先解決成本、成長、風險，還是創新問題？避免「先買工具，再找使用場景」。",
+        "由領導者親自定義 AI 轉型的目的，把 AI 連回企業的成長、效率、風險與創新目標；親自選擇少數關鍵場景，不要同時推太多專案。",
+        "每個專案都要有對商業成果負責的主管，以及清楚的基準值與量化目標。"
+      ] },
+    { id: "data", name: "資料", q: "關鍵資料是否已數位化、可取得、品質可信？",
+      acts: [
+        "建立資料標準與共同定義，明訂資料品質與更新頻率，並指定資料負責人與問責制度。",
+        "用四個構面檢查資料品質：完整性、正確性、一致性、即時性。",
+        "依缺口補強：只有紙本或口述經驗 → 改用數位表單、單據辨識、訪談整理；資料散在多個系統 → 建立資料串接或共用資料平台；涉及個資或營業機密 → 去識別化、權限控管、地端部署。"
+      ] },
+    { id: "tech", name: "技術與基礎設施", q: "是否有可整合的系統（ERP／CRM 等）與雲端或地端運算環境？",
+      acts: [
+        "AI 類型選定前，由業務與 IT 共同確認：這個痛點對應的資料是否存在、品質是否足夠、量是否充分。",
+        "資料散在多個系統時，先建立資料串接或共用資料平台。",
+        "涉及個資或營業機密的應用，可採去識別化、權限控管或地端部署。"
+      ] },
+    { id: "talent", name: "人才與技能", q: "是否有懂業務又懂 AI 的人？員工是否具備基本 AI 素養？",
+      acts: [
+        "依三個層次培養人才：全體員工具備 AI 基本素養與安全使用能力；各部門主管懂得找場景、訂 KPI、帶領人機協作；專業團隊具備資料、模型、平台、整合與治理能力。",
+        "依對象安排培訓：高階主管著重 AI 策略與投資判斷、治理與責任；中階主管著重流程再設計、KPI 管理、帶領團隊採用；第一線員工著重工具操作、提示詞技巧、資料與資安規範。",
+        "主管帶頭使用 AI，可從會議準備、產業分析、數據解讀、情境模擬、文件與簡報初稿開始。"
+      ] },
+    { id: "process", name: "流程與組織", q: "流程是否標準化、可量測？跨部門是否願意配合調整？",
+      acts: [
+        "重新設計流程，不要把 AI 掛在舊流程旁邊；教育訓練、流程重新設計、誘因調整，應與導入步驟同步規劃，而不是等系統上線才開始。",
+        "組成跨部門敏捷團隊（流程負責人、領域專家、資料與技術人員），針對具體場景快速驗證、流程重設與落地。",
+        "用 ADKAR 推動變革：說明為什麼要導入、讓員工看見好處並邀請參與設計、教會工具操作與使用規範、在實際工作中練習、公開成功案例並納入績效與 SOP。"
+      ] },
+    { id: "gov", name: "治理與風險", q: "是否有資安、個資、AI 使用規範與責任歸屬？",
+      acts: [
+        "治理架構先回答四個問題：哪些資料可以輸入 AI、哪些工具可以使用？哪些決策必須由人核准並保留紀錄與追溯？如何測試準確性、偏誤與資安風險？發生錯誤時由誰負責、如何持續監控與稽核？",
+        "建立跨部門治理機制，讓業務、資訊、資料、資安、法務與人資共同參與。",
+        "AI 產出的結果仍須有人覆核與負責。"
+      ] }
+  ];
+
+  /* ---------- three bands (thresholds and headlines from the slides) ---------- */
+  var BANDS = [
+    { range: "平均 ≤ 2", head: "先補數位化與資料基礎", color: "--b1",
+      steps: [
+        ["盤點關鍵資料", "列出關鍵資料的來源系統、格式、期間與品質，把缺口寫成導入計畫第一階段的工作項目。資料缺口不是「不能做」的理由。"],
+        ["把紙本與口述經驗數位化", "改用數位表單、單據辨識、訪談整理；分散在多個系統的資料，建立資料串接或共用資料平台。"],
+        ["建立全員 AI 素養", "讓員工具備 AI 基本素養與安全使用能力，先從個人生產力（會議摘要、文件撰寫、翻譯、搜尋、簡報）開始。"],
+        ["小步微調", "不需要一開始就建立龐大系統，先解決一個每週重複的痛點。"]
+      ] },
+    { range: "平均 2～3.5", head: "選一個單點流程做 PoC", color: "--b2",
+      steps: [
+        ["選對場景", "優先選擇「價值可衡量、資料較完整、風險可控制」的場景，建立成功經驗後再擴大。"],
+        ["先定基準值", "確認現況工時、成本、準確率與資料來源。沒有基準值就沒有成果：先量得出來，才談得上規模化。"],
+        ["60–90 天驗證", "第 2–4 週單一流程、單一團隊小範圍試點；第 5–8 週加入例外情境，檢視穩定度與人工覆核比例；第 9–12 週決策點：達標則規模化，未達標則調整或停止。"],
+        ["先定出場條件", "PoC 前就要先定義出場條件與擴散所需資源，每個關卡都有 Go／No-Go 決策。"],
+        ["指定負責主管", "AI 專案負責人應是對經營成果負責的流程或事業主管，而不只是資訊主管。"]
+      ] },
+    { range: "平均 ≥ 3.5", head: "可規劃跨部門擴散", color: "--b3",
+      steps: [
+        ["建立跨域協作組織", "AI 轉型指導委員會（策略、投資優先順序、資源協調、風險與成果追蹤）、AI 卓越中心（平台標準、共用資料、方法、訓練、治理與案例複製）、跨部門敏捷團隊。"],
+        ["規模化", "跨部門流程重設、共用平台與知識庫，成果納入 KPI。"],
+        ["複製與維運", "複製到其他部門或據點，建立系統整合與維運機制，持續監控與治理。"],
+        ["持續衡量，延伸商業模式", "每季檢視使用率與成果指標，滾動修正；以 AI 能力延伸新產品、新服務與新收費方式。"]
+      ] }
+  ];
+
+  var KEY = "ai-readiness-v1:";
+  var store = {
+    get: function (k) { try { return localStorage.getItem(KEY + k); } catch (e) { return null; } },
+    set: function (k, v) { try { localStorage.setItem(KEY + k, v); } catch (e) {} },
+    del: function (k) { try { localStorage.removeItem(KEY + k); } catch (e) {} }
+  };
+  function $(id) { return document.getElementById(id); }
+  function esc(t) { return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+
+  /* ---------- text size ---------- */
+  var k = parseFloat(store.get("k")) || 1;
+  function setK(v) { k = Math.max(.85, Math.min(1.6, Math.round(v * 100) / 100)); document.documentElement.style.setProperty("--k", k); store.set("k", k); }
+  $("aPlus").onclick = function () { setK(k + .1); };
+  $("aMinus").onclick = function () { setK(k - .1); };
+  setK(k);
+
+  /* ---------- questions ---------- */
+  var answers = {};
+  try { answers = JSON.parse(store.get("answers") || "{}") || {}; } catch (e) { answers = {}; }
+  var qs = $("qs");
+  DIMS.forEach(function (d, i) {
+    var f = document.createElement("fieldset");
+    f.className = "q"; f.id = "q-" + d.id;
+    var h = '<legend><span class="dim"><span class="no">' + (i + 1) + '</span>' + esc(d.name) + '</span><span class="text">' + esc(d.q) + '</span></legend><div class="scale5">';
+    for (var v = 1; v <= 5; v++) {
+      h += '<label><input type="radio" name="' + d.id + '" value="' + v + '"' + (answers[d.id] == v ? " checked" : "") + ' aria-label="' + v + ' 分"><span>' + v + '</span></label>';
+    }
+    h += '</div><div class="ends"><span>1 完全沒有</span><span>5 已全面落實</span></div>';
+    f.innerHTML = h;
+    qs.appendChild(f);
+  });
+  function answered() { return DIMS.filter(function (d) { return answers[d.id]; }).length; }
+  function progress() {
+    var n = answered();
+    $("count").textContent = "已填 " + n + "／" + DIMS.length;
+    $("fill").style.width = (n / DIMS.length * 100) + "%";
+  }
+  qs.addEventListener("change", function (e) {
+    var t = e.target; if (t.type !== "radio") return;
+    answers[t.name] = +t.value; store.set("answers", JSON.stringify(answers));
+    $("q-" + t.name).classList.remove("miss");
+    $("alert").hidden = true;
+    progress();
+    var i = DIMS.findIndex(function (d) { return d.id === t.name; });
+    var next = DIMS.slice(i + 1).find(function (d) { return !answers[d.id]; });
+    if (next) setTimeout(function () { $("q-" + next.id).scrollIntoView({ behavior: "smooth", block: "start" }); }, 180);
+  });
+  progress();
+
+  $("form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var miss = DIMS.filter(function (d) { return !answers[d.id]; });
+    DIMS.forEach(function (d) { $("q-" + d.id).classList.toggle("miss", !answers[d.id]); });
+    if (miss.length) {
+      $("alert").textContent = "還有 " + miss.length + " 題沒有填：" + miss.map(function (d) { return d.name; }).join("、");
+      $("alert").hidden = false;
+      $("q-" + miss[0].id).scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    store.set("done", "1");
+    show();
+  });
+
+  /* ---------- result ---------- */
+  function bandOf(avg) { return avg <= 2 ? 0 : (avg < 3.5 ? 1 : 2); }
+  function fmt(x) { return (Math.round(x * 10) / 10).toFixed(1); }
+  var lastText = "";
+
+  function show() {
+    var sc = DIMS.map(function (d) { return answers[d.id]; });
+    var avg = sc.reduce(function (a, b) { return a + b; }, 0) / sc.length;
+    var bi = bandOf(avg), B = BANDS[bi];
+    var col = "var(" + B.color + ")";
+    document.body.classList.add("done");
+    ["scorePanel", "nextPanel"].forEach(function (id) { $(id).style.setProperty("--bc", col); });
+
+    $("avg").textContent = fmt(avg);
+    $("verdict").textContent = B.head;
+    $("bands").innerHTML = BANDS.map(function (b, i) {
+      return '<div class="band' + (i === bi ? " me" : "") + '" style="--tc:var(' + b.color + ')"><div class="r">' + esc(b.range) + '</div><div class="a">' + esc(b.head) + '</div></div>';
+    }).join("");
+
+    /* radar */
+    var cx = 200, cy = 172, R = 118, n = DIMS.length, svg = "";
+    function pt(i, r) { var a = -Math.PI / 2 + i * 2 * Math.PI / n; return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; }
+    for (var lv = 1; lv <= 5; lv++) {
+      svg += '<polygon points="' + DIMS.map(function (_, i) { return pt(i, R * lv / 5).join(","); }).join(" ") + '" fill="none" stroke="var(--line)" stroke-width="' + (lv === 5 ? 1.6 : 1) + '"/>';
+    }
+    DIMS.forEach(function (d, i) {
+      var p = pt(i, R); svg += '<line x1="' + cx + '" y1="' + cy + '" x2="' + p[0] + '" y2="' + p[1] + '" stroke="var(--line)"/>';
+    });
+    svg += '<polygon points="' + sc.map(function (s, i) { return pt(i, R * s / 5).join(","); }).join(" ") + '" fill="color-mix(in srgb, var(--accent) 22%, transparent)" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>';
+    sc.forEach(function (s, i) {
+      var p = pt(i, R * s / 5);
+      svg += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="5" fill="' + (s <= 2 ? "var(--b1)" : "var(--accent)") + '"/>';
+    });
+    DIMS.forEach(function (d, i) {
+      var p = pt(i, R + 26), anchor = Math.abs(p[0] - cx) < 4 ? "middle" : (p[0] > cx ? "start" : "end");
+      var dy = p[1] < cy - 40 ? -2 : (p[1] > cy + 40 ? 14 : 5);
+      if (anchor !== "middle") p[0] += (anchor === "start" ? -14 : 14);
+      svg += '<text x="' + p[0] + '" y="' + (p[1] + dy) + '" text-anchor="' + anchor + '" font-size="18" font-weight="800" fill="var(--ink)">' + esc(d.name) + ' <tspan fill="' + (sc[i] <= 2 ? "var(--b1)" : "var(--accent)") + '">' + sc[i] + '</tspan></text>';
+    });
+    $("radar").innerHTML = svg;
+    $("rows").innerHTML = DIMS.map(function (d, i) {
+      return '<div class="row' + (sc[i] <= 2 ? " low" : "") + '"><span class="nm">' + esc(d.name) + '</span><span class="trk"><span class="bf" style="display:block;width:' + (sc[i] / 5 * 100) + '%"></span></span><span class="n">' + sc[i] + '</span></div>';
+    }).join("");
+
+    /* next steps for the band */
+    $("nextTitle").textContent = B.range + "：" + B.head;
+    $("nextSteps").innerHTML = B.steps.map(function (s) { return '<li><b>' + esc(s[0]) + '</b>' + esc(s[1]) + '</li>'; }).join("");
+
+    /* weakest dimensions: every dimension ≤ 2; if none, the lowest-scoring ones when they are ≤ 3 */
+    var low = DIMS.filter(function (d, i) { return sc[i] <= 2; });
+    var min = Math.min.apply(null, sc);
+    var intro;
+    if (low.length) intro = "以下構面只有 1–2 分，建議優先補強：";
+    else if (min <= 3) { low = DIMS.filter(function (d, i) { return sc[i] === min; }); intro = "沒有構面低於 2 分；分數最低的構面是："; }
+    else intro = "六個構面都在 4 分以上，沒有明顯的短板。可以把重點放在上方的擴散步驟，並每季重新檢核一次。";
+    low = low.slice().sort(function (x, y) { return answers[x.id] - answers[y.id]; });
+    var rest = low.slice(3); low = low.slice(0, 3);
+    if (rest.length) intro = "有 " + (low.length + rest.length) + " 個構面只有 1–2 分。建議從分數最低的三個開始補強：";
+    $("weakIntro").textContent = intro;
+    $("weakList").innerHTML = low.map(function (d) {
+      var s = answers[d.id];
+      return '<div class="dimcard"><h3>' + esc(d.name) + '<span>' + s + ' 分</span></h3><ul>' + d.acts.map(function (a) { return '<li>' + esc(a) + '</li>'; }).join("") + '</ul></div>';
+    }).join("") + (rest.length ? '<p class="muted" style="margin-top:14px">其他也偏低的構面：' + rest.map(function (d) { return esc(d.name) + "（" + answers[d.id] + " 分）"; }).join("、") + '。可在上方三個構面有進展後再處理。</p>' : "");
+    var gap = bi > 0 ? DIMS.filter(function (d, i) { return sc[i] <= 2; }) : [];
+    if (gap.length) {
+      $("gapNote").hidden = false;
+      $("gapNote").textContent = "提醒：平均分數會掩蓋短板。" + gap.map(function (d) { return d.name + "（" + answers[d.id] + " 分）"; }).join("、") + " 明顯偏低；資料與組織是 AI 轉型落地的關鍵基礎，缺一都可能讓投入白費。";
+    } else $("gapNote").hidden = true;
+
+    lastText = "【企業AI準備度自我檢核】\n平均 " + fmt(avg) + " 分（" + B.range + "）→ " + B.head + "\n" +
+      DIMS.map(function (d, i) { return d.name + "：" + sc[i]; }).join("、") +
+      (low.length && min <= 3 ? "\n優先補強：" + low.map(function (d) { return d.name; }).join("、") : "");
+
+    window.scrollTo({ top: 0 });
+  }
+
+  $("copy").onclick = function () {
+    function done() { $("copied").textContent = "已複製"; setTimeout(function () { $("copied").textContent = ""; }, 1500); }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(lastText).then(done, fallback);
+    else fallback();
+    function fallback() {
+      var ta = document.createElement("textarea"); ta.value = lastText; document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); done(); } catch (e) {} ta.remove();
+    }
+  };
+  $("edit").onclick = function () { document.body.classList.remove("done"); store.del("done"); window.scrollTo({ top: 0 }); };
+  $("again").onclick = function () {
+    answers = {}; store.del("answers"); store.del("done");
+    qs.querySelectorAll("input").forEach(function (x) { x.checked = false; });
+    progress(); document.body.classList.remove("done"); window.scrollTo({ top: 0 });
+  };
+
+  if (store.get("done") === "1" && answered() === DIMS.length) show();
+})();
+</script>
+</body>
+</html>
