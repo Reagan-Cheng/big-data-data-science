@@ -49,6 +49,13 @@
     "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-03/cases/abc-bath-living/?lang=zh"
   },
   {
+    "file": "star-sales-90-days",
+    "path": "/chapter-00/cases/star-sales-90-days/",
+    "zh": "個案閱讀：從明星業務到主管",
+    "en": "Case Reading: From Star Salesperson to Manager",
+    "url": "https://reagan-cheng.github.io/big-data-data-science/chapter-00/cases/star-sales-90-days/"
+  },
+  {
     "file": "chapter-01",
     "path": "/chapter-01/",
     "zh": "第一章｜大數據概論",
