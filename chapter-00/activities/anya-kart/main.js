@@ -1,5 +1,6 @@
 import * as THREE from './lib/three.module.min.js';
 import { TRACKS } from './tracks.js';
+import { createAnyaBuilder } from './anya-model.js?v=1.9';
 
 // ================= 小工具 =================
 const $ = (id) => document.getElementById(id);
@@ -15,7 +16,8 @@ const LAPS = 3;      // 圈數
 const N = 1200;      // 賽道取樣點數
 const HW = 11;       // 賽道半寬
 const DIFF = [0.84, 0.93, 1.0];
-const SPEED_MUL = [1, 0.8, 0.65];   // 車速：標準／慢一點／更慢
+const SPEED_MUL = [1, 0.8, 0.65];
+const WIN_TEXT = '安妮亞，哇庫哇庫！';   // 拿第一名時固定顯示這句   // 車速：標準／慢一點／更慢
 // 測試用網址參數：?auto=1 自動駕駛、?ts=4 四倍速
 const params = new URLSearchParams(location.search);
 const AUTO = params.has('auto'), TS = clamp(+params.get('ts') || 1, 1, 8);
@@ -79,175 +81,7 @@ function drawStar(g, cx, cy, R, r) {
 }
 
 // ================= 安妮亞 3D 模型 =================
-function faceTexture(type) {
-  return canvasTex(768, 500, (g, W) => {
-    const ex = [W / 2 - 125, W / 2 + 125], ey = 238;
-    g.lineCap = 'round'; g.lineJoin = 'round';
-    if (type === 'shock') {
-      const gr = g.createLinearGradient(0, 40, 0, 340);
-      gr.addColorStop(0, 'rgba(80,80,130,0.6)'); gr.addColorStop(1, 'rgba(80,80,130,0)');
-      g.fillStyle = gr; g.fillRect(W / 2 - 280, 40, 560, 300);
-    }
-    // 腮紅
-    g.fillStyle = 'rgba(255,130,130,0.5)';
-    for (const x of [W / 2 - 200, W / 2 + 200]) { g.beginPath(); g.ellipse(x, 335, 44, 22, 0, 0, Math.PI * 2); g.fill(); }
-    // 眼睛
-    for (const x of ex) {
-      const side = x < W / 2 ? -1 : 1;
-      if (type === 'sleepy') {
-        g.strokeStyle = '#2b1d1d'; g.lineWidth = 13;
-        g.beginPath(); g.arc(x, ey + 40, 56, Math.PI * 1.15, Math.PI * 1.85); g.stroke();
-        g.lineWidth = 6; g.beginPath(); g.moveTo(x + 50 * side, ey + 18); g.lineTo(x + 70 * side, ey + 8); g.stroke();
-      } else if (type === 'shock') {
-        g.fillStyle = '#fff'; g.strokeStyle = '#2b1d1d'; g.lineWidth = 9;
-        g.beginPath(); g.ellipse(x, ey, 62, 72, 0, 0, Math.PI * 2); g.fill(); g.stroke();
-        g.fillStyle = '#183528'; g.beginPath(); g.arc(x, ey + 4, 12, 0, Math.PI * 2); g.fill();
-        g.lineWidth = 5; g.beginPath(); g.moveTo(x - 40, ey + 95); g.lineTo(x + 40, ey + 92); g.stroke();
-      } else {
-        g.fillStyle = '#fff'; g.beginPath(); g.ellipse(x, ey, 58, 70, 0, 0, Math.PI * 2); g.fill();
-        const ir = g.createLinearGradient(0, ey - 60, 0, ey + 64);
-        ir.addColorStop(0, '#0b4f3b'); ir.addColorStop(0.55, '#1c9e76'); ir.addColorStop(1, '#8be6c0');
-        g.fillStyle = ir; g.beginPath(); g.ellipse(x, ey + 5, 46, 60, 0, 0, Math.PI * 2); g.fill();
-        g.strokeStyle = '#0b3a2b'; g.lineWidth = 4; g.stroke();
-        g.fillStyle = '#fff'; drawStar(g, x, ey + 8, 22, 9);
-        g.beginPath(); g.arc(x - 24 * -side, ey - 30, 9, 0, Math.PI * 2); g.fill();
-        g.strokeStyle = '#2b1d1d'; g.lineWidth = 13;
-        g.beginPath(); g.ellipse(x, ey + 2, 63, 75, 0, Math.PI * 1.1, Math.PI * 1.9); g.stroke();
-        g.lineWidth = 7; g.beginPath(); g.moveTo(x + 56 * side, ey - 30); g.lineTo(x + 78 * side, ey - 46); g.stroke();
-      }
-    }
-    // 嘴巴
-    const mx = W / 2;
-    g.strokeStyle = '#3a1a1a'; g.lineWidth = 6;
-    if (type === 'happy') {
-      g.fillStyle = '#9b2f3a';
-      g.beginPath(); g.moveTo(mx - 48, 360); g.lineTo(mx + 48, 360); g.ellipse(mx, 360, 48, 46, 0, 0, Math.PI); g.closePath(); g.fill(); g.stroke();
-      g.fillStyle = '#ff8c95'; g.beginPath(); g.ellipse(mx, 392, 26, 13, 0, 0, Math.PI * 2); g.fill();
-      g.fillStyle = '#fff'; g.fillRect(mx - 40, 362, 80, 10);
-    } else if (type === 'sleepy') {
-      g.beginPath(); g.arc(mx, 335, 30, Math.PI * 0.2, Math.PI * 0.8); g.stroke();
-    } else if (type === 'shock') {
-      g.fillStyle = '#9b2f3a';
-      g.beginPath(); g.roundRect(mx - 48, 345, 96, 100, 22); g.fill(); g.stroke();
-      g.fillStyle = '#fff'; g.fillRect(mx - 40, 350, 80, 12);
-      g.fillStyle = '#9fdcff';
-      for (const [sx, sy] of [[mx + 250, 250], [mx - 255, 300]]) {
-        g.beginPath(); g.moveTo(sx, sy - 26); g.quadraticCurveTo(sx + 16, sy, sx, sy + 12); g.quadraticCurveTo(sx - 16, sy, sx, sy - 26); g.fill();
-      }
-    } else {
-      g.fillStyle = '#9b2f3a'; g.beginPath(); g.ellipse(mx, 372, 17, 22, 0, 0, Math.PI * 2); g.fill(); g.stroke();
-    }
-  });
-}
-
-function starTexture() {
-  const t = canvasTex(256, 256, (g, W, H) => {
-    g.fillStyle = '#76c7c9'; g.fillRect(0, 0, W, H);
-    g.fillStyle = '#ffffff';
-    for (const [x, y, r] of [[40, 50, 26], [150, 30, 22], [220, 120, 26], [90, 150, 28], [190, 220, 22], [30, 220, 20]]) drawStar(g, x, y, r, r * 0.45);
-  });
-  t.wrapS = t.wrapT = THREE.RepeatWrapping;
-  t.repeat.set(3, 1);
-  return t;
-}
-
-function buildAnya(cfg) {
-  const root = new THREE.Group();
-  const HAIR = '#f4a3a0', SKIN = '#ffe6d8', BLACK = '#3d3638';
-  const top = cfg.outfit === 'dress' ? BLACK : cfg.outfit === 'pajama' ? '#7ccbcc' : '#7fd3c6';
-  const bottom = cfg.outfit === 'dress' ? BLACK : cfg.outfit === 'pajama' ? '#7ccbcc' : '#ffe066';
-
-  // 坐姿雙腿
-  for (const sx of [-0.17, 0.17]) {
-    const leg = mesh(new THREE.CapsuleGeometry(0.12, 0.42, 4, 8), toon(cfg.outfit === 'sport' ? SKIN : bottom), sx, 0.45, 0.38, root);
-    leg.rotation.x = Math.PI / 2;
-  }
-  mesh(new THREE.CylinderGeometry(0.36, 0.47, 0.34, 16), toon(bottom), 0, 0.52, 0, root);
-  mesh(new THREE.CylinderGeometry(0.27, 0.36, 0.56, 16), toon(top), 0, 0.9, 0, root);
-  if (cfg.outfit === 'dress') {
-    mesh(new THREE.TorusGeometry(0.2, 0.05, 6, 16), toon('#f0a0a0'), 0, 1.15, 0.02, root).rotation.x = Math.PI / 2;
-    for (const s of [-1, 1]) {
-      const r = mesh(new THREE.ConeGeometry(0.06, 0.16, 4), toon('#ffffff'), 0.06 * s, 1.08, 0.27, root);
-      r.rotation.z = Math.PI / 2 * s;
-    }
-  } else if (cfg.outfit === 'pajama') {
-    for (let i = 0; i < 3; i++) mesh(new THREE.SphereGeometry(0.03, 6, 6), toon('#ffffff'), 0, 1.08 - i * 0.14, 0.31 + i * 0.02, root);
-  }
-  // 雙手握方向盤
-  for (const s of [-1, 1]) {
-    const sh = new THREE.Vector3(0.32 * s, 1.07, 0.02);
-    const hand = new THREE.Vector3(0.24 * s, 0.78, 0.66);
-    const dir = hand.clone().sub(sh);
-    const len = dir.length();
-    dir.normalize();
-    const ag = new THREE.CylinderGeometry(0.1, 0.085, len, 10);
-    ag.translate(0, len / 2, 0);
-    const arm = mesh(ag, toon(cfg.outfit === 'sport' ? SKIN : top), sh.x, sh.y, sh.z, root);
-    arm.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
-    if (cfg.outfit === 'sport') mesh(new THREE.SphereGeometry(0.14, 10, 8), toon(top), sh.x, sh.y, sh.z, root);
-    mesh(new THREE.SphereGeometry(0.1, 10, 8), toon(SKIN), hand.x, hand.y, hand.z, root);
-  }
-
-  // 頭
-  const head = new THREE.Group();
-  head.position.set(0, 1.62, 0.02);
-  root.add(head);
-  const skull = new THREE.Group();
-  skull.scale.set(1, 0.94, 0.96);
-  head.add(skull);
-  mesh(new THREE.SphereGeometry(0.55, 32, 24), toon(SKIN), 0, 0, 0, skull);
-  const FL = Math.PI * 0.7;
-  const face = new THREE.Mesh(
-    new THREE.SphereGeometry(0.556, 32, 16, Math.PI / 2 - FL / 2, FL, Math.PI * 0.3, Math.PI * 0.45),
-    new THREE.MeshToonMaterial({ map: faceTexture(cfg.face), gradientMap: gradTex, transparent: true, depthWrite: false }));
-  skull.add(face);
-
-  const hairM = toon(HAIR, { side: THREE.DoubleSide });
-  mesh(new THREE.SphereGeometry(0.6, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.4), hairM, 0, 0, 0, skull);
-  const back = mesh(new THREE.SphereGeometry(0.61, 32, 20, Math.PI * 0.9, Math.PI * 1.2, 0, Math.PI * 0.8), hairM, 0, 0, 0, skull);
-  back.scale.set(1.08, 1, 1.05);
-  // 瀏海
-  for (const a of [-0.78, -0.47, -0.16, 0.16, 0.47, 0.78]) {
-    const bg = new THREE.Group();
-    bg.rotation.y = a;
-    skull.add(bg);
-    const b = mesh(new THREE.ConeGeometry(0.15, 0.4, 8), hairM, 0, 0.25, 0.555, bg);
-    b.rotation.x = Math.PI - 0.32;
-    b.scale.z = 0.45;
-  }
-  // 兩側長髮
-  for (const s of [-1, 1]) {
-    const lock = mesh(new THREE.CapsuleGeometry(0.11, 0.42, 4, 8), hairM, 0.5 * s, -0.2, 0.16, skull);
-    lock.rotation.z = 0.12 * s;
-  }
-  if (!cfg.hat) {
-    // 呆毛
-    const ah = mesh(new THREE.ConeGeometry(0.05, 0.28, 6), hairM, 0.04, 0.66, 0.08, skull);
-    ah.rotation.z = -0.5;
-    // 招牌黑色髮飾
-    for (const s of [-1, 1]) {
-      const hg = new THREE.Group();
-      hg.position.set(0.37 * s, 0.43, -0.02);
-      hg.rotation.z = -0.55 * s;
-      skull.add(hg);
-      mesh(new THREE.ConeGeometry(0.16, 0.34, 4), toon('#2e2627'), 0, 0.12, 0, hg).rotation.y = Math.PI / 4;
-      mesh(new THREE.CylinderGeometry(0.165, 0.165, 0.07, 4), toon('#c9a64a'), 0, -0.06, 0, hg).rotation.y = Math.PI / 4;
-    }
-  }
-  if (cfg.bun) mesh(new THREE.SphereGeometry(0.21, 14, 12), hairM, 0.32, 0.28, -0.4, skull);
-  if (cfg.hat) {
-    const hatM = toon('#ffffff', { map: starTexture() });
-    const hg = new THREE.Group();
-    hg.position.set(0, 0.34, -0.03);
-    hg.rotation.set(-0.12, 0, -0.32);
-    skull.add(hg);
-    mesh(new THREE.CylinderGeometry(0.645, 0.66, 0.22, 24), hatM, 0, 0, 0, hg);
-    mesh(new THREE.ConeGeometry(0.63, 0.95, 24), hatM, 0, 0.58, 0, hg);
-    mesh(new THREE.SphereGeometry(0.15, 12, 10), toon('#ffffff'), 0, 1.05, 0, hg);
-  }
-  root.userData.head = head;
-  return root;
-}
+const buildAnya = createAnyaBuilder({ THREE, toon, mesh, canvasTex, drawStar });
 
 function buildPlush() {
   const g = new THREE.Group();
@@ -346,7 +180,35 @@ function buildKart(cfg) {
   lights.add(beam);
   lights.visible = false;
   body.add(lights);
-  kart.userData = { body, wheels, steers, flames, shield, dog, lights, head: driver.userData.head };
+  // 花生集滿時的金色光芒：發光罩＋繞圈的小星星
+  const gold = new THREE.Group();
+  gold.position.y = 1.3;
+  const glow = new THREE.Mesh(new THREE.SphereGeometry(2.6, 20, 14),
+    new THREE.MeshBasicMaterial({ color: '#ffd23f', transparent: true, opacity: 0.32, depthWrite: false, blending: THREE.AdditiveBlending }));
+  gold.add(glow);
+  const sparkM = new THREE.MeshBasicMaterial({ color: '#fff3a0' });
+  for (let k = 0; k < 10; k++) {
+    const sp = new THREE.Mesh(new THREE.OctahedronGeometry(0.22, 0), sparkM);
+    const a = k / 10 * Math.PI * 2;
+    sp.position.set(Math.cos(a) * 2.4, (k % 3 - 1) * 0.8, Math.sin(a) * 2.4);
+    gold.add(sp);
+  }
+  gold.visible = false;
+  kart.add(gold);
+  // 大斷橋撐的粉紅雨傘
+  const umbrella = new THREE.Group();
+  umbrella.position.set(0.3, 3.0, -0.1);
+  const umbTex = canvasTex(256, 32, (c, W, H) => { for (let k = 0; k < 8; k++) { c.fillStyle = k % 2 ? '#ffffff' : '#ff8fb1'; c.fillRect(k * W / 8, 0, W / 8, H); } });
+  const canopy = new THREE.Mesh(new THREE.SphereGeometry(2.4, 16, 8, 0, Math.PI * 2, 0, Math.PI * 0.42),
+    new THREE.MeshToonMaterial({ map: umbTex, gradientMap: gradTex, side: THREE.DoubleSide }));
+  canopy.scale.y = 0.7;
+  canopy.position.y = 1.0;
+  umbrella.add(canopy);
+  mesh(new THREE.CylinderGeometry(0.06, 0.06, 2.4, 6), toon('#8a5a3c'), 0, 0.2, 0, umbrella);
+  mesh(new THREE.SphereGeometry(0.15, 8, 6), toon('#ff8fb1'), 0, 2.75, 0, umbrella);
+  umbrella.visible = false;
+  body.add(umbrella);
+  kart.userData = { body, wheels, steers, flames, shield, dog, lights, gold, umbrella, head: driver.userData.head };
   return kart;
 }
 
@@ -413,7 +275,8 @@ function nameTag(cfg) {
 // ================= 賽道 =================
 // 每條賽道的路線、配色與機關寫在 tracks.js；這裡負責把賽道建出來，並提供高度、位置等查詢
 let TRACK = null, world = null, trackIndex = -1;
-let pts = [], TAN = [], SIDE = [], SPACING = 1, isDeck = [];
+let pts = [], TAN = [], SIDE = [], SPACING = 1, isDeck = [], isBroken = [];
+let EDGE = -1, BROKEN_END = -1;   // 大斷橋：斷口位置與斷掉路段的結尾
 let GAP = null, BRIDGE_I = -1, BC = null, BT = null, BS = null, GAP0 = -1, CANYON_Y = -24, GAP_HALF = 10;
 let CREST = 0, RAMPS = [], LAYOUT = {};
 let OFFROAD = 20;   // 可以開出路面多遠（之外是看不見的邊界）
@@ -455,6 +318,7 @@ function groundY(x, z, i, dist) {
 // 車子/物體腳下的高度（含跳台、高架橋、橋面、峽谷）
 function surfaceY(o) {
   const al = Math.abs(o.lat), ry = roadY(o.s);
+  if (isBroken[o.idx]) { const [gi, gd] = nearestIdx(o.x, o.z, 2, true); return groundY(o.x, o.z, gi, gd); }
   if (isDeck[o.idx]) {
     // 在橋面上：有欄杆不會掉下去；在橋下：用下面地面的高度
     if (o.under) { const [gi, gd] = nearestIdx(o.x, o.z, 2, true); return groundY(o.x, o.z, gi, gd); }
@@ -470,7 +334,7 @@ function surfaceY(o) {
 function nearestIdx(x, z, step = 1, skipDeck = false) {
   let best = 0, bd = Infinity;
   for (let i = 0; i < N; i += step) {
-    if (skipDeck && isDeck[i]) continue;
+    if (skipDeck && (isDeck[i] || isBroken[i])) continue;
     const d = (pts[i].x - x) ** 2 + (pts[i].z - z) ** 2;
     if (d < bd) { bd = d; best = i; }
   }
@@ -507,6 +371,16 @@ function loadTrack(k) {
   hillFn = cfg.hill === 'snow' ? snowHill : cfg.flat ? cityHill : countryHill;
   OFFROAD = cfg.offroad ?? 20;
   isDeck = pts.map((p) => cfg.deckAbove != null && p.y > cfg.deckAbove);
+  isBroken = pts.map(() => false);
+  EDGE = -1; BROKEN_END = -1;
+  if (cfg.broken) {
+    // 斷口 = 那附近最高的點；斷口之後一路往下、還高於地面的路段都是斷掉的（沒有路面）
+    let e = nearestIdx(cfg.broken.x, cfg.broken.z)[0];
+    for (let k = -40; k <= 40; k++) { const i = (e + k + N) % N; if (pts[i].y > pts[e].y) e = i; }
+    EDGE = e;
+    let i = (e + 1) % N;
+    while (pts[i].y > (cfg.deckAbove ?? 3.2)) { isBroken[i] = true; isDeck[i] = false; BROKEN_END = i; i = (i + 1) % N; }
+  }
   GAP = cfg.gap || null;
   GAP0 = -1; BRIDGE_I = -1;
   if (GAP) {
@@ -518,7 +392,7 @@ function loadTrack(k) {
   }
   CREST = 0;
   if (cfg.crest) { CREST = cfg.crest[0]; for (let i = cfg.crest[0]; i < cfg.crest[1]; i++) if (pts[i].y > pts[CREST].y) CREST = i; }
-  const T = { N, near: (x, z) => nearestIdx(x, z)[0], GAP0, CREST, idxGap: (a, b) => (b - a + N) % N };
+  const T = { N, near: (x, z) => nearestIdx(x, z)[0], GAP0, CREST, EDGE, idxGap: (a, b) => (b - a + N) % N };
   LAYOUT = Object.assign({ ramps: [], pads: [], signs: [], boxes: [], obstacles: [], villains: [], peanuts: [], zones: [],
     lasers: [], snowballs: [], dividers: [], tunnels: [], crosswalks: [], ghosts: [], penguins: [], traffic: null }, cfg.layout(T));
   RAMPS = LAYOUT.ramps;
@@ -557,7 +431,7 @@ function buildWorld() {
     let [i, d] = nearestIdx(x, z, 3, true);
     for (let k = -3; k <= 3; k++) {
       const j = (i + k + N) % N;
-      if (isDeck[j]) continue;
+      if (isDeck[j] || isBroken[j]) continue;
       const dd = Math.hypot(pts[j].x - x, pts[j].z - z);
       if (dd < d) { d = dd; i = j; }
     }
@@ -653,6 +527,7 @@ function buildWorld() {
 
   if (GAP) buildBridge();
   buildDecks();
+  if (EDGE >= 0) buildBrokenEdge();
   for (const r of RAMPS) world.add(rampMesh(r));
   for (const [i, a, b] of LAYOUT.signs) roadSign((i + N) % N, a, b);
   for (const t of LAYOUT.tunnels) buildTunnel(t);
@@ -834,7 +709,8 @@ function ribbonRange(i0, len, off0, off1, yOff, vScale, skipGap = false) {
     if (k > 0) dist += SPACING;
     pos.push(p.x + s.x * off0, p.y + yOff, p.z + s.z * off0, p.x + s.x * off1, p.y + yOff, p.z + s.z * off1);
     uv.push(0, dist / vScale, 1, dist / vScale);
-    if (k < len && !(skipGap && (inGap(i) || inGap((i + 1) % N)))) { const a = k * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); }
+    const j = (i + 1) % N;
+    if (k < len && !(skipGap && (inGap(i) || inGap(j) || isBroken[i] || isBroken[j]))) { const a = k * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); }
   }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
@@ -897,6 +773,30 @@ function buildBridge() {
     }
   }
   world.add(wg);
+}
+
+// 大斷橋的斷口：碎裂的橋板、掉下來的鋼筋、警示燈
+function buildBrokenEdge() {
+  const dc = TRACK.theme.deck, p = pts[EDGE];
+  const g = new THREE.Group();
+  g.position.copy(p);
+  g.rotation.y = headingAt(EDGE);
+  world.add(g);
+  for (const x of [-8, -3, 2, 7]) {
+    const b = mesh(new THREE.BoxGeometry(4 + rand() * 2, 0.5, 2.6), toon(dc.deck), x + rand() * 1.5, -1.6 - rand(), 2.2, g);
+    b.rotation.x = 0.8 + rand() * 0.4;
+    b.rotation.z = (rand() - 0.5) * 0.6;
+  }
+  for (let k = 0; k < 6; k++) {
+    const r = mesh(new THREE.CylinderGeometry(0.08, 0.08, 3 + rand() * 2, 5), toon('#9a6a3a'), (rand() - 0.5) * 20, -1.5, 1.8, g);
+    r.rotation.x = 1.0 + rand() * 0.6;
+  }
+  const lampM = new THREE.MeshBasicMaterial({ color: '#ff8a1f' });
+  for (const s of [-1, 1]) {
+    const l = new THREE.Mesh(new THREE.SphereGeometry(0.4, 10, 8), lampM);
+    l.position.set((HW + 1.6) * s, 1.6, 0);
+    g.add(l);
+  }
 }
 
 // 高架橋：橋面、欄杆、橋墩
@@ -1204,7 +1104,7 @@ function buildGhosts(gd) {
   }
 }
 
-// 藍色企鵝：戴藍綠色軟帽，在路上搖搖擺擺走來走去，撞到會暈倒
+// 童童（藍色企鵝）：戴藍綠色軟帽，在路上搖搖擺擺走來走去，撞到會暈倒
 function buildPenguin() {
   const g = new THREE.Group();
   const blue = toon('#a9d0e2'), hatM = toon('#4f949e'), beige = toon('#f0d6a4'), black = toon('#1d2430');
@@ -1422,7 +1322,8 @@ const input = { left: false, right: false, gas: false, brake: false };
 const G = 36;          // 重力
 const SPIN_T = 1.3;    // 轉圈圈秒數
 const KART_R = 1.6;    // 車子半寬（含後輪），撞牆時用
-const MAX_UP_V = 22;   // 在地面時最大往上速度（跳台起飛約 12～18）
+const MAX_UP_V = 22;
+const GLIDE_G = 12, GLIDE_FALL = 12;   // 大斷橋撐傘：重力與最大下降速度   // 在地面時最大往上速度（跳台起飛約 12～18）
 const ITEMS = {
   rocket: { icon: '🚀', name: '火箭衝刺', w: [1, 3, 5, 6] },
   bomb: { icon: '💣', name: '花生炸彈', w: [2, 4, 4, 4] },
@@ -1446,7 +1347,7 @@ function makeCar(ri, isPlayer) {
     lap: 0, checkpoint: true, peanuts: 0, boost: 0, finished: false, finishTime: 0, offroad: false, wheelSpin: 0,
     maxSpeed: (42 + s.speed * 2) * speedMul(), accel: (12 + s.accel * 3) * speedMul(), handling: 1.85 + s.handling * 0.13,
     s: 0, vy: 0, air: false, prevSy: 0, fallT: 0, spin: 0, invuln: 0, shield: 0, item: null, roll: 0,
-    big: 0, small: 0, dog: 0, scaleNow: 1,
+    big: 0, small: 0, dog: 0, scaleNow: 1, gold: 0,
     ai: { baseSkill: 1, skill: 1, phase: rand() * 6, bias: (rand() - 0.5) * 4, hold: 0 },
   };
 }
@@ -1459,7 +1360,7 @@ function placeCar(car, idx, lat) {
   car.heading = Math.atan2(TAN[idx].x, TAN[idx].z);
   car.under = false; car.onDeck = isDeck[idx];
   car.y = car.prevSy = surfaceY(car);
-  car.vy = 0; car.air = false; car.airT = 0;
+  car.vy = 0; car.air = false; car.airT = 0; car.glide = false;
   car.vdir = car.heading; car.slip = 0;
   car.safeP = car.stuckP = car.lap * N + idx;
   car.stuckT = 0;
@@ -1507,6 +1408,7 @@ function updateCar(car, dt, ctl) {
     return;
   }
   car.big = Math.max(0, car.big - dt);
+  car.gold = Math.max(0, car.gold - dt);
   car.small = Math.max(0, car.small - dt);
   car.dog = Math.max(0, car.dog - dt);
   if (car.dog > 0) {
@@ -1544,6 +1446,8 @@ function updateCar(car, dt, ctl) {
     const th = Math.atan2(TAN[car.idx].x, TAN[car.idx].z);
     car.heading += wrapAngle(th - car.heading) * Math.min(1, dt * 3);
     if (Math.abs(car.lat) > HW - 3) car.heading -= Math.sign(car.lat) * dt * 0.25;
+    // 撐傘飄落時間很長：一路慢慢往路面中間飄，才會降落在路上
+    if (car.glide) car.heading -= clamp(car.lat / HW, -1.2, 1.2) * dt * 0.9;
   }
   // 地面區域：冰面會滑、輸送帶往旁邊推、水窪打滑
   const zone = car.air ? null : zoneAt(car);
@@ -1647,12 +1551,16 @@ function updateCar(car, dt, ctl) {
   // 一格內地面突然高很多（台階、土堤邊緣）：直接站上去，不要被彈起來；跳台是慢慢變高，不會走到這裡
   if (rawGv > 30 && !car.air) gv = 0;
   if (car.air) {
-    car.vy = Math.max(car.vy - G * dt, -60);
+    if (!car.glide && (isBroken[car.idx] || (EDGE >= 0 && idxAhead((EDGE - 1 + N) % N, car.idx) < 10))) {
+      car.glide = true;
+      if (car.isPlayer) { showBanner('☂️ 斷橋！撐傘飛下去～', 1600); Sound.tone(523, 0.3, 'sine', 0.15, 0, 1046); }
+    }
+    car.vy = car.glide ? Math.max(car.vy - GLIDE_G * dt, -GLIDE_FALL) : Math.max(car.vy - G * dt, -60);
     car.y += car.vy * dt;
     car.airT += dt;
     if (car.y <= sy) {
       if (car.isPlayer && car.vy < -12) { Sound.land(); state.shake = Math.min(0.5, -car.vy * 0.02); }
-      car.y = sy; car.vy = gv; car.air = false; car.airT = 0;
+      car.y = sy; car.vy = gv; car.air = false; car.airT = 0; car.glide = false;
     }
   } else if (gv < car.vy - G * dt - 0.6) {
     car.air = true;
@@ -1672,12 +1580,12 @@ function updateCar(car, dt, ctl) {
     return;
   }
   // 記住最近一次安全的位置（在路面上、沒在飛、不在峽谷）
-  if (!car.air && Math.abs(car.lat) < HW && canyonF(car.x, car.z) < 0.02) car.safeP = car.lap * N + car.idx;
+  if (!car.air && Math.abs(car.lat) < HW && canyonF(car.x, car.z) < 0.02 && !isBroken[car.idx]) car.safeP = car.lap * N + car.idx;
   // 保險：飛太久、飛太高、或卡住不動太久，就回到安全位置
   const p = car.lap * N + car.s;
   if (Math.abs(p - car.stuckP) > 3) { car.stuckP = p; car.stuckT = 0; } else if (car.spin <= 0) car.stuckT += dt;
   const wantsToGo = !car.isPlayer || AUTO || car.finished || ((state.autoGas || input.gas) && !input.brake);
-  if (car.airT > 4 || car.y > roadY(car.s) + 45 || (wantsToGo && car.stuckT > 5)) {
+  if (car.airT > (car.glide ? 10 : 4) || car.y > roadY(car.s) + 45 || (wantsToGo && car.stuckT > 5)) {
     (state.rescueLog ||= []).push({ who: car.cfg.name, why: car.airT > 4 ? 'air' : car.stuckT > 5 ? 'stuck' : 'high', idx: car.idx, lat: +car.lat.toFixed(1), y: +car.y.toFixed(1) });
     rescue(car);
     return;
@@ -1853,8 +1761,7 @@ function useItem(car) {
     car.spin = 0;
     if (car.isPlayer) { Sound.bark(); showBanner('彭德衝衝衝！', 1200); }
   } else {
-    car.peanuts = Math.min(10, car.peanuts + 3);
-    if (car.isPlayer) Sound.ding();
+    addPeanuts(car, 3);
   }
 }
 
@@ -2039,6 +1946,7 @@ function updateMovingHazards(dt, cars) {
   for (const v of traffic) {
     v.s = (v.s + v.speed * dt / SPACING) % N;
     v.idx = Math.floor(v.s);
+    if (isBroken[v.idx] || v.idx === EDGE) { v.s = (BROKEN_END + 2) % N; v.idx = Math.floor(v.s); }
     const [x, z] = latPos(v.idx, v.lat);
     v.x = x; v.z = z; v.y = roadY(v.s);
     v.mesh.position.set(x, v.y, z);
@@ -2113,7 +2021,7 @@ function updateMovingHazards(dt, cars) {
     for (const c of cars) {
       if (c.fallT > 0 || c.air || Math.abs(c.y - pg.y) > 2.5) continue;
       if ((c.x - x) ** 2 + (c.z - z) ** 2 < (0.95 + 1.15 * c.scaleNow) ** 2) {
-        hit(c, '撞到企鵝了！暈頭轉向～');
+        hit(c, '撞到童童了！暈頭轉向～');
         pg.dizzy = 2.5; pg.vy = 9; pg.hop = 0.01; pg.wave = 0;
         Sound.squeak();
         break;
@@ -2260,13 +2168,40 @@ function updateBlunder(car, dt, allowed) {
   }
 }
 
+// 吃花生：每顆最高速度 +1.2%（最多 10 顆）；集滿 10 顆時金色衝刺
+function addPeanuts(car, n) {
+  const before = car.peanuts;
+  car.peanuts = Math.min(10, car.peanuts + n);
+  const got = car.peanuts - before;
+  if (car.isPlayer) {
+    Sound.ding();
+    peanutPop(got > 0 ? `🥜 +${got} 速度 UP！` : '🥜 花生已經滿了！');
+  }
+  if (before < 10 && car.peanuts === 10) {
+    car.gold = 3;
+    car.boost = Math.max(car.boost, 1.5);
+    car.speed += 8 * speedMul();
+    if (car.isPlayer) {
+      showBanner('🌟 花生集滿！金色衝刺！', 1500);
+      [784, 988, 1175, 1568].forEach((f, i) => Sound.tone(f, 0.22, 'triangle', 0.18, i * 0.07));
+    }
+  }
+}
+let popTimer = 0;
+function peanutPop(text) {
+  const el = $('peanutPop');
+  el.textContent = text;
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  clearTimeout(popTimer);
+  popTimer = setTimeout(() => el.classList.remove('show'), 1000);
+}
+
 function checkPickups(car) {
   for (const pn of peanuts) {
     if (!pn.active || Math.abs(pn.y - 1.3 - car.y) > 4) continue;
     if ((pn.x - car.x) ** 2 + (pn.z - car.z) ** 2 < 5.5) {
       pn.active = false; pn.timer = 6; pn.mesh.visible = false;
-      car.peanuts = Math.min(10, car.peanuts + 1);
-      if (car.isPlayer) Sound.ding();
+      addPeanuts(car, 1);
     }
   }
   for (const pad of pads) {
@@ -2314,7 +2249,7 @@ function onLap(car) {
       state.mode = 'finished';
       state.resultTimer = 2.5;
       const rank = ranking().indexOf(car) + 1;
-      showBanner(rank === 1 ? '第一名！哇庫哇庫！' : '抵達終點！', 2400);
+      showBanner(rank === 1 ? WIN_TEXT : '抵達終點！', 2400);
       Sound.fanfare();
       $('controls').classList.add('hidden');
     }
@@ -2350,6 +2285,14 @@ function syncModel(car, dt) {
   for (const f of u.flames) {
     f.visible = car.boost > 0 || car.dog > 0;
     f.scale.set(1, 0.7 + Math.random() * 0.6, 1);
+  }
+  u.umbrella.visible = !!car.glide;
+  if (car.glide) { u.umbrella.rotation.y += (dt || 0.016) * 2; u.umbrella.rotation.z = Math.sin(time * 3) * 0.12; }
+  u.gold.visible = car.gold > 0;
+  if (car.gold > 0) {
+    u.gold.rotation.y += (dt || 0.016) * 4;
+    u.gold.children[0].material.opacity = 0.18 + 0.16 * (0.5 + 0.5 * Math.sin(time * 14)) * Math.min(1, car.gold);
+    u.gold.scale.setScalar(1 + Math.sin(time * 10) * 0.06);
   }
   // 變大／縮小（快結束時閃爍提醒）
   let target = car.big > 0 ? 1.7 : car.small > 0 ? 0.55 : 1;
@@ -2520,7 +2463,7 @@ function showResults() {
     list.appendChild(li);
   });
   const r = rk.indexOf(state.player) + 1;
-  $('resultTitle').textContent = `${TRACK.icon} ${r === 1 ? '冠軍！太厲害了！' : `第 ${r} 名！再接再厲`}`;
+  $('resultTitle').textContent = r === 1 ? `🏆 ${WIN_TEXT}` : `${TRACK.icon} 第 ${r} 名！再接再厲`;
   $('result').classList.remove('hidden');
 }
 
@@ -2788,6 +2731,8 @@ if (AUTO || params.has('debug')) {
   window.__dbg = {
     state, villains, obstacles, bombs, smokes, lasers, traffic, snowballs,
     get GAP0() { return GAP0; },
+    get EDGE() { return EDGE; },
+    get BROKEN_END() { return BROKEN_END; },
     get pts() { return pts; },
     solids, ghosts, penguins,
     near: (x, z) => nearestIdx(x, z)[0],
