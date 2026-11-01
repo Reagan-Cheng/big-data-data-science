@@ -12,6 +12,7 @@ This website is for teaching the Big Data & Data Science course at National Taiw
 - [衝突風格自評 / Conflict Style Self-Assessment](https://reagan-cheng.github.io/big-data-data-science/chapter-00/activities/conflict-style/)
 - [DISC 動物風格測驗 / DISC Animal Style Quiz](https://reagan-cheng.github.io/big-data-data-science/chapter-00/activities/disc/)
 - [企業AI準備度自我檢核 / AI Readiness Self-Assessment](https://reagan-cheng.github.io/big-data-data-science/chapter-00/activities/ai-readiness/)
+- [部門文化快速診斷 / Quick Department Culture Check](https://reagan-cheng.github.io/big-data-data-science/chapter-00/activities/culture-quick/)
 - [個案閱讀：沐鼎鮮鍋 / Case Reading: Mu Ding Hot Pot](https://reagan-cheng.github.io/big-data-data-science/chapter-00/cases/mu-ding-hotpot/)
 - [個案閱讀：從明星業務到主管 / Case Reading: From Star Salesperson to Manager](https://reagan-cheng.github.io/big-data-data-science/chapter-00/cases/star-sales-90-days/)
 - [第一章｜大數據概論 / Chapter 1 | Introduction to Big Data](https://reagan-cheng.github.io/big-data-data-science/chapter-01/)
@@ -41,6 +42,7 @@ Chapter 0 holds activities for industry talks and corporate training. They are n
 - 衝突風格自評位於 chapter-00/activities/conflict-style/（單一檔案、不連外部資源）：20 題 DUTCH 量表，作答後在手機上計分並畫出雷達圖，答案不會上傳。原本的網址 conflict-style/ 保留為轉址頁，舊的 QR Code 仍可使用。
 - DISC 動物風格測驗位於 chapter-00/activities/disc/（單一檔案、不連外部資源，插圖為內嵌 SVG）：10 題四選一，選項 1–4 依序計為 D、I、S、C。最多的一型為結果；兩型並列最高時顯示兩種動物；三型以上並列時顯示變色龍。結果頁有四型題數長條圖與四種風格一覽（重事／重人 × 步調快／慢）。右上角可切換中文與英文，?lang=en 或 ?lang=zh 指定語言。答案只存在學員自己的瀏覽器（localStorage），不會上傳。
 - 企業AI準備度自我檢核位於 chapter-00/activities/ai-readiness/（單一檔案、不連外部資源）：六個構面（策略與領導、資料、技術與基礎設施、人才與技能、流程與組織、治理與風險），題目文字與講義相同，各以 1–5 分作答。結果頁顯示六構面平均與三段判讀（平均 ≤ 2 先補數位化與資料基礎；2～3.5 選一個單點流程做 PoC；≥ 3.5 可規劃跨部門擴散，門檻沿用講義）、雷達圖、該段的建議步驟，以及優先補強構面（1–2 分的構面依分數由低到高最多列三個；沒有 2 分以下時列最低分構面）的具體做法；平均達 2 以上但有構面在 2 分以下時另提醒短板。建議文字皆整理自課程講義。右上角 A−／A+ 調整字體，結果可一鍵複製。答案只存在學員自己的瀏覽器（localStorage），不會上傳。
+- 部門文化快速診斷位於 chapter-00/activities/culture-quick/（單一檔案、不連外部資源）：8 題，每題評「現在」與「期望」（1–5 分）。題目改編自 Moorman (1995, JMR) 的競值文化 Likert 量表（原出自 Deshpandé, Farley & Webster, 1993, JM），家族、創新、層級、市場每型取兩題，未用主管角色題（作答者即部門主管）。每型分數＝兩題相加（2–10）：家族 1＋5、創新 2＋6、層級 3＋7、市場 4＋8，與講義紙本計分相同。結果頁以四軸雷達圖比較現在與期望（軸的位置依競值架構），並標出差距最大的類型；未作答的題目會以紅框與清單提示。答案只存在學員自己的瀏覽器（localStorage），不會上傳。
 - 安妮亞 3D 賽車位於 chapter-00/activities/anya-kart/（index.html＋main.js，Three.js 放在同資料夾 lib/，不連外部資源）：四位安妮亞選手的 3D 卡丁車遊戲，含懸崖飛躍、斷橋、黑衣壞人、路障與禮物盒道具；選手畫面可選難度與車速（標準／慢一點／更慢，車速選擇存在瀏覽器 localStorage）；玩家落到第 3、4 名時前面的電腦會出包。iPad 觸控與電腦鍵盤皆可操作，有 manifest 與 sw.js，可加入主畫面全螢幕、離線遊玩。網址加 ?debug=1 開啟測試用指令，?auto=1 自動駕駛。角色圖版權屬原作者（© TE/S, SFP），僅供非商業使用。
 - 安妮亞打怪獸位於 chapter-00/activities/anya-monster/（index.html＋game.js、draw.js、anime-art.js，圖檔在 img/，不連外部資源）：2D 橫向動作遊戲，四關各有魔王（炸彈客凱斯、紅色馬戲團首領、郵輪殺手首領、巨大企鵝大魔王），洛伊德、約兒、彭德會跳出來幫忙一段時間；可選簡單／普通難度，進度存在瀏覽器 localStorage。iPad 觸控與電腦鍵盤皆可操作，有 manifest 與 sw.js（更新遊戲檔案時要改 sw.js 的 CACHE 名稱）。原始開發檔在網站資料夾外的 monster/，更新時把遊戲檔案複製過來。網址加 #gallery 可檢查角色圖。角色圖版權屬原作者（© TE/S, SFP），僅供非商業使用。
 - 個案閱讀：沐鼎鮮鍋位於 chapter-00/cases/mu-ding-hotpot/（單一檔案、不連外部資源，插圖為內嵌 SVG）：個案全文依授課講義原文分四段呈現，未經增刪；每一句是一個步驟，讀到哪一句，旁邊的示意圖就畫到哪一步，最後列出兩題討論問題。版面與 ABC 衛浴生活館相同：電腦上圖在左、文字在右；手機上圖固定在上方、文字在下方。右上角 A−／A+ 調整字體大小，「聚焦」只亮出目前這一句；可捲動、點句子、按右下角箭頭或簡報筆（↓／→／空白鍵／PageDown）前進。字體大小與聚焦設定存在學員自己的瀏覽器。

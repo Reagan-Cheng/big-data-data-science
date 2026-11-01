@@ -109,6 +109,30 @@
 
     <article class="game">
       <div class="num">ACTIVITY 04</div>
+      <h2 id="g9Title">部門文化快速診斷</h2>
+      <p id="g9Desc">8 題、每題評「現在」與「期望」（1–5 分），依競值架構算出家族、創新、層級、市場四型分數（每型兩題相加），送出後以雷達圖比較現在與期望，並標出差距最大的類型。題目改編自 Moorman (1995) 與 Deshpandé et al. (1993)。用於「組織文化」課程。</p>
+      <div class="game-meta">
+        <span class="tag" data-zh="自評量表" data-en="Self-assessment">自評量表</span>
+        <span class="tag" data-zh="組織文化" data-en="Organizational Culture">組織文化</span>
+        <span class="tag" data-zh="手機" data-en="Phone">手機</span>
+      </div>
+      <p class="hint" id="g9Note">約 3 分鐘。紙本也能算：家族＝第 1＋5 題、創新＝2＋6、層級＝3＋7、市場＝4＋8。作答只存在學員自己的手機，不會上傳。</p>
+      <div class="urlbox" id="url9"></div>
+      <div class="qr-code" data-qr-path="/chapter-00/activities/culture-quick/">
+        <img class="qr-image" src="../assets/qr/culture-quick.png" width="192" height="192" alt="部門文化快速診斷 QR Code" data-qr-zh="部門文化快速診斷 QR Code" data-qr-en="Quick Department Culture Check QR Code">
+        <div>
+          <div data-qr-zh="掃描後直接進入活動" data-qr-en="Scan to open the activity directly" class="qr-help">掃描後直接進入活動</div>
+          <a data-qr-zh="下載 PNG 圖片" data-qr-en="Download PNG" class="button secondary qr-download" href="../assets/qr/culture-quick.png" download="big-data-culture-quick-qr.png">下載 PNG 圖片</a>
+        </div>
+      </div>
+      <div class="actions">
+        <a class="button" href="activities/culture-quick/" target="_blank" id="open9">開啟活動</a>
+        <button class="button secondary" type="button" data-copy="9" id="copy9">複製網址</button>
+      </div>
+    </article>
+
+    <article class="game">
+      <div class="num">ACTIVITY 05</div>
       <h2 id="g7Title">安妮亞 3D 賽車</h2>
       <p id="g7Desc">四位安妮亞選手的 3D 卡丁車遊戲：懸崖飛躍、斷橋、衝出來的黑衣壞人、路障與禮物盒道具，跑三圈和電腦對手比賽。可選難度與車速（標準／慢一點／更慢），落後時電腦會出包讓玩家追上。</p>
       <div class="game-meta">
@@ -132,7 +156,7 @@
     </article>
 
     <article class="game">
-      <div class="num">ACTIVITY 05</div>
+      <div class="num">ACTIVITY 06</div>
       <h2 id="g8Title">安妮亞打怪獸</h2>
       <p id="g8Desc">安妮亞的 2D 橫向打怪遊戲：四關（柏林特街頭、伊甸學園、豪華郵輪、夜晚的柏林特），每關最後有魔王；爸爸、媽媽和彭德會跳出來幫忙一段時間。用拳頭、花生和超能力打倒壞人，可選簡單／普通難度。</p>
       <div class="game-meta">
@@ -241,8 +265,8 @@
 <footer id="footer">Chapter 0｜業界演講用</footer>
 
 <script>
-const COUNT=8;
-const paths=["activities/conflict-style/","activities/disc/","cases/mu-ding-hotpot/","../chapter-03/cases/abc-bath-living/?lang=zh","activities/ai-readiness/","cases/star-sales-90-days/","activities/anya-kart/","activities/anya-monster/"];
+const COUNT=9;
+const paths=["activities/conflict-style/","activities/disc/","cases/mu-ding-hotpot/","../chapter-03/cases/abc-bath-living/?lang=zh","activities/ai-readiness/","cases/star-sales-90-days/","activities/anya-kart/","activities/anya-monster/","activities/culture-quick/"];
 function gameUrl(i){ return new URL(paths[i-1], window.location.href).href; }
 function refreshUrls(){for(let i=1;i<=COUNT;i++)document.getElementById("url"+i).textContent=gameUrl(i)}
 async function copyUrl(i){
@@ -284,7 +308,10 @@ zh:{
  g8Title:"安妮亞打怪獸",
  g8Desc:"安妮亞的 2D 橫向打怪遊戲：四關（柏林特街頭、伊甸學園、豪華郵輪、夜晚的柏林特），每關最後有魔王；爸爸、媽媽和彭德會跳出來幫忙一段時間。用拳頭、花生和超能力打倒壞人，可選簡單／普通難度。",
  g8Note:"一關約 3～5 分鐘。建議用 iPad 橫放遊玩，用 Safari「分享 → 加入主畫面」可全螢幕玩；電腦用方向鍵移動、空白鍵跳、Z 出拳、X 丟花生、C 超能力。",
- open1:"開啟活動",open2:"開啟活動",open3:"開啟個案",open4:"開啟個案",open5:"開啟活動",open6:"開啟個案",open7:"開啟遊戲",open8:"開啟遊戲",copy:"複製網址",qrTitle:"QR Code 圖片下載",
+ g9Title:"部門文化快速診斷",
+ g9Desc:"8 題、每題評「現在」與「期望」（1–5 分），依競值架構算出家族、創新、層級、市場四型分數（每型兩題相加），送出後以雷達圖比較現在與期望，並標出差距最大的類型。題目改編自 Moorman (1995) 與 Deshpandé et al. (1993)。用於「組織文化」課程。",
+ g9Note:"約 3 分鐘。紙本也能算：家族＝第 1＋5 題、創新＝2＋6、層級＝3＋7、市場＝4＋8。作答只存在學員自己的手機，不會上傳。",
+ open1:"開啟活動",open2:"開啟活動",open3:"開啟個案",open4:"開啟個案",open5:"開啟活動",open6:"開啟個案",open7:"開啟遊戲",open8:"開啟遊戲",open9:"開啟活動",copy:"複製網址",qrTitle:"QR Code 圖片下載",
  qrText:"每個活動與個案的 QR Code 已自動建立，掃描後可直接進入該頁。按「下載 PNG 圖片」即可保存圖片；課程首頁另提供本章的 QR Code。",
  homeBtn:"返回課程首頁",footer:"Chapter 0｜業界演講用"
 },
@@ -315,14 +342,17 @@ en:{
  g8Title:"Anya Monster Brawl",
  g8Desc:"A 2D side-scrolling brawler starring Anya: four stages (Berlint streets, Eden Academy, a cruise ship, Berlint at night), each ending with a boss; Dad, Mom and Bond jump in to help for a while. Defeat villains with punches, peanuts and a telepathy super move. Easy / Normal difficulty. In Chinese.",
  g8Note:"About 3–5 minutes per stage. Best played on an iPad in landscape; in Safari use Share → Add to Home Screen to play full screen. On a computer, move with the arrow keys, Space to jump, Z to punch, X to throw peanuts, C for the super move.",
- open1:"Open Activity",open2:"Open Activity",open3:"Open Case",open4:"Open Case",open5:"Open Activity",open6:"Open Case",open7:"Open Game",open8:"Open Game",copy:"Copy URL",qrTitle:"Download QR Code Images",
+ g9Title:"Quick Department Culture Check",
+ g9Desc:"Eight items, each rated twice (now and preferred, 1–5). Scores for the four competing-values culture types (clan, adhocracy, hierarchy, market; two items each) are compared on a radar chart, and the type with the largest gap is flagged. Items adapted from Moorman (1995) and Deshpandé et al. (1993). Used in the Organizational Culture course. In Chinese.",
+ g9Note:"About 3 minutes. Also easy to score on paper: clan = items 1+5, adhocracy = 2+6, hierarchy = 3+7, market = 4+8. Answers stay on each participant's phone and are never uploaded.",
+ open1:"Open Activity",open2:"Open Activity",open3:"Open Case",open4:"Open Case",open5:"Open Activity",open6:"Open Case",open7:"Open Game",open8:"Open Game",open9:"Open Activity",copy:"Copy URL",qrTitle:"Download QR Code Images",
  qrText:"Each activity and case has an automatically generated QR Code that opens it directly. Select Download PNG to save the image. A QR Code for this chapter is also available on the course home page.",
  homeBtn:"Back to Course Home",footer:"Chapter 0 | Industry Talks"
 }};
 let current="zh";
 function setLang(l){
  current=l; document.documentElement.lang=l==="zh"?"zh-Hant":"en"; const t=lang[l];
- ["title","subtitle","langLabel","teacherNote","g1Title","g1Desc","g1Note","g2Title","g2Desc","g2Note","g3Title","g3Desc","g3Note","g4Title","g4Desc","g4Note","g5Title","g5Desc","g5Note","g6Title","g6Desc","g6Note","g7Title","g7Desc","g7Note","g8Title","g8Desc","g8Note","open1","open2","open3","open4","open5","open6","open7","open8","qrTitle","qrText","homeBtn","footer"].forEach(k=>{
+ ["title","subtitle","langLabel","teacherNote","g1Title","g1Desc","g1Note","g2Title","g2Desc","g2Note","g3Title","g3Desc","g3Note","g4Title","g4Desc","g4Note","g5Title","g5Desc","g5Note","g6Title","g6Desc","g6Note","g7Title","g7Desc","g7Note","g8Title","g8Desc","g8Note","g9Title","g9Desc","g9Note","open1","open2","open3","open4","open5","open6","open7","open8","open9","qrTitle","qrText","homeBtn","footer"].forEach(k=>{
    const e=document.getElementById(k); if(e)e.textContent=t[k];
  });
  for(let i=1;i<=COUNT;i++)document.getElementById("copy"+i).textContent=t.copy;
