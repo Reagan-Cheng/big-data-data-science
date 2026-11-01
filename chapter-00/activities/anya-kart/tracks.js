@@ -7,7 +7,7 @@ export const TRACKS = [
     id: 'country',
     name: '花生鄉村',
     icon: '🌳',
-    desc: '懸崖飛躍、斷橋、黑衣壞人',
+    desc: '懸崖飛躍、斷橋、黑衣壞人、藍色企鵝',
     ctrl: [[0, 0, -150], [90, 0, -160], [170, 4, -120], [199, 13, -68], [205, 20, -25], [205, 12, 10], [204, 5, 44], [152, 4, 68],
       [85, 2, 105], [120, 0, 170], [72, 0, 220], [10, 0, 222], [-52, 0, 218], [-110, 3, 160], [-180, 8, 120], [-200, 6, 30],
       [-150, 2, -20], [-170, 0, -100], [-100, 0, -160]],
@@ -30,6 +30,7 @@ export const TRACKS = [
       obstacles: [[190, [-7, -3.5]], [530, [1, 4.5, -7]], [840, [-6, -2]], [1085, [2.5, 6.5, -4]]],
       villains: [380, 760, 1020],
       peanuts: [[90, 0], [340, -5], [480, 5], [680, 0], [800, 4], [960, -4], [1130, 0]],
+      penguins: [{ i: 60 }, { i: 420 }, { i: 925 }],
     }),
   },
 
@@ -38,12 +39,13 @@ export const TRACKS = [
     id: 'city',
     name: '城市夜賽',
     icon: '🌃',
-    desc: '8 字高架橋、隧道、路上車輛、水窪',
+    desc: '8 字高架橋、隧道、車輛、水窪、可愛幽靈、企鵝',
     ctrl: [[240, 0, 50], [240, 0, -40], [218, 0, -110], [150, 1, -145], [80, 4, -95], [0, 9, 0], [-80, 4, 95],
       [-150, 1, 145], [-222, 0, 105], [-245, 0, 0], [-222, 0, -105], [-150, 0, -140], [-75, 0, -75], [0, 0, 0],
       [75, 0, 75], [150, 0, 135], [218, 0, 112]],
     deckAbove: 3.2,
     flat: true,
+    offroad: 9,
     theme: {
       night: true,
       sky: ['#070b24', '#18215a', '#3a3f7a'], fog: ['#1b1f4a', 120, 560],
@@ -61,7 +63,7 @@ export const TRACKS = [
         pads: [[n(240, -10), -4, 2.3], [n(-245, 20), 4, 2.3], [n(-110, -110), 0, 2.3], [n(110, 105), -4, 2.3]],
         signs: [[n(-215, 112), '⚠ 前方隧道 ⚠', '注意前方車輛'], [n(115, -125), '⬆ 高架橋 ⬆', '小心不要撞欄杆']],
         boxes: [n(230, -80), n(-190, 128), n(-185, -125), n(60, 60)],
-        obstacles: [[n(-120, 120), [-7, 6], 'hydrant'], [n(-40, -40), [7], 'hydrant'], [n(185, -130), [-6, 2]], [n(190, 125), [5, -3]]],
+        obstacles: [[n(-120, 120), [-8], 'hydrant'], [n(-40, -40), [8], 'hydrant'], [n(190, 125), [6]]],
         villains: [n(-160, -135), n(150, 140)],
         crosswalks: [n(-160, -135), n(150, 140)],
         peanuts: [[n(240, 20), 0], [n(-60, 60), 4], [n(-245, -40), -3], [n(-30, -30), 0], [n(200, 120), -5]],
@@ -73,6 +75,8 @@ export const TRACKS = [
         ],
         traffic: { count: 5, speed: 18, lanes: [-5.5, 5.5] },
         tunnels: [{ kind: 'tunnel', i0: n(-238, 60), len: 95 }],
+        ghosts: [{ i: n(-243, 15), amp: 7 }, { i: n(-55, -55), amp: 8 }, { i: n(205, 115), amp: 8, speed: 1.1 }],
+        penguins: [{ i: n(120, -130) }, { i: n(-238, -70) }],
       };
     },
     decor: (C) => buildCityDecor(C),
@@ -83,7 +87,7 @@ export const TRACKS = [
     id: 'snow',
     name: '雪山間諜基地',
     icon: '❄️',
-    desc: '雪球、雷射門、輸送帶、冰面、岔路、冰湖',
+    desc: '雪球、雷射門、輸送帶、冰面、岔路、冰湖、企鵝',
     ctrl: [[0, 0, -205], [90, 0, -205], [165, 2, -190], [222, 6, -160], [206, 9, -102], [240, 12, -48], [228, 15, 10],
       [192, 16, 62], [140, 16, 105], [72, 16, 130], [-10, 15, 128], [-82, 12, 102], [-140, 8, 58], [-176, 4, 0],
       [-182, 2, -62], [-150, 1, -120], [-100, 0, -132], [-86, 0, -175], [-40, 0, -202]],
@@ -111,7 +115,7 @@ export const TRACKS = [
         obstacles: [[n(-82, -160), [-6, 3]], [n(200, -118), [6]]],
         villains: [n(100, 125)],
         peanuts: [[n(30, -205), 0], [n(225, -60), -4], [n(150, 100), 0], [n(-170, -95), 0], [n(-60, -190), 4]],
-        lasers: [{ i: n(205, 48), period: 3.2, phase: 0 }, { i: n(165, 86), period: 3.2, phase: 1.1 }, { i: n(110, 120), period: 2.6, phase: 0.5 }],
+        lasers: [{ i: n(205, 48), period: 3.4, phase: 0 }, { i: n(110, 120), period: 3.0, phase: 1.2 }],
         zones: [
           { type: 'conveyor', i0: n(145, 102), len: 14, lat0: -11, lat1: 11, push: 7 },
           { type: 'conveyor', i0: n(95, 124), len: 14, lat0: -11, lat1: 11, push: -7 },
@@ -119,7 +123,8 @@ export const TRACKS = [
           { type: 'ice', i0: n(-176, 10), len: 25, lat0: -11, lat1: 11 },
           { type: 'ice', i0: n(-95, -122), len: 30, lat0: -11, lat1: 2 },
         ],
-        snowballs: [{ iTop: n(232, -20), iBottom: n(165, -186), lanes: [-6, -1, 5], every: 2.4 }],
+        snowballs: [{ iTop: n(232, -20), iBottom: n(165, -186), lanes: [-6, -1, 5], every: 3.4 }],
+        penguins: [{ i: n(120, -198) }, { i: n(-178, -20) }, { i: n(-130, -125) }],
         dividers: [{ i0: div0, len: T.idxGap(div0, div1) }],
         tunnels: [
           { kind: 'base', i0: n(222, 32), len: T.idxGap(n(222, 32), n(60, 131)) },
@@ -133,7 +138,7 @@ export const TRACKS = [
 
 // ---------------- 城市佈景：大樓、霓虹、路燈、月亮星星 ----------------
 function buildCityDecor(C) {
-  const { THREE, world, toon, mesh, canvasTex, rand, pts, TAN, SIDE, N, HW, nearestIdx } = C;
+  const { THREE, world, toon, mesh, canvasTex, rand, pts, TAN, SIDE, N, HW, nearestIdx, addSolid, onBoundary } = C;
   // 大樓（窗戶會亮）
   const winTex = canvasTex(64, 128, (g, W, H) => {
     g.fillStyle = '#1d2033'; g.fillRect(0, 0, W, H);
@@ -148,21 +153,22 @@ function buildCityDecor(C) {
   for (let tries = 0; tries < 900 && made < 120; tries++) {
     const x = (rand() - 0.5) * 820, z = (rand() - 0.5) * 820;
     const [, d] = nearestIdx(x, z, 4);
-    if (d < HW + 14 || Math.hypot(x, z) > 420) continue;
     const w = 10 + rand() * 16, dpt = 10 + rand() * 16, h = 14 + rand() * (d > 60 ? 70 : 34);
+    if (d - Math.hypot(w, dpt) / 2 < HW + 3 || Math.hypot(x, z) > 420 || onBoundary(d, Math.hypot(w, dpt) / 2)) continue;
     const t = winTex.clone(); t.needsUpdate = true; t.repeat.set(Math.max(1, Math.round(w / 8)), Math.max(1, Math.round(h / 16)));
     const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, dpt),
       new THREE.MeshToonMaterial({ color: bodyCols[made % 5], gradientMap: C.gradTex, emissive: '#ffffff', emissiveMap: t, emissiveIntensity: 0.9 }));
     m.position.set(x, h / 2 - 0.3, z);
     m.rotation.y = Math.round(rand() * 4) * Math.PI / 2 + (rand() - 0.5) * 0.2;
     world.add(m);
+    addSolid({ x, z, hw: w / 2, hd: dpt / 2, rot: m.rotation.y });
     made++;
     if (rand() < 0.25) mesh(new THREE.BoxGeometry(w * 0.5, 4, dpt * 0.5), toon('#2a2d40'), x, h + 1.6, z, world);
   }
   // 霓虹招牌
   const words = [['WAKU WAKU', '#ff4fd8'], ['花生 PEANUT', '#ffd23f'], ['SPY 間諜', '#4ff0ff'], ['安妮亞 ♥', '#ff6b8b'], ['EDEN', '#8bff6b']];
   for (let k = 0; k < 14; k++) {
-    const i = Math.floor(rand() * N), s = rand() < 0.5 ? -1 : 1, off = (HW + 9) * s;
+    const i = Math.floor(rand() * N), s = rand() < 0.5 ? -1 : 1, off = (HW + 6.5) * s;
     if (pts[i].y > 2) continue;
     const [word, col] = words[k % words.length];
     const tex = canvasTex(512, 128, (g, W, H) => {
@@ -176,6 +182,7 @@ function buildCityDecor(C) {
     g.position.set(p.x + SIDE[i].x * off, p.y, p.z + SIDE[i].z * off);
     g.rotation.y = Math.atan2(TAN[i].x, TAN[i].z) - s * Math.PI / 2;
     world.add(g);
+    addSolid({ x: g.position.x, z: g.position.z, y: p.y, r: 0.45 });
     mesh(new THREE.CylinderGeometry(0.25, 0.25, 7, 6), toon('#30334a'), 0, 3.5, 0, g);
     const sign = new THREE.Mesh(new THREE.PlaneGeometry(9, 2.25), new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide }));
     sign.position.y = 8;
@@ -199,6 +206,7 @@ function buildCityDecor(C) {
       g.position.set(p.x + SIDE[i].x * off, p.y, p.z + SIDE[i].z * off);
       g.rotation.y = Math.atan2(TAN[i].x, TAN[i].z);
       world.add(g);
+      addSolid({ x: g.position.x, z: g.position.z, y: p.y, r: 0.4 });
       mesh(new THREE.CylinderGeometry(0.18, 0.25, 8, 6), poleM, 0, 4, 0, g);
       mesh(new THREE.BoxGeometry(0.2, 0.2, 2.4), poleM, -1.1 * s, 8, 0, g).rotation.y = Math.PI / 2;
       const b = new THREE.Mesh(new THREE.SphereGeometry(0.45, 10, 8), bulbM);
@@ -226,16 +234,17 @@ function buildCityDecor(C) {
 
 // ---------------- 雪山佈景：雪人、岩石、飄雪 ----------------
 function buildSnowDecor(C) {
-  const { THREE, world, toon, mesh, rand, HW, nearestIdx, groundY } = C;
+  const { THREE, world, toon, mesh, rand, HW, nearestIdx, groundY, addSolid, onBoundary } = C;
   // 雪人
   for (let k = 0, made = 0; k < 300 && made < 14; k++) {
     const x = (rand() - 0.5) * 760, z = (rand() - 0.5) * 760;
     const [i, d] = nearestIdx(x, z, 4);
-    if (d < HW + 6 || d > HW + 30 || C.canyonF(x, z) > 0.01) continue;
+    if (d < HW + 6 || d > HW + 30 || C.canyonF(x, z) > 0.01 || onBoundary(d, 1.6)) continue;
     const g = new THREE.Group();
     g.position.set(x, groundY(x, z, i, d) - 0.2, z);
     g.rotation.y = rand() * 6;
     world.add(g);
+    addSolid({ x, z, y: g.position.y, r: 1.5 });
     mesh(new THREE.SphereGeometry(1.4, 14, 10), toon('#ffffff'), 0, 1.3, 0, g);
     mesh(new THREE.SphereGeometry(1.0, 14, 10), toon('#ffffff'), 0, 3.2, 0, g);
     mesh(new THREE.SphereGeometry(0.7, 14, 10), toon('#ffffff'), 0, 4.6, 0, g);
@@ -250,8 +259,10 @@ function buildSnowDecor(C) {
   for (let k = 0, made = 0; k < 400 && made < 40; k++) {
     const x = (rand() - 0.5) * 800, z = (rand() - 0.5) * 800;
     const [i, d] = nearestIdx(x, z, 4);
-    if (d < HW + 8 || C.canyonF(x, z) > 0.01) continue;
-    const r = mesh(new THREE.DodecahedronGeometry(1.5 + rand() * 3, 0), rockM, x, groundY(x, z, i, d), z, world);
+    if (d < HW + 8 || C.canyonF(x, z) > 0.01 || onBoundary(d, 4.5)) continue;
+    const size = 1.5 + rand() * 3;
+    const r = mesh(new THREE.DodecahedronGeometry(size, 0), rockM, x, groundY(x, z, i, d), z, world);
+    addSolid({ x, z, y: r.position.y, r: size * 0.85 });
     r.rotation.set(rand() * 3, rand() * 3, 0);
     made++;
   }
