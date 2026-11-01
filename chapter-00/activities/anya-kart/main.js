@@ -1,4 +1,5 @@
 import * as THREE from './lib/three.module.min.js';
+import { TRACKS } from './tracks.js';
 
 // ================= 小工具 =================
 const $ = (id) => document.getElementById(id);
@@ -330,8 +331,69 @@ function buildKart(cfg) {
   shield.position.y = 1.3;
   shield.visible = false;
   kart.add(shield);
-  kart.userData = { body, wheels, steers, flames, shield, head: driver.userData.head };
+  const dog = buildDog();
+  dog.position.set(0, 0, 5.3);
+  dog.scale.setScalar(1.35);
+  dog.visible = false;
+  kart.add(dog);
+  // 車頭燈與前方光圈（夜晚賽道才顯示）
+  const lights = new THREE.Group();
+  const headM = new THREE.MeshBasicMaterial({ color: '#fff6c8' });
+  for (const s of [-1, 1]) { const h = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 6), headM); h.position.set(0.5 * s, 0.6, 2.45); lights.add(h); }
+  const beam = new THREE.Mesh(new THREE.PlaneGeometry(7, 12), new THREE.MeshBasicMaterial({ map: headlightTex(), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+  beam.rotation.x = -Math.PI / 2;
+  beam.position.set(0, 0.15, 8.5);
+  lights.add(beam);
+  lights.visible = false;
+  body.add(lights);
+  kart.userData = { body, wheels, steers, flames, shield, dog, lights, head: driver.userData.head };
   return kart;
+}
+
+let _hlTex = null;
+function headlightTex() {
+  if (_hlTex) return _hlTex;
+  _hlTex = canvasTex(64, 128, (g, W, H) => {
+    const gr = g.createRadialGradient(W / 2, H, 4, W / 2, H * 0.55, H * 0.6);
+    gr.addColorStop(0, 'rgba(255,245,200,0.55)'); gr.addColorStop(1, 'rgba(255,245,200,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  });
+  return _hlTex;
+}
+
+// 彭德：拉車的大白狗
+function buildDog() {
+  const g = new THREE.Group();
+  const white = toon('#fbfaf6'), grey = toon('#d9d6cf'), black = toon('#222222'), pink = toon('#ff8fa3');
+  const body = mesh(new THREE.CapsuleGeometry(0.6, 1.3, 6, 12), white, 0, 1.25, 0, g);
+  body.rotation.x = Math.PI / 2;
+  const head = new THREE.Group();
+  head.position.set(0, 1.85, 1.15);
+  g.add(head);
+  mesh(new THREE.SphereGeometry(0.55, 16, 12), white, 0, 0, 0, head);
+  mesh(new THREE.SphereGeometry(0.3, 12, 10), white, 0, -0.12, 0.42, head).scale.set(1, 0.8, 1);
+  mesh(new THREE.SphereGeometry(0.09, 8, 8), black, 0, -0.04, 0.72, head);
+  mesh(new THREE.SphereGeometry(0.1, 8, 6), pink, 0, -0.32, 0.6, head).scale.set(1, 0.5, 1);
+  for (const s of [-1, 1]) {
+    mesh(new THREE.SphereGeometry(0.07, 8, 8), black, 0.2 * s, 0.13, 0.48, head);
+    const ear = mesh(new THREE.SphereGeometry(0.22, 10, 8), grey, 0.48 * s, 0.05, -0.05, head);
+    ear.scale.set(0.45, 1.1, 0.8);
+  }
+  const legs = [];
+  for (const [x, z] of [[-0.35, 0.75], [0.35, 0.75], [-0.35, -0.75], [0.35, -0.75]]) {
+    const hip = new THREE.Group();
+    hip.position.set(x, 1.0, z);
+    g.add(hip);
+    mesh(new THREE.CapsuleGeometry(0.17, 0.55, 4, 8), white, 0, -0.45, 0, hip);
+    legs.push(hip);
+  }
+  const tail = mesh(new THREE.CapsuleGeometry(0.15, 0.5, 4, 8), white, 0, 1.6, -1.25, g);
+  tail.rotation.x = -0.8;
+  // 牽繩
+  const rope = mesh(new THREE.CylinderGeometry(0.04, 0.04, 2.2, 6), toon('#e2577f'), 0, 0.8, -1.9, g);
+  rope.rotation.x = Math.PI / 2 - 0.15;
+  g.userData.legs = legs;
+  return g;
 }
 
 function nameTag(cfg) {
@@ -349,43 +411,35 @@ function nameTag(cfg) {
 }
 
 // ================= 賽道 =================
-const CTRL = [[0, 0, -150], [90, 0, -160], [170, 4, -120], [199, 13, -68], [205, 20, -25], [205, 12, 10], [204, 5, 44], [152, 4, 68],
-  [85, 2, 105], [120, 0, 170], [72, 0, 220], [10, 0, 222], [-52, 0, 218], [-110, 3, 160], [-180, 8, 120], [-200, 6, 30],
-  [-150, 2, -20], [-170, 0, -100], [-100, 0, -160]];
-const curve = new THREE.CatmullRomCurve3(CTRL.map(([x, y, z]) => new THREE.Vector3(x, y, z)), true, 'centripetal');
-const pts = curve.getSpacedPoints(N);
-pts.pop();
-const TAN = [], SIDE = [];
-for (let i = 0; i < N; i++) {
-  const a = pts[(i - 1 + N) % N], b = pts[(i + 1) % N];
-  const t = new THREE.Vector3(b.x - a.x, 0, b.z - a.z).normalize();
-  TAN.push(t);
-  SIDE.push(new THREE.Vector3(t.z, 0, -t.x));
-}
-const SPACING = curve.getLength() / N;
+// 每條賽道的路線、配色與機關寫在 tracks.js；這裡負責把賽道建出來，並提供高度、位置等查詢
+let TRACK = null, world = null, trackIndex = -1;
+let pts = [], TAN = [], SIDE = [], SPACING = 1, isDeck = [];
+let GAP = null, BRIDGE_I = -1, BC = null, BT = null, BS = null, GAP0 = -1, CANYON_Y = -24, GAP_HALF = 10;
+let CREST = 0, RAMPS = [], LAYOUT = {};
+let hillFn = countryHill;
 
-function hillH(x, z) {
+function countryHill(x, z) {
   const r = Math.hypot(x, z);
   return 3 + 5 * Math.sin(x * 0.012 + 0.5) * Math.cos(z * 0.014) + 2.5 * Math.sin(x * 0.033) * Math.sin(z * 0.029 + 1.1)
     + Math.max(0, r - 290) * 0.5;
 }
+function cityHill(x, z) {
+  return Math.max(0, Math.hypot(x, z) - 380) * 0.3;
+}
+function snowHill(x, z) {
+  const r = Math.hypot(x, z);
+  return 5 + 7 * Math.sin(x * 0.011 + 0.4) * Math.cos(z * 0.013) + 3 * Math.sin(x * 0.03) * Math.sin(z * 0.027 + 1.1)
+    + 45 * Math.exp(-((x - 20) ** 2 + (z + 30) ** 2) / 8000) + Math.max(0, r - 270) * 0.7;
+}
 
-// 斷橋峽谷：一條橫越賽道的深谷，橋中間斷了一段要飛過去
-const BRIDGE_I = nearestIdx(10, 222)[0];
-const BC = pts[BRIDGE_I], BT = TAN[BRIDGE_I], BS = SIDE[BRIDGE_I];
-const CANYON_Y = -24, GAP_HALF = 10;
+// 峽谷／冰湖：一條橫越賽道的深谷，中間斷了一段要飛過去
 function canyonF(x, z) {
+  if (!GAP) return 0;
   const dx = x - BC.x, dz = z - BC.z;
   const t = Math.abs(dx * BT.x + dz * BT.z), s = Math.abs(dx * BS.x + dz * BS.z);
-  return (1 - smooth(14, 24, t)) * (1 - smooth(110, 140, s));
+  return (1 - smooth(GAP_HALF + 4, GAP_HALF + 14, t)) * (1 - smooth(GAP.side - 30, GAP.side, s));
 }
-const inGap = (i) => Math.abs((pts[i].x - BC.x) * BT.x + (pts[i].z - BC.z) * BT.z) < GAP_HALF;
-let GAP0 = BRIDGE_I;
-while (inGap(GAP0 - 1)) GAP0--;
-// 跳台：懸崖頂端一個、斷橋前一個
-let CREST = 150;
-for (let i = 150; i < 400; i++) if (pts[i].y > pts[CREST].y) CREST = i;
-const RAMPS = [{ i0: CREST - 8, len: 9, h: 2.6 }, { i0: GAP0 - 9, len: 9, h: 2.3 }];
+const inGap = (i) => !!GAP && Math.abs((pts[i].x - BC.x) * BT.x + (pts[i].z - BC.z) * BT.z) < GAP_HALF;
 function rampH(s) {
   for (const r of RAMPS) { const k = s - r.i0; if (k >= 0 && k < r.len) return r.h * k / r.len; }
   return 0;
@@ -395,61 +449,113 @@ function roadY(s) {
   return lerp(pts[i].y, pts[(i + 1) % N].y, f);
 }
 function groundY(x, z, i, dist) {
-  return lerp(lerp(pts[i].y, hillH(x, z), smooth(HW + 3, HW + 45, dist)), CANYON_Y, canyonF(x, z));
+  return lerp(lerp(pts[i].y, hillFn(x, z), smooth(HW + 3, HW + 45, dist)), CANYON_Y, canyonF(x, z));
 }
-// 車子/物體腳下的高度（含跳台、橋面、峽谷）
+// 車子/物體腳下的高度（含跳台、高架橋、橋面、峽谷）
 function surfaceY(o) {
   const al = Math.abs(o.lat), ry = roadY(o.s);
-  let y = lerp(ry, hillH(o.x, o.z), smooth(HW + 3, HW + 45, al));
+  if (isDeck[o.idx]) return ry + (al <= HW + 1.6 ? rampH(o.s) : 0);   // 高架橋有欄杆，不會掉下去
+  let y = lerp(ry, hillFn(o.x, o.z), smooth(HW + 3, HW + 45, al));
   const c = canyonF(o.x, o.z);
   if (c > 0) y = al <= HW + 1.6 && !inGap(o.idx) ? ry : lerp(y, CANYON_Y, c);
   if (al <= HW + 1.6) y += rampH(o.s);
   return y;
 }
-function nearestIdx(x, z, step = 1) {
+// 找最近的賽道點；skipDeck 時略過高架橋（地形要貼著下面那條路）
+function nearestIdx(x, z, step = 1, skipDeck = false) {
   let best = 0, bd = Infinity;
   for (let i = 0; i < N; i += step) {
+    if (skipDeck && isDeck[i]) continue;
     const d = (pts[i].x - x) ** 2 + (pts[i].z - z) ** 2;
     if (d < bd) { bd = d; best = i; }
   }
   return [best, Math.sqrt(bd)];
 }
+const headingAt = (i) => Math.atan2(TAN[i].x, TAN[i].z);
+const latPos = (i, lat) => [pts[i].x + SIDE[i].x * lat, pts[i].z + SIDE[i].z * lat];
+
+function loadTrack(k) {
+  const cfg = TRACKS[k];
+  trackIndex = k;
+  TRACK = cfg;
+  if (world) {
+    scene.remove(world);
+    world.traverse((o) => { if (o.geometry) o.geometry.dispose(); });
+  }
+  world = new THREE.Group();
+  scene.add(world);
+  seed = 7;
+  const curve = new THREE.CatmullRomCurve3(cfg.ctrl.map(([x, y, z]) => new THREE.Vector3(x, y, z)), true, 'centripetal');
+  pts = curve.getSpacedPoints(N);
+  pts.pop();
+  TAN = []; SIDE = [];
+  for (let i = 0; i < N; i++) {
+    const a = pts[(i - 1 + N) % N], b = pts[(i + 1) % N];
+    const t = new THREE.Vector3(b.x - a.x, 0, b.z - a.z).normalize();
+    TAN.push(t);
+    SIDE.push(new THREE.Vector3(t.z, 0, -t.x));
+  }
+  SPACING = curve.getLength() / N;
+  hillFn = cfg.hill === 'snow' ? snowHill : cfg.flat ? cityHill : countryHill;
+  isDeck = pts.map((p) => cfg.deckAbove != null && p.y > cfg.deckAbove);
+  GAP = cfg.gap || null;
+  GAP0 = -1; BRIDGE_I = -1;
+  if (GAP) {
+    BRIDGE_I = nearestIdx(GAP.x, GAP.z)[0];
+    BC = pts[BRIDGE_I]; BT = TAN[BRIDGE_I]; BS = SIDE[BRIDGE_I];
+    CANYON_Y = GAP.depth; GAP_HALF = GAP.half;
+    GAP0 = BRIDGE_I;
+    while (inGap((GAP0 - 1 + N) % N)) GAP0 = (GAP0 - 1 + N) % N;
+  }
+  CREST = 0;
+  if (cfg.crest) { CREST = cfg.crest[0]; for (let i = cfg.crest[0]; i < cfg.crest[1]; i++) if (pts[i].y > pts[CREST].y) CREST = i; }
+  const T = { N, near: (x, z) => nearestIdx(x, z)[0], GAP0, CREST, idxGap: (a, b) => (b - a + N) % N };
+  LAYOUT = Object.assign({ ramps: [], pads: [], signs: [], boxes: [], obstacles: [], villains: [], peanuts: [], zones: [],
+    lasers: [], snowballs: [], dividers: [], tunnels: [], crosswalks: [], traffic: null }, cfg.layout(T));
+  RAMPS = LAYOUT.ramps;
+  for (const a of [pads, peanuts, itemBoxes, obstacles, villains, bombs, smokes, effects, lasers, traffic, snowballs, scrollTex]) a.length = 0;
+  snowfall = null;
+  buildWorld();
+  if (cfg.decor) cfg.decor({ THREE, world, toon, mesh, canvasTex, rand, pts, TAN, SIDE, N, HW, nearestIdx, groundY, canyonF, gradTex });
+  initMinimap();
+  for (const m of [...raceModels, ...previewModels]) m.userData.lights.visible = !!cfg.theme.night;
+}
 
 function buildWorld() {
-  // 天空
+  const th = TRACK.theme;
+  // 天空、霧、燈光
   scene.background = canvasTex(4, 256, (g, W, H) => {
     const gr = g.createLinearGradient(0, 0, 0, H);
-    gr.addColorStop(0, '#5fb8ff'); gr.addColorStop(0.6, '#bfe4ff'); gr.addColorStop(1, '#f2fbff');
+    gr.addColorStop(0, th.sky[0]); gr.addColorStop(0.6, th.sky[1]); gr.addColorStop(1, th.sky[2]);
     g.fillStyle = gr; g.fillRect(0, 0, W, H);
   });
-  scene.fog = new THREE.Fog('#d6eeff', 160, 700);
-  scene.add(new THREE.HemisphereLight('#ffffff', '#86b86a', 1.5));
-  sun.castShadow = true;
-  sun.shadow.mapSize.set(1024, 1024);
-  Object.assign(sun.shadow.camera, { left: -40, right: 40, top: 40, bottom: -40, near: 1, far: 220 });
-  sun.shadow.bias = -0.0006;
-  scene.add(sun, sun.target);
+  scene.fog = new THREE.Fog(th.fog[0], th.fog[1], th.fog[2]);
+  hemi.color.set(th.hemi[0]); hemi.groundColor.set(th.hemi[1]); hemi.intensity = th.hemi[2];
+  sun.color.set(th.sun[0]); sun.intensity = th.sun[1];
 
   // 地形
   const SIZE = 960, SEG = 160;
   const tg = new THREE.PlaneGeometry(SIZE, SIZE, SEG, SEG);
   tg.rotateX(-Math.PI / 2);
   const pos = tg.attributes.position, cols = [];
-  const cGrass = new THREE.Color('#8fd16a'), cGrass2 = new THREE.Color('#6fbf5a'), cSand = new THREE.Color('#e8d7a0'), cRock = new THREE.Color('#b8c99a'), cCliff = new THREE.Color('#b98b5e');
+  const gc = th.ground;
+  const cA = new THREE.Color(gc.a), cB = new THREE.Color(gc.b), cEdge = new THREE.Color(gc.edge), cHigh = new THREE.Color(gc.high), cCliff = new THREE.Color(gc.cliff);
   const tmp = new THREE.Color();
   for (let v = 0; v < pos.count; v++) {
     const x = pos.getX(v), z = pos.getZ(v);
-    let [i, d] = nearestIdx(x, z, 3);
+    let [i, d] = nearestIdx(x, z, 3, true);
     for (let k = -3; k <= 3; k++) {
-      const j = (i + k + N) % N, dd = Math.hypot(pts[j].x - x, pts[j].z - z);
+      const j = (i + k + N) % N;
+      if (isDeck[j]) continue;
+      const dd = Math.hypot(pts[j].x - x, pts[j].z - z);
       if (dd < d) { d = dd; i = j; }
     }
     const k = smooth(HW + 3, HW + 45, d);
     const y = groundY(x, z, i, d) - 0.25 * (1 - k);
     pos.setY(v, y);
-    tmp.copy(cGrass).lerp(cGrass2, (Math.sin(x * 0.07) * Math.cos(z * 0.05) + 1) / 2);
-    if (d < HW + 3.5) tmp.copy(cSand);
-    if (y > 18) tmp.lerp(cRock, clamp((y - 18) / 30, 0, 1));
+    tmp.copy(cA).lerp(cB, (Math.sin(x * 0.07) * Math.cos(z * 0.05) + 1) / 2);
+    if (d < HW + 3.5) tmp.copy(cEdge);
+    if (y > 18) tmp.lerp(cHigh, clamp((y - 18) / 30, 0, 1));
     const cf = canyonF(x, z);
     if (cf > 0.02) tmp.lerp(cCliff, clamp(cf * 1.6, 0, 1));
     cols.push(tmp.r, tmp.g, tmp.b);
@@ -458,92 +564,228 @@ function buildWorld() {
   tg.computeVertexNormals();
   const terrain = new THREE.Mesh(tg, new THREE.MeshLambertMaterial({ vertexColors: true }));
   terrain.receiveShadow = true;
-  scene.add(terrain);
+  world.add(terrain);
 
-  // 路面
+  // 路面與路緣
+  const rc = th.road;
   const roadTex = canvasTex(256, 256, (g, W, H) => {
-    g.fillStyle = '#6b6f7a'; g.fillRect(0, 0, W, H);
+    g.fillStyle = rc.base; g.fillRect(0, 0, W, H);
     for (let i = 0; i < 1500; i++) { g.fillStyle = `rgba(${rand() > 0.5 ? 255 : 0},${rand() > 0.5 ? 255 : 0},255,0.05)`; g.fillRect(rand() * W, rand() * H, 2, 2); }
-    g.fillStyle = '#ffffff'; g.fillRect(6, 0, 7, H); g.fillRect(W - 13, 0, 7, H);
-    g.fillStyle = '#ffe680'; g.fillRect(W / 2 - 4, 20, 8, H / 2 - 20);
+    g.fillStyle = rc.edge; g.fillRect(6, 0, 7, H); g.fillRect(W - 13, 0, 7, H);
+    g.fillStyle = rc.center; g.fillRect(W / 2 - 4, 20, 8, H / 2 - 20);
   });
   roadTex.wrapS = roadTex.wrapT = THREE.RepeatWrapping;
   const road = new THREE.Mesh(ribbon(-HW, HW, 0.03, 18), new THREE.MeshLambertMaterial({ map: roadTex }));
   road.receiveShadow = true;
-  scene.add(road);
-  const curbTex = canvasTex(4, 64, (g, W, H) => { g.fillStyle = '#ff4f6d'; g.fillRect(0, 0, W, H / 2); g.fillStyle = '#ffffff'; g.fillRect(0, H / 2, W, H / 2); });
+  world.add(road);
+  const curbTex = canvasTex(4, 64, (g, W, H) => { g.fillStyle = th.curb[0]; g.fillRect(0, 0, W, H / 2); g.fillStyle = th.curb[1]; g.fillRect(0, H / 2, W, H / 2); });
   curbTex.wrapS = curbTex.wrapT = THREE.RepeatWrapping;
   curbTex.magFilter = THREE.NearestFilter;
   const curbM = new THREE.MeshLambertMaterial({ map: curbTex });
   for (const s of [-1, 1]) {
     const c = new THREE.Mesh(ribbon(s < 0 ? -HW - 1.6 : HW, s < 0 ? -HW : HW + 1.6, 0.08, 4), curbM);
     c.receiveShadow = true;
-    scene.add(c);
+    world.add(c);
   }
 
   // 起跑線與拱門
   const chk = canvasTex(128, 32, (g) => { for (let x = 0; x < 16; x++) for (let y = 0; y < 4; y++) { g.fillStyle = (x + y) % 2 ? '#222' : '#fff'; g.fillRect(x * 8, y * 8, 8, 8); } });
-  const p0 = pts[0], h0 = Math.atan2(TAN[0].x, TAN[0].z);
+  const p0 = pts[0], h0 = headingAt(0);
   const line = new THREE.Mesh(new THREE.PlaneGeometry(HW * 2, 3), new THREE.MeshLambertMaterial({ map: chk }));
   line.rotation.set(-Math.PI / 2, h0, 0, 'YXZ');
   line.position.set(p0.x, p0.y + 0.06, p0.z);
   line.receiveShadow = true;
-  scene.add(line);
+  world.add(line);
   const arch = new THREE.Group();
   arch.position.copy(p0);
   arch.rotation.y = h0;
-  scene.add(arch);
-  for (const s of [-1, 1]) mesh(new THREE.BoxGeometry(1.2, 9, 1.2), toon('#ff7fa3'), (HW + 2.4) * s, 4.5, 0, arch);
+  world.add(arch);
+  for (const s of [-1, 1]) mesh(new THREE.BoxGeometry(1.2, 9, 1.2), toon(th.arch.color), (HW + 2.4) * s, 4.5, 0, arch);
   const bannerTex = canvasTex(1024, 128, (g, W, H) => {
     g.fillStyle = '#3d3638'; g.fillRect(0, 0, W, H);
-    g.fillStyle = '#ffd36b'; g.font = '900 78px "PingFang TC", "Microsoft JhengHei", sans-serif';
-    g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('★ 安妮亞大賽車 ★', W / 2, H / 2 + 4);
+    if (th.arch.neon) { g.shadowColor = th.arch.color; g.shadowBlur = 20; }
+    g.fillStyle = th.arch.neon ? '#ffe6fb' : '#ffd36b'; g.font = '900 70px "PingFang TC", "Microsoft JhengHei", sans-serif';
+    g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(th.arch.text, W / 2, H / 2 + 4);
   });
-  const bannerM = [toon('#3d3638'), toon('#3d3638'), toon('#3d3638'), toon('#3d3638'),
-    toon('#ffffff', { map: bannerTex }), toon('#ffffff', { map: bannerTex })];
-  mesh(new THREE.BoxGeometry(HW * 2 + 6, 2.2, 0.6), bannerM, 0, 9, 0, arch);
+  const faceM = th.arch.neon ? new THREE.MeshBasicMaterial({ map: bannerTex }) : toon('#ffffff', { map: bannerTex });
+  mesh(new THREE.BoxGeometry(HW * 2 + 6, 2.2, 0.6), [toon('#3d3638'), toon('#3d3638'), toon('#3d3638'), toon('#3d3638'), faceM, faceM], 0, 9, 0, arch);
 
-  // 樹木
-  const trunkGeo = new THREE.CylinderGeometry(0.5, 0.7, 3, 6); trunkGeo.translate(0, 1.5, 0);
-  const leafGeo = new THREE.IcosahedronGeometry(3, 0); leafGeo.translate(0, 5, 0);
+  buildTrees(th.trees);
+  buildHouses(th.houses || 0);
+  if (th.clouds) buildClouds(th.snow ? '#f4f7fb' : '#ffffff');
+
+  // 加速板
+  const padTex = canvasTex(64, 128, (g, W, H) => {
+    g.fillStyle = '#ff9a1f'; g.fillRect(0, 0, W, H);
+    g.fillStyle = '#fff36b';
+    for (let k = 0; k < 3; k++) { const y = 18 + k * 40; g.beginPath(); g.moveTo(8, y + 24); g.lineTo(W / 2, y); g.lineTo(W - 8, y + 24); g.lineTo(W - 8, y + 36); g.lineTo(W / 2, y + 12); g.lineTo(8, y + 36); g.fill(); }
+  });
+  padTex.wrapS = THREE.RepeatWrapping;
+  for (const [i, lat, w] of LAYOUT.pads) {
+    const p = pts[i], [x, z] = latPos(i, lat);
+    const t = new THREE.MeshBasicMaterial({ map: padTex.clone() });
+    t.map.repeat.set(w / 2.3, 1);
+    t.map.needsUpdate = true;
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w * 2, 7), t);
+    m.rotation.set(-Math.PI / 2, 0, 0);
+    const g = new THREE.Group();
+    g.position.set(x, p.y + 0.07, z);
+    g.rotation.y = headingAt(i) + Math.PI;
+    g.add(m);
+    world.add(g);
+    pads.push({ idx: i, lat, w });
+  }
+
+  if (GAP) buildBridge();
+  buildDecks();
+  for (const r of RAMPS) world.add(rampMesh(r));
+  for (const [i, a, b] of LAYOUT.signs) roadSign((i + N) % N, a, b);
+  for (const t of LAYOUT.tunnels) buildTunnel(t);
+  for (const d of LAYOUT.dividers) buildDivider(d);
+  for (const z of LAYOUT.zones) buildZone(z);
+  for (const i of LAYOUT.crosswalks) {
+    const zebra = canvasTex(128, 16, (g, W, H) => { g.fillStyle = '#ffffff'; for (let x = 0; x < W; x += 16) g.fillRect(x, 0, 9, H); });
+    zebra.wrapS = zebra.wrapT = THREE.RepeatWrapping;
+    world.add(new THREE.Mesh(ribbonRange(i - 3, 6, -HW, HW, 0.05, 999), new THREE.MeshBasicMaterial({ map: zebra, transparent: true, opacity: 0.9 })));
+  }
+  for (const l of LAYOUT.lasers) buildLaser(l);
+  if (LAYOUT.traffic) buildTraffic(LAYOUT.traffic);
+  for (const sb of LAYOUT.snowballs) buildSnowballs(sb);
+  if (th.snow) buildSnowfall();
+
+  // 道具禮物盒
+  const boxTex = canvasTex(128, 128, (g, W, H) => {
+    g.fillStyle = '#ff8fb1'; g.fillRect(0, 0, W, H);
+    g.fillStyle = '#ffffff'; g.fillRect(W / 2 - 12, 0, 24, H); g.fillRect(0, H / 2 - 12, W, 24);
+    g.fillStyle = '#ffd36b'; drawStar(g, W / 2, H / 2, 30, 13);
+    g.strokeStyle = '#ffffff'; g.lineWidth = 8; g.strokeRect(4, 4, W - 8, H - 8);
+  });
+  const boxGeo = new THREE.BoxGeometry(1.7, 1.7, 1.7);
+  const boxM = th.night ? new THREE.MeshBasicMaterial({ map: boxTex }) : toon('#ffffff', { map: boxTex });
+  for (const i of LAYOUT.boxes) {
+    for (const lat of [-7.5, -2.5, 2.5, 7.5]) {
+      const p = pts[i], [x, z] = latPos(i, lat);
+      const m = mesh(boxGeo, boxM, x, p.y + 1.4, z, world);
+      itemBoxes.push({ x, z, y: p.y + 1.4, mesh: m, active: true, timer: 0 });
+    }
+  }
+
+  // 路障：三角錐、柵欄、消防栓
+  const coneGeo = new THREE.ConeGeometry(0.6, 1.5, 12), bandGeo = new THREE.CylinderGeometry(0.36, 0.45, 0.25, 12);
+  const barTex = canvasTex(128, 32, (g, W, H) => {
+    for (let k = 0; k < 8; k++) { g.fillStyle = k % 2 ? '#ffffff' : '#ff4f4f'; g.beginPath(); g.moveTo(k * 20 - 10, H); g.lineTo(k * 20 + 6, 0); g.lineTo(k * 20 + 26, 0); g.lineTo(k * 20 + 10, H); g.fill(); }
+  });
+  const barM = toon('#ffffff', { map: barTex });
+  for (const [i0, list, kind] of LAYOUT.obstacles) {
+    list.forEach((lat, k) => {
+      const i = (i0 + k * 3) % N, p = pts[i], [x, z] = latPos(i, lat);
+      const g = new THREE.Group();
+      g.position.set(x, p.y, z);
+      g.rotation.y = headingAt(i);
+      let r = 1.9;
+      if (kind === 'hydrant') {
+        mesh(new THREE.CylinderGeometry(0.45, 0.55, 1.3, 12), toon('#e8343a'), 0, 0.65, 0, g);
+        mesh(new THREE.SphereGeometry(0.45, 12, 8), toon('#e8343a'), 0, 1.3, 0, g);
+        mesh(new THREE.CylinderGeometry(0.18, 0.18, 1.3, 8), toon('#c9c9c9'), 0, 0.85, 0, g).rotation.z = Math.PI / 2;
+        r = 1.8;
+      } else if (k % 2 === 1) {
+        mesh(new THREE.BoxGeometry(2.6, 0.7, 0.25), barM, 0, 1.0, 0, g);
+        for (const s of [-1, 1]) mesh(new THREE.BoxGeometry(0.15, 1.2, 0.6), toon('#555555'), 1.1 * s, 0.6, 0, g);
+        r = 2.4;
+      } else {
+        mesh(coneGeo, toon('#ff8a1f'), 0, 0.75, 0, g);
+        mesh(bandGeo, toon('#ffffff'), 0, 0.75, 0, g);
+        mesh(new THREE.BoxGeometry(1.2, 0.12, 1.2), toon('#333333'), 0, 0.06, 0, g);
+      }
+      world.add(g);
+      obstacles.push({ idx: i, lat, x, z, y: p.y, r, kind, mesh: g, home: g.position.clone(), knocked: 0, v: new THREE.Vector3() });
+    });
+  }
+
+  // 突然衝出來的黑衣壞人
+  for (const i of LAYOUT.villains) {
+    const m = buildVillain();
+    world.add(m);
+    villains.push({ idx: i, side: rand() < 0.5 ? -1 : 1, lat: 0, state: 'wait', t: 0, mesh: m, x: 0, y: 0, z: 0, vy: 0, v: new THREE.Vector3() });
+  }
+
+  // 花生
+  const peanutGeo = new THREE.CapsuleGeometry(0.42, 0.7, 6, 10);
+  const peanutM = toon('#d9a35b');
+  for (const [i0, lat] of LAYOUT.peanuts) {
+    for (let k = 0; k < 4; k++) {
+      const i = (i0 + k * 6) % N, p = pts[i], [x, z] = latPos(i, lat);
+      const m = new THREE.Group();
+      const body = mesh(peanutGeo, peanutM, 0, 0, 0, m);
+      body.rotation.z = Math.PI / 2;
+      body.scale.set(1, 1, 0.9);
+      mesh(new THREE.TorusGeometry(0.4, 0.06, 6, 16), toon('#b9853f'), 0, 0, 0, m).rotation.y = Math.PI / 2;
+      m.position.set(x, p.y + 1.3, z);
+      world.add(m);
+      peanuts.push({ x, z, y: p.y + 1.3, mesh: m, active: true, timer: 0 });
+    }
+  }
+}
+
+function buildTrees(cfg) {
+  if (!cfg || !cfg.count) return;
   const trees = [];
-  while (trees.length < 380) {
+  for (let tries = 0; trees.length < cfg.count && tries < cfg.count * 20; tries++) {
     const x = (rand() - 0.5) * 860, z = (rand() - 0.5) * 860;
     const [i, d] = nearestIdx(x, z, 4);
     if (d < HW + 9 || Math.hypot(x, z) > 430 || canyonF(x, z) > 0.01) continue;
-    trees.push([x, groundY(x, z, i, d), z, 0.7 + rand() * 0.8, rand() < 0.18]);
+    trees.push([x, groundY(x, z, i, d), z, 0.7 + rand() * 0.8, rand() < (cfg.pink || 0)]);
   }
-  const trunks = new THREE.InstancedMesh(trunkGeo, toon('#9a6b4a'), trees.length);
-  const greens = trees.filter((t) => !t[4]), pinks = trees.filter((t) => t[4]);
-  const leafG = new THREE.InstancedMesh(leafGeo, toon('#4fae5a'), greens.length);
-  const leafP = new THREE.InstancedMesh(leafGeo, toon('#ffb3c8'), pinks.length);
   const mtx = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), ps = new THREE.Vector3();
   const place = (im, list) => list.forEach(([x, y, z, s], k) => {
     q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), x * 13 % 6);
     im.setMatrixAt(k, mtx.compose(ps.set(x, y - 0.2, z), q, sc.set(s, s, s)));
   });
-  place(trunks, trees); place(leafG, greens); place(leafP, pinks);
-  for (const im of [trunks, leafG, leafP]) { im.castShadow = true; scene.add(im); }
+  const trunkGeo = new THREE.CylinderGeometry(0.5, 0.7, 3, 6); trunkGeo.translate(0, 1.5, 0);
+  const meshes = [new THREE.InstancedMesh(trunkGeo, toon('#9a6b4a'), trees.length)];
+  place(meshes[0], trees);
+  if (cfg.kind === 'pine') {
+    // 雪松：三層圓錐，頂端積雪
+    const tiers = [[3.2, 3.6, 3.8], [2.5, 3.0, 5.8], [1.6, 2.4, 7.6]];
+    for (const [r, h, y] of tiers) {
+      const g = new THREE.ConeGeometry(r, h, 8); g.translate(0, y, 0);
+      const im = new THREE.InstancedMesh(g, toon('#2f6b4f'), trees.length);
+      place(im, trees); meshes.push(im);
+      const cap = new THREE.ConeGeometry(r * 0.75, h * 0.45, 8); cap.translate(0, y + h * 0.3, 0);
+      const imc = new THREE.InstancedMesh(cap, toon('#ffffff'), trees.length);
+      place(imc, trees); meshes.push(imc);
+    }
+  } else {
+    const leafGeo = new THREE.IcosahedronGeometry(3, 0); leafGeo.translate(0, 5, 0);
+    const greens = trees.filter((t) => !t[4]), pinks = trees.filter((t) => t[4]);
+    const leafG = new THREE.InstancedMesh(leafGeo, toon('#4fae5a'), greens.length);
+    const leafP = new THREE.InstancedMesh(leafGeo, toon('#ffb3c8'), pinks.length);
+    place(leafG, greens); place(leafP, pinks);
+    meshes.push(leafG, leafP);
+  }
+  for (const im of meshes) { im.castShadow = true; world.add(im); }
+}
 
-  // 小房子
+function buildHouses(count) {
   const houseCols = ['#ffd6a5', '#caffbf', '#bde0fe', '#ffc6ff', '#fdffb6'];
-  for (let k = 0; k < 16; k++) {
+  for (let k = 0; k < count; k++) {
     const i = Math.floor(rand() * N), s = rand() < 0.5 ? -1 : 1, off = (HW + 18 + rand() * 14) * s;
-    const p = pts[i], x = p.x + SIDE[i].x * off, z = p.z + SIDE[i].z * off;
+    const [x, z] = latPos(i, off);
     const [ni, nd] = nearestIdx(x, z, 4);
     if (nd < HW + 12 || canyonF(x, z) > 0.01) continue;
     const hs = new THREE.Group();
     hs.position.set(x, groundY(x, z, ni, nd) - 0.3, z);
-    hs.rotation.y = Math.atan2(TAN[i].x, TAN[i].z);
-    scene.add(hs);
+    hs.rotation.y = headingAt(i);
+    world.add(hs);
     const w = 5 + rand() * 3;
     mesh(new THREE.BoxGeometry(w, 4, w), toon(houseCols[k % 5]), 0, 2, 0, hs);
     mesh(new THREE.ConeGeometry(w * 0.8, 3, 4), toon('#e76f6f'), 0, 5.5, 0, hs).rotation.y = Math.PI / 4;
     mesh(new THREE.BoxGeometry(1.2, 2, 0.1), toon('#8a5a3c'), 0, 1, w / 2 + 0.02, hs);
   }
+}
 
-  // 雲
-  const cloudM = new THREE.MeshLambertMaterial({ color: '#ffffff', fog: false });
+function buildClouds(color) {
+  const cloudM = new THREE.MeshLambertMaterial({ color, fog: false });
   const cloudGeo = new THREE.SphereGeometry(1, 10, 8);
   for (let k = 0; k < 22; k++) {
     const cg = new THREE.Group();
@@ -555,115 +797,23 @@ function buildWorld() {
       c.scale.setScalar(5 + rand() * 4);
       cg.add(c);
     }
-    scene.add(cg);
-  }
-
-  // 加速板
-  const padTex = canvasTex(64, 128, (g, W, H) => {
-    g.fillStyle = '#ff9a1f'; g.fillRect(0, 0, W, H);
-    g.fillStyle = '#fff36b';
-    for (let k = 0; k < 3; k++) { const y = 18 + k * 40; g.beginPath(); g.moveTo(8, y + 24); g.lineTo(W / 2, y); g.lineTo(W - 8, y + 24); g.lineTo(W - 8, y + 36); g.lineTo(W / 2, y + 12); g.lineTo(8, y + 36); g.fill(); }
-  });
-  padTex.wrapS = THREE.RepeatWrapping;
-  const padM = new THREE.MeshBasicMaterial({ map: padTex });
-  for (const [i, lat, w] of [[160, -4, 2.3], [400, 4, 2.3], [GAP0 - 32, 0, HW], [880, -5, 2.3], [1060, 4, 2.3]]) {
-    const p = pts[i], x = p.x + SIDE[i].x * lat, z = p.z + SIDE[i].z * lat;
-    const t = padM.clone();
-    t.map = padTex.clone();
-    t.map.repeat.set(w / 2.3, 1);
-    t.map.needsUpdate = true;
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(w * 2, 7), t);
-    m.rotation.set(-Math.PI / 2, 0, 0);
-    const g = new THREE.Group();
-    g.position.set(x, p.y + 0.07, z);
-    g.rotation.y = Math.atan2(TAN[i].x, TAN[i].z) + Math.PI;
-    g.add(m);
-    scene.add(g);
-    pads.push({ idx: i, lat, w });
-  }
-
-  buildBridge();
-  for (const r of RAMPS) scene.add(rampMesh(r));
-  roadSign(CREST - 25, '⚠ 前方懸崖 ⚠', '加速飛下去！');
-  roadSign(GAP0 - 55, '⚠ 斷橋注意 ⚠', '全速跳過去！');
-
-  // 道具禮物盒
-  const boxTex = canvasTex(128, 128, (g, W, H) => {
-    g.fillStyle = '#ff8fb1'; g.fillRect(0, 0, W, H);
-    g.fillStyle = '#ffffff'; g.fillRect(W / 2 - 12, 0, 24, H); g.fillRect(0, H / 2 - 12, W, 24);
-    g.fillStyle = '#ffd36b'; drawStar(g, W / 2, H / 2, 30, 13);
-    g.strokeStyle = '#ffffff'; g.lineWidth = 8; g.strokeRect(4, 4, W - 8, H - 8);
-  });
-  const boxGeo = new THREE.BoxGeometry(1.7, 1.7, 1.7), boxM = toon('#ffffff', { map: boxTex });
-  for (const i of [120, 450, 720, 1000]) {
-    for (const lat of [-7.5, -2.5, 2.5, 7.5]) {
-      const p = pts[i], x = p.x + SIDE[i].x * lat, z = p.z + SIDE[i].z * lat;
-      const m = mesh(boxGeo, boxM, x, p.y + 1.4, z, scene);
-      itemBoxes.push({ x, z, y: p.y + 1.4, mesh: m, active: true, timer: 0 });
-    }
-  }
-
-  // 路障：三角錐與柵欄
-  const coneGeo = new THREE.ConeGeometry(0.6, 1.5, 12), bandGeo = new THREE.CylinderGeometry(0.36, 0.45, 0.25, 12);
-  const barTex = canvasTex(128, 32, (g, W, H) => {
-    for (let k = 0; k < 8; k++) { g.fillStyle = k % 2 ? '#ffffff' : '#ff4f4f'; g.beginPath(); g.moveTo(k * 20 - 10, H); g.lineTo(k * 20 + 6, 0); g.lineTo(k * 20 + 26, 0); g.lineTo(k * 20 + 10, H); g.fill(); }
-  });
-  const barM = toon('#ffffff', { map: barTex });
-  for (const [i, list] of [[190, [-7, -3.5]], [530, [1, 4.5, -7]], [840, [-6, -2]], [1085, [2.5, 6.5, -4]]]) {
-    list.forEach((lat, k) => {
-      const p = pts[i + k * 3], x = p.x + SIDE[i + k * 3].x * lat, z = p.z + SIDE[i + k * 3].z * lat;
-      const g = new THREE.Group();
-      g.position.set(x, p.y, z);
-      g.rotation.y = Math.atan2(TAN[i].x, TAN[i].z);
-      const barrier = k % 2 === 1;
-      if (barrier) {
-        mesh(new THREE.BoxGeometry(2.6, 0.7, 0.25), barM, 0, 1.0, 0, g);
-        for (const s of [-1, 1]) mesh(new THREE.BoxGeometry(0.15, 1.2, 0.6), toon('#555555'), 1.1 * s, 0.6, 0, g);
-      } else {
-        mesh(coneGeo, toon('#ff8a1f'), 0, 0.75, 0, g);
-        mesh(bandGeo, toon('#ffffff'), 0, 0.75, 0, g);
-        mesh(new THREE.BoxGeometry(1.2, 0.12, 1.2), toon('#333333'), 0, 0.06, 0, g);
-      }
-      scene.add(g);
-      obstacles.push({ idx: (i + k * 3) % N, lat, x, z, y: p.y, r: barrier ? 2.4 : 1.9, mesh: g, home: g.position.clone(), knocked: 0, v: new THREE.Vector3() });
-    });
-  }
-
-  // 突然衝出來的黑衣壞人
-  for (const i of [380, 760, 1020]) {
-    const m = buildVillain();
-    scene.add(m);
-    villains.push({ idx: i, side: rand() < 0.5 ? -1 : 1, lat: 0, state: 'wait', t: 0, mesh: m, x: 0, y: 0, z: 0, vy: 0, v: new THREE.Vector3() });
-  }
-
-  // 花生
-  const peanutGeo = new THREE.CapsuleGeometry(0.42, 0.7, 6, 10);
-  const peanutM = toon('#d9a35b');
-  for (const [i0, lat] of [[90, 0], [340, -5], [480, 5], [680, 0], [800, 4], [960, -4], [1130, 0]]) {
-    for (let k = 0; k < 4; k++) {
-      const i = (i0 + k * 6) % N, p = pts[i];
-      const x = p.x + SIDE[i].x * lat, z = p.z + SIDE[i].z * lat;
-      const m = new THREE.Group();
-      const body = mesh(peanutGeo, peanutM, 0, 0, 0, m);
-      body.rotation.z = Math.PI / 2;
-      body.scale.set(1, 1, 0.9);
-      mesh(new THREE.TorusGeometry(0.4, 0.06, 6, 16), toon('#b9853f'), 0, 0, 0, m).rotation.y = Math.PI / 2;
-      m.position.set(x, p.y + 1.3, z);
-      scene.add(m);
-      peanuts.push({ x, z, y: p.y + 1.3, mesh: m, active: true, timer: 0 });
-    }
+    world.add(cg);
   }
 }
 
+// 沿著賽道的長條（整圈用 ribbon，一段用 ribbonRange）
 function ribbon(off0, off1, yOff, vScale) {
+  return ribbonRange(0, N, off0, off1, yOff, vScale, true);
+}
+function ribbonRange(i0, len, off0, off1, yOff, vScale, skipGap = false) {
   const pos = [], uv = [], idx = [];
   let dist = 0;
-  for (let k = 0; k <= N; k++) {
-    const i = k % N, p = pts[i], s = SIDE[i];
+  for (let k = 0; k <= len; k++) {
+    const i = (i0 + k + N) % N, p = pts[i], s = SIDE[i];
     if (k > 0) dist += SPACING;
     pos.push(p.x + s.x * off0, p.y + yOff, p.z + s.z * off0, p.x + s.x * off1, p.y + yOff, p.z + s.z * off1);
     uv.push(0, dist / vScale, 1, dist / vScale);
-    if (k < N && !inGap(i) && !inGap((i + 1) % N)) { const a = k * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); }
+    if (k < len && !(skipGap && (inGap(i) || inGap((i + 1) % N)))) { const a = k * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); }
   }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
@@ -677,7 +827,8 @@ function ribbon(off0, off1, yOff, vScale) {
 }
 
 function buildBridge() {
-  const deckM = toon('#a8743f'), railM = toon('#f1dfb8'), pillarM = toon('#7d5636');
+  const dc = TRACK.theme.deck;
+  const deckM = toon(dc.deck), railM = toon(dc.rail), pillarM = toon(dc.pillar);
   const deckGeo = new THREE.BoxGeometry(HW * 2 + 3.4, 1.4, SPACING * 2 + 0.05);
   const railGeo = new THREE.BoxGeometry(0.35, 1.1, SPACING * 2 + 0.05);
   for (let i = BRIDGE_I - 60; i < BRIDGE_I + 60; i += 2) {
@@ -685,8 +836,8 @@ function buildBridge() {
     if (canyonF(p.x, p.z) < 0.02 || inGap(j) || inGap((j + 1) % N) || inGap((j + 2) % N)) continue;
     const g = new THREE.Group();
     g.position.copy(p);
-    g.rotation.y = Math.atan2(TAN[j].x, TAN[j].z);
-    scene.add(g);
+    g.rotation.y = headingAt(j);
+    world.add(g);
     mesh(deckGeo, deckM, 0, -0.68, SPACING, g).receiveShadow = true;
     for (const s of [-1, 1]) mesh(railGeo, railM, (HW + 1.5) * s, 0.5, SPACING, g);
     if (j % 8 === 0) {
@@ -696,27 +847,57 @@ function buildBridge() {
   }
   // 斷掉的木板
   let gapEnd = GAP0;
-  while (inGap((gapEnd + 1) % N)) gapEnd++;
-  for (const [i, dir] of [[GAP0, 1], [gapEnd + 1, -1]]) {
-    const p = pts[i % N];
+  while (inGap((gapEnd + 1) % N)) gapEnd = (gapEnd + 1) % N;
+  for (const [i, dir] of [[GAP0, 1], [(gapEnd + 1) % N, -1]]) {
+    const p = pts[i];
     const g = new THREE.Group();
     g.position.copy(p);
-    g.rotation.y = Math.atan2(TAN[i % N].x, TAN[i % N].z);
-    scene.add(g);
+    g.rotation.y = headingAt(i);
+    world.add(g);
     for (const x of [-7, -1, 5]) {
       const b = mesh(new THREE.BoxGeometry(3.5, 0.35, 2.4), deckM, x + rand() * 2, -1.2, dir * 0.9, g);
       b.rotation.x = 0.7 * dir;
       b.rotation.z = (rand() - 0.5) * 0.4;
     }
   }
-  // 谷底河流
-  const water = new THREE.Mesh(new THREE.PlaneGeometry(280, 40), new THREE.MeshLambertMaterial({ color: '#4fb3e8', transparent: true, opacity: 0.88 }));
+  // 谷底的河／冰湖
+  const water = new THREE.Mesh(new THREE.PlaneGeometry(GAP.side * 2, 40),
+    new THREE.MeshLambertMaterial({ color: GAP.water, transparent: true, opacity: GAP.ice ? 0.95 : 0.88 }));
   water.rotation.set(-Math.PI / 2, 0, 0);
   const wg = new THREE.Group();
   wg.position.set(BC.x, CANYON_Y + 3, BC.z);
-  wg.rotation.y = Math.atan2(BT.x, BT.z);
+  wg.rotation.y = headingAt(BRIDGE_I);
   wg.add(water);
-  scene.add(wg);
+  if (GAP.ice) {
+    // 冰湖上的碎冰塊
+    for (let k = 0; k < 18; k++) {
+      const b = mesh(new THREE.BoxGeometry(2 + rand() * 4, 0.6, 2 + rand() * 4), toon('#eaf8ff'), (rand() - 0.5) * GAP.side * 1.6, 0.2, (rand() - 0.5) * 30, wg);
+      b.rotation.y = rand() * 3;
+    }
+  }
+  world.add(wg);
+}
+
+// 高架橋：橋面、欄杆、橋墩
+function buildDecks() {
+  const dc = TRACK.theme.deck;
+  const deckM = toon(dc.deck), railM = toon(dc.rail), pillarM = toon(dc.pillar);
+  const deckGeo = new THREE.BoxGeometry(HW * 2 + 3.4, 1.2, SPACING * 2 + 0.1);
+  const railGeo = new THREE.BoxGeometry(0.4, 1.2, SPACING * 2 + 0.1);
+  for (let i = 0; i < N; i += 2) {
+    if (!isDeck[i]) continue;
+    const p = pts[i];
+    const g = new THREE.Group();
+    g.position.copy(p);
+    g.rotation.y = headingAt(i);
+    world.add(g);
+    mesh(deckGeo, deckM, 0, -0.6, SPACING, g).receiveShadow = true;
+    for (const s of [-1, 1]) mesh(railGeo, railM, (HW + 1.6) * s, 0.55, SPACING, g);
+    if (i % 12 === 0) {
+      const [, d] = nearestIdx(p.x, p.z, 2, true);
+      if (d > HW + 2) for (const s of [-1, 1]) mesh(new THREE.CylinderGeometry(0.7, 0.9, p.y, 10), pillarM, (HW - 2) * s, -p.y / 2, SPACING, g);
+    }
+  }
 }
 
 function rampMesh(r) {
@@ -724,7 +905,7 @@ function rampMesh(r) {
   const V = (x, y, z) => { verts.push(x, y, z); return verts.length / 3 - 1; };
   const rows = [];
   for (let k = 0; k <= r.len; k++) {
-    const i = (r.i0 + k) % N, p = pts[i], s = SIDE[i], y = p.y + 0.06, h = r.h * k / r.len, w = HW + 0.3;
+    const i = (r.i0 + k + N) % N, p = pts[i], s = SIDE[i], y = p.y + 0.06, h = r.h * k / r.len, w = HW + 0.3;
     rows.push({
       tl: V(p.x - s.x * w, y + h, p.z - s.z * w), tr: V(p.x + s.x * w, y + h, p.z + s.z * w),
       bl: V(p.x - s.x * w, y, p.z - s.z * w), br: V(p.x + s.x * w, y, p.z + s.z * w),
@@ -753,15 +934,202 @@ function roadSign(i, line1, line2) {
     g.font = '900 64px "PingFang TC", "Microsoft JhengHei", sans-serif'; g.fillText(line1, W / 2, 92);
     g.font = '900 48px "PingFang TC", "Microsoft JhengHei", sans-serif'; g.fillText(line2, W / 2, 180);
   });
+  const faceM = TRACK.theme.night ? new THREE.MeshBasicMaterial({ map: tex }) : toon('#ffffff', { map: tex });
   for (const s of [-1, 1]) {
-    const p = pts[i], off = (HW + 4) * s;
+    const p = pts[i], [x, z] = latPos(i, (HW + 4) * s);
     const g = new THREE.Group();
-    g.position.set(p.x + SIDE[i].x * off, p.y, p.z + SIDE[i].z * off);
-    g.rotation.y = Math.atan2(TAN[i].x, TAN[i].z) + Math.PI;
-    scene.add(g);
+    g.position.set(x, p.y, z);
+    g.rotation.y = headingAt(i) + Math.PI;
+    world.add(g);
     mesh(new THREE.CylinderGeometry(0.2, 0.2, 4, 8), toon('#777777'), 0, 2, 0, g);
-    mesh(new THREE.BoxGeometry(6, 3, 0.2), [toon('#3d3638'), toon('#3d3638'), toon('#3d3638'), toon('#3d3638'), toon('#ffffff', { map: tex }), toon('#3d3638')], 0, 5, 0, g);
+    mesh(new THREE.BoxGeometry(6, 3, 0.2), [toon('#3d3638'), toon('#3d3638'), toon('#3d3638'), toon('#3d3638'), faceM, toon('#3d3638')], 0, 5, 0, g);
   }
+}
+
+// 隧道（城市）、間諜基地（雪山，方形鋼構）、冰洞（雪山岔路，只蓋住一邊）
+function buildTunnel(t) {
+  const verts = [], tri = [];
+  const kind = t.kind;
+  const prof = [];   // 斷面：[側向位置, 高度]
+  if (kind === 'base') {
+    for (const [a, b] of [[-HW - 2, 0], [-HW - 2, 7.5], [HW + 2, 7.5], [HW + 2, 0]]) prof.push([a, b]);
+  } else {
+    const cx = kind === 'cave' ? t.side * 6.5 : 0, R = kind === 'cave' ? 7.2 : HW + 3;
+    for (let a = 0; a <= 16; a++) { const th = Math.PI * a / 16; prof.push([cx + Math.cos(th) * R, Math.sin(th) * R * (kind === 'cave' ? 0.85 : 0.75)]); }
+  }
+  const cols = prof.length;
+  for (let k = 0; k <= t.len; k++) {
+    const i = (t.i0 + k + N) % N, p = pts[i], s = SIDE[i];
+    for (const [lat, h] of prof) verts.push(p.x + s.x * lat, p.y + h, p.z + s.z * lat);
+    if (k < t.len) for (let c = 0; c < cols - 1; c++) {
+      const a = k * cols + c, b = a + cols;
+      tri.push(a, b, a + 1, a + 1, b, b + 1);
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+  g.setIndex(tri);
+  g.computeVertexNormals();
+  const color = kind === 'base' ? '#4d5666' : kind === 'cave' ? '#bfe3f5' : '#4a4e5c';
+  const shell = new THREE.Mesh(g, toon(color, { side: THREE.DoubleSide }));
+  shell.castShadow = true;
+  world.add(shell);
+  // 燈條與裝飾
+  const lightM = new THREE.MeshBasicMaterial({ color: kind === 'base' ? '#4ff0ff' : kind === 'cave' ? '#e9fbff' : '#ffe08a' });
+  for (let k = 2; k < t.len; k += kind === 'cave' ? 5 : 8) {
+    const i = (t.i0 + k + N) % N, p = pts[i];
+    const gg = new THREE.Group();
+    gg.position.copy(p);
+    gg.rotation.y = headingAt(i);
+    world.add(gg);
+    if (kind === 'base') {
+      for (const s of [-1, 1]) { const b = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.3, SPACING * 4), lightM); b.position.set((HW + 1.8) * s, 3.5, 0); gg.add(b); }
+      const top = new THREE.Mesh(new THREE.BoxGeometry(HW * 1.4, 0.15, 0.5), lightM); top.position.set(0, 7.3, 0); gg.add(top);
+    } else if (kind === 'cave') {
+      for (let c = 0; c < 3; c++) {
+        const ic = mesh(new THREE.ConeGeometry(0.25, 1.4 + Math.random(), 6), toon('#e9fbff'), t.side * (2 + c * 3 + Math.random()), 5.2 - c * 0.8, 0, gg);
+        ic.rotation.x = Math.PI;
+      }
+    } else {
+      const b = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.2, 0.8), lightM); b.position.set(0, (HW + 3) * 0.75 - 0.2, 0); gg.add(b);
+    }
+  }
+  // 入口牌樓
+  for (const k of [0, t.len]) {
+    const i = (t.i0 + k + N) % N, p = pts[i];
+    const gg = new THREE.Group();
+    gg.position.copy(p);
+    gg.rotation.y = headingAt(i);
+    world.add(gg);
+    if (kind === 'base') {
+      const tex = canvasTex(512, 96, (c, W, H) => {
+        c.fillStyle = '#20252f'; c.fillRect(0, 0, W, H); c.shadowColor = '#4ff0ff'; c.shadowBlur = 16;
+        c.fillStyle = '#4ff0ff'; c.font = '900 56px "PingFang TC", "Microsoft JhengHei", sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+        c.fillText(k ? 'EXIT 出口' : 'SPY BASE 間諜基地', W / 2, H / 2 + 3);
+      });
+      const sm = new THREE.MeshBasicMaterial({ map: tex });
+      const sign = mesh(new THREE.BoxGeometry(HW * 2 + 4, 2, 0.5), [toon('#20252f'), toon('#20252f'), toon('#20252f'), toon('#20252f'), sm, sm], 0, 8.6, 0, gg);
+      sign.castShadow = false;
+    } else if (kind === 'tunnel') {
+      mesh(new THREE.BoxGeometry(HW * 2 + 8, 2.4, 1.2), toon('#6a6f80'), 0, (HW + 3) * 0.75 + 0.8, 0, gg);
+    }
+  }
+}
+
+// 岔路中間的分隔牆
+function buildDivider(d) {
+  const m = toon(TRACK.theme.snow ? '#a9c4dc' : '#8a8f9c');
+  const geo = new THREE.BoxGeometry(3.2, 2.6, SPACING * 3 + 0.1);
+  for (let k = 0; k < d.len; k += 3) {
+    const i = (d.i0 + k + N) % N, p = pts[i];
+    const b = mesh(geo, m, p.x, p.y + 1.3, p.z, world);
+    b.rotation.y = headingAt(i);
+  }
+}
+
+// 地面區域：水窪、冰面、輸送帶
+function buildZone(z) {
+  const mid = (z.lat0 + z.lat1) / 2, w = z.lat1 - z.lat0;
+  if (z.type === 'puddle') {
+    const i = (z.i0 + Math.floor(z.len / 2)) % N, p = pts[i], [x, y] = latPos(i, mid);
+    const pm = new THREE.Mesh(new THREE.CircleGeometry(1, 24), new THREE.MeshBasicMaterial({ color: '#3d6fd0', transparent: true, opacity: 0.6, depthWrite: false }));
+    pm.rotation.set(-Math.PI / 2, 0, 0);
+    pm.scale.set(w / 2, z.len * SPACING / 2, 1);
+    const g = new THREE.Group();
+    g.position.set(x, p.y + 0.09, y);
+    g.rotation.y = headingAt(i);
+    g.add(pm);
+    world.add(g);
+  } else if (z.type === 'ice') {
+    const tex = canvasTex(64, 64, (g, W, H) => {
+      g.fillStyle = 'rgba(205,240,255,0.85)'; g.fillRect(0, 0, W, H);
+      g.strokeStyle = 'rgba(255,255,255,0.9)'; g.lineWidth = 2;
+      for (let k = 0; k < 5; k++) { g.beginPath(); g.moveTo(Math.random() * W, Math.random() * H); g.lineTo(Math.random() * W, Math.random() * H); g.stroke(); }
+    });
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    world.add(new THREE.Mesh(ribbonRange(z.i0, z.len, z.lat0, z.lat1, 0.07, 6), new THREE.MeshLambertMaterial({ map: tex, transparent: true })));
+  } else if (z.type === 'conveyor') {
+    const tex = canvasTex(64, 64, (g, W, H) => {
+      g.fillStyle = '#4a515c'; g.fillRect(0, 0, W, H);
+      g.fillStyle = '#ffd23f';
+      for (const y of [16, 48]) { g.beginPath(); g.moveTo(8, y - 10); g.lineTo(40, y); g.lineTo(8, y + 10); g.fill(); }
+    });
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(w / 4, 1);
+    world.add(new THREE.Mesh(ribbonRange(z.i0, z.len, z.lat0, z.lat1, 0.07, 4), new THREE.MeshLambertMaterial({ map: tex })));
+    scrollTex.push({ tex, speed: -z.push / 4 });
+  }
+}
+
+// 雷射門：定時開關，開著的時候穿過去會轉圈
+function buildLaser(l) {
+  const i = (l.i + N) % N, p = pts[i];
+  const g = new THREE.Group();
+  g.position.copy(p);
+  g.rotation.y = headingAt(i);
+  world.add(g);
+  for (const s of [-1, 1]) {
+    mesh(new THREE.BoxGeometry(0.8, 4, 0.8), toon('#39404d'), (HW + 1.2) * s, 2, 0, g);
+    const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.35, 8, 6), new THREE.MeshBasicMaterial({ color: '#ff3040' }));
+    lamp.position.set((HW + 1.2) * s, 4.3, 0);
+    g.add(lamp);
+  }
+  const beamM = new THREE.MeshBasicMaterial({ color: '#ff2a3a', transparent: true, opacity: 0.9 });
+  const beams = [];
+  for (const h of [0.6, 1.5, 2.4]) {
+    const b = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, HW * 2 + 2.4, 6), beamM);
+    b.rotation.z = Math.PI / 2;
+    b.position.y = h;
+    g.add(b);
+    beams.push(b);
+  }
+  lasers.push({ idx: i, period: l.period, phase: l.phase, beams, beamM, on: false });
+}
+const laserOn = (l, t) => ((t + l.phase) % l.period) < l.period * 0.45;
+
+// 城市裡一般車輛（同方向慢慢開）
+function buildTraffic(cfg) {
+  const cols = ['#e8eef7', '#ff6b6b', '#4fa3ff', '#ffd23f', '#7be08b', '#c38bff'];
+  for (let k = 0; k < cfg.count; k++) {
+    const bus = k === 0;
+    const g = new THREE.Group();
+    const L = bus ? 8 : 4.2, Wd = bus ? 2.8 : 2.2, H = bus ? 3 : 1.1;
+    mesh(new THREE.BoxGeometry(Wd, H, L), toon(bus ? '#ffb02e' : cols[k % cols.length]), 0, 0.6 + H / 2, 0, g);
+    if (!bus) mesh(new THREE.BoxGeometry(Wd * 0.85, 0.9, L * 0.5), toon('#2a3040'), 0, 1.15 + H, -0.2, g);
+    else mesh(new THREE.BoxGeometry(Wd + 0.05, 0.9, L * 0.85), toon('#2a3040'), 0, 2.5, 0, g);
+    for (const [x, z] of [[-1, 1], [1, 1], [-1, -1], [1, -1]]) {
+      const w = mesh(new THREE.CylinderGeometry(0.45, 0.45, 0.35, 12), toon('#222222'), x * Wd / 2, 0.45, z * L * 0.32, g);
+      w.rotation.z = Math.PI / 2;
+    }
+    const headM = new THREE.MeshBasicMaterial({ color: '#fff6c8' }), tailM = new THREE.MeshBasicMaterial({ color: '#ff3040' });
+    for (const s of [-1, 1]) {
+      const h = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.25, 0.1), headM); h.position.set(s * Wd * 0.32, 0.9, L / 2 + 0.02); g.add(h);
+      const t = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.25, 0.1), tailM); t.position.set(s * Wd * 0.32, 0.9, -L / 2 - 0.02); g.add(t);
+    }
+    world.add(g);
+    traffic.push({ s: (k + 0.5) * N / cfg.count, lat: cfg.lanes[k % cfg.lanes.length], speed: cfg.speed * (0.85 + rand() * 0.3), r: bus ? 3.2 : 2.3, mesh: g, x: 0, z: 0, y: 0, idx: 0 });
+  }
+}
+
+// 從坡上滾下來的大雪球
+function buildSnowballs(cfg) {
+  const geo = new THREE.SphereGeometry(2, 18, 14);
+  for (let k = 0; k < 3; k++) {
+    const m = mesh(geo, toon('#ffffff'), 0, -50, 0, world);
+    snowballs.push({ cfg, s: cfg.iTop, lat: 0, active: false, t: k * cfg.every, r: 2, mesh: m, x: 0, z: 0, y: 0, idx: cfg.iTop });
+  }
+}
+
+// 飄雪
+function buildSnowfall() {
+  const n = 1400, posArr = new Float32Array(n * 3);
+  for (let k = 0; k < n; k++) { posArr[k * 3] = (Math.random() - 0.5) * 90; posArr[k * 3 + 1] = Math.random() * 45; posArr[k * 3 + 2] = (Math.random() - 0.5) * 90; }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
+  const pts3 = new THREE.Points(g, new THREE.PointsMaterial({ color: '#ffffff', size: 0.35, transparent: true, opacity: 0.9 }));
+  pts3.frustumCulled = false;
+  world.add(pts3);
+  snowfall = pts3;
 }
 
 function buildVillain() {
@@ -820,7 +1188,7 @@ function makeSmokeMesh() {
 function spawnEffect(x, y, z, color, size) {
   const m = new THREE.Mesh(new THREE.SphereGeometry(1, 14, 10), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.9 }));
   m.position.set(x, y, z);
-  scene.add(m);
+  world.add(m);
   effects.push({ mesh: m, t: 0, dur: 0.5, size });
 }
 
@@ -881,24 +1249,35 @@ const Sound = {
   explode() { this.noise(0.6, 0.5); this.tone(160, 0.5, 'square', 0.14, 0, 40); },
   tick() { this.tone(1500, 0.04, 'square', 0.05); },
   fall() { this.tone(700, 1.1, 'sine', 0.18, 0, 90); },
+  grow() { [262, 330, 392, 523].forEach((f, i) => this.tone(f, 0.25, 'square', 0.1, i * 0.08, f * 1.5)); },
+  shrink() { this.tone(1400, 0.6, 'sine', 0.18, 0, 200); },
+  bark() { this.tone(520, 0.12, 'square', 0.16, 0, 300); this.tone(560, 0.14, 'square', 0.16, 0.18, 320); },
   fanfare() { [523, 659, 784, 1046, 784, 1046].forEach((f, i) => this.tone(f, 0.32, 'triangle', 0.2, i * 0.14)); },
   setMuted(m) { this.muted = m; if (this.master) this.master.gain.value = m ? 0 : 0.5; },
 };
 
 // ================= 遊戲狀態 =================
 const sun = new THREE.DirectionalLight('#fff3e0', 2.4);
-const pads = [], peanuts = [], itemBoxes = [], obstacles = [], villains = [], bombs = [], smokes = [], effects = [];
-const state = { mode: 'loading', selected: 0, difficulty: 1, speedLevel: 0, autoGas: true, cars: [], player: null, raceTime: 0, countdown: 0, lastCount: 0, resultTimer: -1, shake: 0 };
+const pads = [], peanuts = [], itemBoxes = [], obstacles = [], villains = [], bombs = [], smokes = [], effects = []
+const lasers = [], traffic = [], snowballs = [], scrollTex = [];
+let snowfall = null;
+const hemi = new THREE.HemisphereLight('#ffffff', '#86b86a', 1.5);
+const state = { mode: 'loading', selected: 0, difficulty: 1, speedLevel: 0, track: 0, autoGas: true, cars: [], player: null, raceTime: 0, countdown: 0, lastCount: 0, resultTimer: -1, shake: 0 };
 const input = { left: false, right: false, gas: false, brake: false };
 const G = 36;          // 重力
 const SPIN_T = 1.3;    // 轉圈圈秒數
+const MAX_UP_V = 22;   // 在地面時最大往上速度（跳台起飛約 12～18）
 const ITEMS = {
   rocket: { icon: '🚀', name: '火箭衝刺', w: [1, 3, 5, 6] },
   bomb: { icon: '💣', name: '花生炸彈', w: [2, 4, 4, 4] },
   smoke: { icon: '💨', name: '間諜煙霧彈', w: [5, 3, 2, 1] },
   shield: { icon: '🛡️', name: '間諜護盾', w: [4, 3, 2, 1] },
   peanut: { icon: '🥜', name: '花生大放送', w: [3, 2, 1, 1] },
+  grow: { icon: '🧪', name: '變大藥水', w: [1, 2, 3, 3] },
+  shrink: { icon: '🔦', name: '縮小手電筒', w: [0, 2, 3, 4] },
+  dog: { icon: '🐶', name: '彭德拉車', w: [0, 1, 3, 5] },
 };
+const BIG_T = 8, SMALL_T = 6, DOG_T = 3.5;
 const ITEM_KEYS = Object.keys(ITEMS);
 let raceModels = [], previewModels = [], time = 0;
 const camPos = new THREE.Vector3(), camLook = new THREE.Vector3();
@@ -911,6 +1290,7 @@ function makeCar(ri, isPlayer) {
     lap: 0, checkpoint: true, peanuts: 0, boost: 0, finished: false, finishTime: 0, offroad: false, wheelSpin: 0,
     maxSpeed: (42 + s.speed * 2) * speedMul(), accel: (12 + s.accel * 3) * speedMul(), handling: 1.85 + s.handling * 0.13,
     s: 0, vy: 0, air: false, prevSy: 0, fallT: 0, spin: 0, invuln: 0, shield: 0, item: null, roll: 0,
+    big: 0, small: 0, dog: 0, scaleNow: 1,
     ai: { baseSkill: 1, skill: 1, phase: rand() * 6, bias: (rand() - 0.5) * 4, hold: 0 },
   };
 }
@@ -922,7 +1302,10 @@ function placeCar(car, idx, lat) {
   car.x = p.x + s.x * lat; car.z = p.z + s.z * lat;
   car.heading = Math.atan2(TAN[idx].x, TAN[idx].z);
   car.y = car.prevSy = surfaceY(car);
-  car.vy = 0; car.air = false;
+  car.vy = 0; car.air = false; car.airT = 0;
+  car.vdir = car.heading; car.slip = 0;
+  car.safeP = car.stuckP = car.lap * N + idx;
+  car.stuckT = 0;
 }
 const progress = (c) => c.lap * N + c.idx;
 const speedMul = () => SPEED_MUL[state.speedLevel];
@@ -966,6 +1349,16 @@ function updateCar(car, dt, ctl) {
     if (car.fallT <= 0) respawn(car);
     return;
   }
+  car.big = Math.max(0, car.big - dt);
+  car.small = Math.max(0, car.small - dt);
+  car.dog = Math.max(0, car.dog - dt);
+  if (car.dog > 0) {
+    // 彭德拉車：自動駕駛往前衝
+    car.ai.blunderT = 0;
+    const steer = car.isPlayer && !AUTO && !car.finished ? aiControl(car, dt).steer : ctl.steer;
+    ctl = { steer, gas: true, brake: false };
+    car.spin = 0;
+  }
   if (car.spin > 0) {
     car.spin -= dt;
     ctl = { steer: 0, gas: false, brake: false };
@@ -974,8 +1367,11 @@ function updateCar(car, dt, ctl) {
   car.steer += clamp(ctl.steer - car.steer, -dt * 6, dt * 6);
   car.offroad = !car.air && Math.abs(car.lat) > HW + 1.2;
   let maxSp = car.maxSpeed * (1 + car.peanuts * 0.012) * (car.isPlayer && !car.finished && !AUTO ? 1 : car.ai.skill);
-  if (car.offroad) maxSp *= 0.5;
+  if (car.offroad && car.dog <= 0) maxSp *= 0.5;
+  if (car.big > 0) maxSp *= 1.08;
+  if (car.small > 0) maxSp *= 0.72;
   if (car.boost > 0) { maxSp += 18 * speedMul(); car.boost -= dt; }
+  if (car.dog > 0) { maxSp = car.maxSpeed * 1.45; car.speed = Math.max(car.speed, lerp(car.speed, maxSp, 1 - Math.exp(-dt * 4))); }
   if (!car.air) {
     if (ctl.gas && car.speed < maxSp) car.speed += car.accel * dt * (1.15 - Math.max(0, car.speed) / maxSp);
     if (!ctl.gas && !ctl.brake) car.speed -= Math.sign(car.speed) * Math.min(Math.abs(car.speed), 9 * dt);
@@ -992,21 +1388,53 @@ function updateCar(car, dt, ctl) {
     car.heading += wrapAngle(th - car.heading) * Math.min(1, dt * 3);
     if (Math.abs(car.lat) > HW - 3) car.heading -= Math.sign(car.lat) * dt * 0.25;
   }
+  // 地面區域：冰面會滑、輸送帶往旁邊推、水窪打滑
+  const zone = car.air ? null : zoneAt(car);
+  if (zone && zone.type === 'puddle') {
+    if (!car.inPuddle) {
+      car.slip = 0.7;
+      spawnEffect(car.x, car.y + 0.6, car.z, '#9fd0ff', 1.6);
+      if (car.isPlayer) { Sound.noise(0.25, 0.15); showBanner('水窪！打滑～', 700); }
+    }
+    car.inPuddle = true;
+  } else car.inPuddle = false;
+  if (car.slip > 0) {
+    car.slip -= dt;
+    car.heading += Math.sin(time * 18 + car.ri) * dt * 2.2;
+    car.speed *= Math.pow(0.85, dt);
+  }
+  // 移動方向：一般跟車頭一樣；在冰上會慢慢跟上，車子會甩尾滑行
+  const onIce = zone && zone.type === 'ice' && car.dog <= 0;
+  if (car.vdir === undefined) car.vdir = car.heading;
+  car.vdir += wrapAngle(car.heading - car.vdir) * Math.min(1, dt * (onIce ? 1.3 : 14));
   const ox = car.x, oz = car.z;
-  car.x += Math.sin(car.heading) * car.speed * dt;
-  car.z += Math.cos(car.heading) * car.speed * dt;
+  car.x += Math.sin(car.vdir) * car.speed * dt;
+  car.z += Math.cos(car.vdir) * car.speed * dt;
+  if (zone && zone.type === 'conveyor') { car.x += SIDE[car.idx].x * zone.push * dt; car.z += SIDE[car.idx].z * zone.push * dt; }
 
   car.prevIdx = car.idx;
   updateIdx(car);
   const inCanyon = canyonF(car.x, car.z) > 0.05;
-  const lim = inCanyon ? HW + 1 : HW + 20;   // 橋上有欄杆
+  const railed = inCanyon || isDeck[car.idx];
+  const lim = railed ? HW + 1 : HW + 20;   // 橋上、高架橋上有欄杆
   if (Math.abs(car.lat) > lim) {
     const s = SIDE[car.idx], L = Math.sign(car.lat) * lim;
     car.x -= s.x * (car.lat - L); car.z -= s.z * (car.lat - L); car.lat = L;
     // 貼著邊界滑行：車頭轉回賽道方向，不會卡死
-    const th = Math.atan2(TAN[car.idx].x, TAN[car.idx].z);
+    const th = headingAt(car.idx);
     car.heading += wrapAngle(th - car.heading) * Math.min(1, dt * 5);
-    car.speed = Math.max(Math.min(car.speed, 10), car.speed * Math.pow(inCanyon ? 0.7 : 0.3, dt));
+    car.vdir = car.heading;
+    car.speed = Math.max(Math.min(car.speed, 10), car.speed * Math.pow(railed ? 0.7 : 0.3, dt));
+  }
+  // 岔路中間的分隔牆
+  for (const d of LAYOUT.dividers) {
+    if (car.air || idxAhead(d.i0, car.idx) > d.len || Math.abs(car.lat) >= 2.9) continue;
+    const s = SIDE[car.idx], L = (car.lat >= 0 ? 1 : -1) * 2.9;
+    car.x -= s.x * (car.lat - L); car.z -= s.z * (car.lat - L); car.lat = L;
+    car.heading += wrapAngle(headingAt(car.idx) - car.heading) * Math.min(1, dt * 6);
+    car.vdir = car.heading;
+    car.speed *= Math.pow(0.6, dt);
+    if (car.isPlayer && Math.random() < dt * 4) Sound.bump();
   }
 
   // 垂直：跳躍、飛行、落地
@@ -1018,27 +1446,44 @@ function updateCar(car, dt, ctl) {
     updateIdx(car);
     sy = surfaceY(car);
   }
-  const gv = (sy - car.prevSy) / dt;
+  // 地面高度如果一瞬間跳很多（跳台側邊、被欄杆推回橋面），只當成爬上去，不能變成火箭往上噴
+  const gv = clamp((sy - car.prevSy) / dt, -80, MAX_UP_V);
   car.prevSy = sy;
   if (car.air) {
-    car.vy -= G * dt;
+    car.vy = Math.max(car.vy - G * dt, -60);
     car.y += car.vy * dt;
+    car.airT += dt;
     if (car.y <= sy) {
       if (car.isPlayer && car.vy < -12) { Sound.land(); state.shake = Math.min(0.5, -car.vy * 0.02); }
-      car.y = sy; car.vy = gv; car.air = false;
+      car.y = sy; car.vy = gv; car.air = false; car.airT = 0;
     }
   } else if (gv < car.vy - G * dt - 0.6) {
     car.air = true;
+    car.airT = 0;
     car.vy -= G * dt;
     car.y += car.vy * dt;
   } else {
     car.vy = gv;
     car.y = sy;
   }
-  if (car.air && car.y < roadY(car.s) - 7 && canyonF(car.x, car.z) > 0.3) {
+  // 掉進峽谷（不論是飛進去還是開下去）→ 回到橋前
+  if (car.y < roadY(car.s) - 7 && canyonF(car.x, car.z) > 0.3) {
     car.fallT = 1.4;
     car.speed = 0;
+    car.air = true;
     if (car.isPlayer) { Sound.fall(); showBanner('掉下去了～！', 1400); }
+    return;
+  }
+  // 記住最近一次安全的位置（在路面上、沒在飛、不在峽谷）
+  if (!car.air && Math.abs(car.lat) < HW && canyonF(car.x, car.z) < 0.02) car.safeP = car.lap * N + car.idx;
+  // 保險：飛太久、飛太高、或卡住不動太久，就回到安全位置
+  const p = car.lap * N + car.s;
+  if (Math.abs(p - car.stuckP) > 3) { car.stuckP = p; car.stuckT = 0; } else if (car.spin <= 0) car.stuckT += dt;
+  const wantsToGo = !car.isPlayer || AUTO || car.finished || ((state.autoGas || input.gas) && !input.brake);
+  if (car.airT > 4 || car.y > roadY(car.s) + 45 || (wantsToGo && car.stuckT > 5)) {
+    (state.rescueLog ||= []).push({ who: car.cfg.name, why: car.airT > 4 ? 'air' : car.stuckT > 5 ? 'stuck' : 'high', idx: car.idx, lat: +car.lat.toFixed(1), y: +car.y.toFixed(1) });
+    rescue(car);
+    return;
   }
   // 圈數判定
   if (car.idx > N * 0.4 && car.idx < N * 0.6) car.checkpoint = true;
@@ -1049,7 +1494,26 @@ function updateCar(car, dt, ctl) {
   car.pitch = lerp(car.pitch, clamp(pitchT, -0.6, 0.6), 1 - Math.exp(-dt * 10));
 }
 
+function rescue(car) {
+  // 用「圈數＋位置」記安全點，跨過起跑線也不會算錯圈
+  const sp = car.safeP - 8;
+  car.lap = Math.floor(sp / N);
+  const idx = ((sp % N) + N) % N;
+  placeCar(car, idx, 0);
+  car.checkpoint = idx >= N * 0.4;
+  car.speed = 12; car.spin = 0; car.fallT = 0; car.invuln = 2;
+  if (car.isPlayer) showBanner('回到賽道上！', 1000);
+}
+
+function zoneAt(car) {
+  for (const z of LAYOUT.zones) {
+    if (idxAhead(z.i0, car.idx) <= z.len && car.lat >= z.lat0 && car.lat <= z.lat1) return z;
+  }
+  return null;
+}
+
 function respawn(car) {
+  if (GAP0 < 0) { rescue(car); return; }
   const idx = (GAP0 - 48 + N) % N;
   placeCar(car, idx, 0);
   car.speed = 24; car.fallT = 0; car.spin = 0; car.invuln = 2;
@@ -1058,7 +1522,7 @@ function respawn(car) {
 
 // 被打中：轉圈圈（有護盾就擋掉）
 function hit(car, msg) {
-  if (car.invuln > 0 || car.fallT > 0) return false;
+  if (car.invuln > 0 || car.fallT > 0 || car.big > 0 || car.dog > 0) return false;
   if (car.shield > 0) {
     car.shield = 0;
     car.invuln = 1;
@@ -1091,7 +1555,7 @@ function useItem(car) {
     if (car.isPlayer) { Sound.boost(); showBanner('火箭衝刺！', 800); }
   } else if (it === 'bomb') {
     const m = makeBombMesh();
-    scene.add(m);
+    world.add(m);
     const b = { x: car.x + fx * 3.2, z: car.z + fz * 3.2, y: car.y + 1, idx: car.idx, s: car.s, lat: car.lat,
       speed: Math.max(car.speed, 10) + 30, owner: car, life: 5, mesh: m };
     updateIdx(b);
@@ -1099,7 +1563,7 @@ function useItem(car) {
     if (car.isPlayer) Sound.tone(500, 0.2, 'square', 0.12, 0, 900);
   } else if (it === 'smoke') {
     const m = makeSmokeMesh();
-    scene.add(m);
+    world.add(m);
     const sm = { x: car.x - fx * 4, z: car.z - fz * 4, idx: car.idx, s: car.s, lat: car.lat, life: 15, mesh: m };
     updateIdx(sm);
     m.position.set(sm.x, surfaceY(sm), sm.z);
@@ -1108,6 +1572,30 @@ function useItem(car) {
   } else if (it === 'shield') {
     car.shield = 10;
     if (car.isPlayer) Sound.tone(600, 0.4, 'sine', 0.2, 0, 1200);
+  } else if (it === 'grow') {
+    car.big = BIG_T;
+    car.small = 0;
+    if (car.isPlayer) { Sound.grow(); showBanner('變大了！撞誰誰轉圈！', 1200); }
+  } else if (it === 'shrink') {
+    // 縮小所有跑在前面的車
+    const mine = car.lap * N + car.s;
+    let n = 0;
+    for (const c of state.cars) {
+      if (c === car || c.finished || c.lap * N + c.s <= mine) continue;
+      spawnEffect(c.x, c.y + 1.5, c.z, '#b48cff', 3);
+      n++;
+      if (c.shield > 0) { c.shield = 0; continue; }
+      if (c.big > 0) { c.big = 0; continue; }
+      if (c.dog > 0) continue;
+      c.small = SMALL_T;
+      c.item = null; c.roll = 0;
+      if (c.isPlayer) { Sound.shrink(); showBanner('被縮小了！', 1200); }
+    }
+    if (car.isPlayer) { Sound.shrink(); showBanner(n ? `縮小前面 ${n} 台車！` : '前面沒有車…', 1000); }
+  } else if (it === 'dog') {
+    car.dog = DOG_T;
+    car.spin = 0;
+    if (car.isPlayer) { Sound.bark(); showBanner('彭德衝衝衝！', 1200); }
   } else {
     car.peanuts = Math.min(10, car.peanuts + 3);
     if (car.isPlayer) Sound.ding();
@@ -1144,6 +1632,7 @@ function updateItems(car, dt) {
 // ---------- 場上的機關 ----------
 function updateHazards(dt) {
   const cars = state.cars;
+  updateMovingHazards(dt, cars);
   // 道具禮物盒
   for (const b of itemBoxes) {
     b.mesh.rotation.y += dt * 1.6;
@@ -1254,7 +1743,7 @@ function updateHazards(dt) {
     if (boom) {
       spawnEffect(b.x, b.y, b.z, '#ff9a2e', 3.5);
       Sound.explode();
-      scene.remove(b.mesh);
+      b.mesh.removeFromParent();
       bombs.splice(k, 1);
     }
   }
@@ -1271,8 +1760,72 @@ function updateHazards(dt) {
     }
     if (gone) {
       spawnEffect(sm.x, sm.mesh.position.y + 1, sm.z, '#c3c9d6', 3);
-      scene.remove(sm.mesh);
+      sm.mesh.removeFromParent();
       smokes.splice(k, 1);
+    }
+  }
+}
+
+// 雷射門、城市車輛、滾雪球
+function updateMovingHazards(dt, cars) {
+  for (const l of lasers) {
+    const on = laserOn(l, state.raceTime);
+    const warn = !on && laserOn(l, state.raceTime + 0.5);
+    l.on = on;
+    for (const b of l.beams) b.visible = on || (warn && Math.floor(state.raceTime * 12) % 2 === 0);
+    l.beamM.opacity = on ? 0.9 : 0.35;
+    if (!on) continue;
+    for (const c of cars) {
+      if (c.fallT > 0 || c.y > pts[l.idx].y + 3.2) continue;
+      if (Math.min(idxAhead(l.idx, c.idx), idxAhead(c.idx, l.idx)) <= 1) hit(c, '被雷射打中了！轉圈圈～');
+    }
+  }
+  for (const v of traffic) {
+    v.s = (v.s + v.speed * dt / SPACING) % N;
+    v.idx = Math.floor(v.s);
+    const [x, z] = latPos(v.idx, v.lat);
+    v.x = x; v.z = z; v.y = roadY(v.s);
+    v.mesh.position.set(x, v.y, z);
+    v.mesh.rotation.y = headingAt(v.idx);
+    for (const c of cars) {
+      if (c.fallT > 0 || Math.abs(c.y - v.y) > 3) continue;
+      const dx = c.x - v.x, dz = c.z - v.z, d = Math.hypot(dx, dz), r = v.r + 1.35 * c.scaleNow;
+      if (d >= r || d < 0.01) continue;
+      c.x += dx / d * (r - d); c.z += dz / d * (r - d);
+      if (!hit(c, '撞到車子了！轉圈圈～')) c.speed *= 0.9;
+    }
+  }
+  for (const b of snowballs) {
+    const cfg = b.cfg;
+    if (!b.active) {
+      b.mesh.visible = false;
+      if ((b.t -= dt) <= 0) {
+        b.active = true; b.s = cfg.iTop;
+        b.lat = cfg.lanes[Math.floor(Math.random() * cfg.lanes.length)];
+      }
+      continue;
+    }
+    b.s = (b.s - 22 * dt / SPACING + N) % N;
+    b.idx = Math.floor(b.s);
+    const [x, z] = latPos(b.idx, b.lat);
+    b.x = x; b.z = z; b.y = roadY(b.s) + b.r;
+    b.mesh.visible = true;
+    b.mesh.position.set(x, b.y, z);
+    b.mesh.rotation.x -= 22 * dt / b.r;
+    b.mesh.rotation.y = headingAt(b.idx);
+    let done = idxAhead(cfg.iBottom, b.idx) > idxAhead(cfg.iBottom, cfg.iTop);
+    for (const c of cars) {
+      if (c.fallT > 0 || Math.abs(c.y + 1 - b.y) > 3.5) continue;
+      if ((c.x - x) ** 2 + (c.z - z) ** 2 < (b.r + 1.4 * c.scaleNow) ** 2) {
+        hit(c, '被大雪球撞到了！');
+        done = true;
+        break;
+      }
+    }
+    if (done) {
+      spawnEffect(x, b.y, z, '#ffffff', 3.5);
+      b.active = false;
+      b.t = cfg.every * (0.7 + Math.random() * 0.6);
     }
   }
 }
@@ -1284,17 +1837,19 @@ function updateEffects(dt) {
     const f = e.t / e.dur;
     e.mesh.scale.setScalar(e.size * (0.3 + f));
     e.mesh.material.opacity = 0.9 * (1 - f);
-    if (f >= 1) { scene.remove(e.mesh); effects.splice(k, 1); }
+    if (f >= 1) { e.mesh.removeFromParent(); effects.splice(k, 1); }
   }
 }
 
 function resetHazards() {
-  for (const b of bombs) scene.remove(b.mesh);
-  for (const sm of smokes) scene.remove(sm.mesh);
+  for (const b of bombs) b.mesh.removeFromParent();
+  for (const sm of smokes) sm.mesh.removeFromParent();
   bombs.length = 0; smokes.length = 0;
   for (const b of itemBoxes) { b.active = true; b.mesh.visible = true; }
   for (const o of obstacles) { o.knocked = 0; o.mesh.position.copy(o.home); o.mesh.rotation.set(0, o.mesh.rotation.y, 0); }
   for (const v of villains) { v.state = 'wait'; v.t = 0; v.lat = v.side * (HW + 3.5); v.mesh.rotation.x = 0; }
+  traffic.forEach((v, k) => { v.s = (k + 0.5) * N / traffic.length; });
+  snowballs.forEach((b, k) => { b.active = false; b.t = 1 + k * b.cfg.every; });
   updateHazards(0);
 }
 
@@ -1309,10 +1864,19 @@ function aiControl(car, dt) {
   let lane = clamp(Math.sin(ai.phase) * HW * 0.45 + ai.bias, -HW + 2.5, HW - 2.5);
   // 閃避前方的路障、煙霧與壞人（不是每次都閃得掉）
   const dodge = state.difficulty === 0 ? 2.6 : 3.8;
-  const hazards = [...obstacles.filter((o) => o.knocked <= 0), ...smokes, ...villains.filter((v) => v.state !== 'knocked')];
+  const hazards = [...obstacles.filter((o) => o.knocked <= 0), ...smokes, ...villains.filter((v) => v.state !== 'knocked'),
+    ...traffic, ...snowballs.filter((b) => b.active)];
   for (const o of hazards) {
     const d = idxAhead(car.idx, o.idx);
     if (d > 0 && d < 38 && Math.abs(o.lat - lane) < dodge) lane = clamp(o.lat + (lane >= o.lat ? 4.8 : -4.8), -HW + 1.5, HW - 1.5);
+  }
+  // 岔路：每圈隨機選一邊走
+  for (const d of LAYOUT.dividers) {
+    const ahead = idxAhead(car.idx, d.i0);
+    if (ahead < 45 || idxAhead(d.i0, car.idx) <= d.len) {
+      if (ai.routeLap !== car.lap) { ai.routeLap = car.lap; ai.route = Math.random() < 0.5 ? -1 : 1; }
+      lane = ai.route * clamp(Math.abs(lane), 6, HW - 2);
+    }
   }
   // 追趕機制：玩家落到第 3、4 名時，跑在玩家前面的電腦會放慢、偶爾出包
   const pl = state.player;
@@ -1331,6 +1895,11 @@ function aiControl(car, dt) {
   let steer = clamp(-diff * 2.8, -1, 1);
   if (bend > 0.75 && car.speed > car.maxSpeed * 0.78) gas = false;
   if (Math.abs(diff) > 1.0 && car.speed > 18) brake = true;
+  // 雷射門：算一下到達時會不會剛好開著，會的話先放慢
+  for (const l of lasers) {
+    const d = idxAhead(car.idx, l.idx);
+    if (d > 2 && d < 45 && car.speed > 5 && laserOn(l, state.raceTime + d * SPACING / car.speed) && Math.random() > 0.15) { gas = false; if (d < 18) brake = true; }
+  }
   if (ai.blunderT > 0) {
     if (ai.blunder === 'wobble') steer = clamp(steer + Math.sin(time * 7) * 1.1, -1, 1);   // 方向盤亂打
     if (ai.blunder === 'daze') { gas = false; brake = ai.blunderT > 1.2; }                 // 發呆鬆油門
@@ -1349,7 +1918,7 @@ function updateBlunder(car, dt, allowed) {
   if (ai.blunderT > 0) { ai.blunderT -= dt; return; }
   ai.cool = (ai.cool || 0) - dt;
   if (!allowed || ai.cool > 0 || car.air || car.spin > 0 || car.fallT > 0) return;
-  if (Math.abs(idxAhead(GAP0, car.idx) - N / 2) > N / 2 - 70) return;   // 斷橋附近不出包，免得一直掉下去
+  if (GAP0 >= 0 && Math.abs(idxAhead(GAP0, car.idx) - N / 2) > N / 2 - 70) return;   // 斷橋附近不出包，免得一直掉下去
   if (state.cars.filter((c) => c.ai.blunderT > 0).length >= 2) return;
   const rate = [0.45, 0.3, 0.16][state.difficulty];                    // 每秒出包機率
   if (Math.random() > rate * dt) return;
@@ -1389,14 +1958,25 @@ function collide() {
   const cs = state.cars;
   for (let i = 0; i < cs.length; i++) for (let j = i + 1; j < cs.length; j++) {
     const a = cs[i], b = cs[j];
+    if (a.fallT > 0 || b.fallT > 0 || Math.abs(a.y - b.y) > 3) continue;
     const dx = b.x - a.x, dz = b.z - a.z, d = Math.hypot(dx, dz);
-    if (d < 2.7 && d > 0.001) {
-      const push = (2.7 - d) / 2, nx = dx / d, nz = dz / d;
-      a.x -= nx * push; a.z -= nz * push; b.x += nx * push; b.z += nz * push;
+    const r = 1.35 * (a.scaleNow + b.scaleNow);
+    if (d < r && d > 0.001) {
+      const nx = dx / d, nz = dz / d;
+      // 大車把小車推開比較多
+      const wa = b.scaleNow / (a.scaleNow + b.scaleNow), wb = 1 - wa, push = r - d;
+      a.x -= nx * push * wa; a.z -= nz * push * wa; b.x += nx * push * wb; b.z += nz * push * wb;
       a.speed *= 0.97; b.speed *= 0.97;
-      if ((a.isPlayer || b.isPlayer) && push > 0.15) Sound.bump();
+      if ((a.isPlayer || b.isPlayer) && push > 0.3) Sound.bump();
+      bully(a, b); bully(b, a);
     }
   }
+}
+// 變大或彭德拉車撞到別人 → 對方轉圈；一般車壓到縮小的車 → 縮小的車轉圈
+function bully(a, b) {
+  const strong = a.big > 0 || a.dog > 0;
+  if (strong && !(b.big > 0 || b.dog > 0)) hit(b, '被撞飛了！轉圈圈～');
+  else if (b.small > 0 && a.small <= 0) hit(b, '被壓扁了！轉圈圈～');
 }
 
 function onLap(car) {
@@ -1441,8 +2021,21 @@ function syncModel(car, dt) {
   for (const s of u.steers) s.rotation.y = -car.steer * 0.4;
   u.head.rotation.z = car.steer * 0.18;
   for (const f of u.flames) {
-    f.visible = car.boost > 0;
+    f.visible = car.boost > 0 || car.dog > 0;
     f.scale.set(1, 0.7 + Math.random() * 0.6, 1);
+  }
+  // 變大／縮小（快結束時閃爍提醒）
+  let target = car.big > 0 ? 1.7 : car.small > 0 ? 0.55 : 1;
+  const left = car.big > 0 ? car.big : car.small;
+  if (left > 0 && left < 1.2 && Math.floor(time * 8) % 2 === 0) target = 1;
+  car.scaleNow = lerp(car.scaleNow, target, 1 - Math.exp(-(dt || 0.016) * 8));
+  m.scale.setScalar(car.scaleNow);
+  // 彭德拉車
+  u.dog.visible = car.dog > 0;
+  if (car.dog > 0) {
+    const ph = time * 18;
+    u.dog.userData.legs.forEach((l, k) => { l.rotation.x = Math.sin(ph + (k % 2) * Math.PI) * 0.9; });
+    u.dog.position.y = Math.abs(Math.sin(ph)) * 0.15;
   }
 }
 
@@ -1561,8 +2154,8 @@ function buildPreview() {
 function layoutPreviewCam() {
   previewCam.aspect = innerWidth / innerHeight;
   const portrait = innerWidth < innerHeight;
-  previewCam.position.set(0, portrait ? 4.2 : 3.5, portrait ? 17 : 12);
-  previewCam.lookAt(0, portrait ? -2.2 : -0.6, 0);
+  previewCam.position.set(0, portrait ? 4.2 : 3.6, portrait ? 18 : 16.5);
+  previewCam.lookAt(0, portrait ? -3.2 : -1.9, 0);
   previewCam.updateProjectionMatrix();
 }
 
@@ -1600,7 +2193,7 @@ function showResults() {
     list.appendChild(li);
   });
   const r = rk.indexOf(state.player) + 1;
-  $('resultTitle').textContent = r === 1 ? '🏆 冠軍！太厲害了！' : `第 ${r} 名！再接再厲`;
+  $('resultTitle').textContent = `${TRACK.icon} ${r === 1 ? '冠軍！太厲害了！' : `第 ${r} 名！再接再厲`}`;
   $('result').classList.remove('hidden');
 }
 
@@ -1666,7 +2259,7 @@ if (navigator.maxTouchPoints > 0) {
 ['btnStart', 'btnGo', 'btnResume', 'btnRestart', 'btnAgain'].forEach((id) => $(id).addEventListener('click', goFullscreen));
 $('btnStart').addEventListener('click', () => { Sound.init(); goSelect(); });
 $('btnBack').addEventListener('click', () => { state.mode = 'title'; setupGrid(state.selected); showScreen('title'); });
-$('btnGo').addEventListener('click', startRace);
+$('btnGo').addEventListener('click', goRace);
 $('btnPause').addEventListener('click', () => togglePause(true));
 $('btnResume').addEventListener('click', () => togglePause(false));
 $('btnRestart').addEventListener('click', startRace);
@@ -1678,6 +2271,34 @@ $('diff').querySelectorAll('button').forEach((b) => b.addEventListener('click', 
   state.difficulty = +b.dataset.v;
   $('diff').querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
 }));
+// 選賽道：換賽道時要先把新賽道建出來（約 0.3 秒）
+function buildTrackButtons() {
+  const wrap = $('trackSel');
+  TRACKS.forEach((t, k) => {
+    const b = document.createElement('button');
+    b.dataset.v = k;
+    b.innerHTML = `${t.icon} ${t.name}`;
+    b.title = t.desc;
+    b.addEventListener('click', () => setTrack(k));
+    wrap.appendChild(b);
+  });
+  let saved = 0;
+  try { saved = +localStorage.getItem('anyaKartTrack') || 0; } catch (e) { /* 忽略 */ }
+  setTrack(saved >= 0 && saved < TRACKS.length ? saved : 0, true);
+}
+function setTrack(k, silent) {
+  state.track = k;
+  $('trackSel').querySelectorAll('button').forEach((x) => x.classList.toggle('on', +x.dataset.v === k));
+  $('trackDesc').textContent = `${TRACKS[k].icon} ${TRACKS[k].name}：${TRACKS[k].desc}`;
+  try { localStorage.setItem('anyaKartTrack', String(k)); } catch (e) { /* 私密瀏覽時無法記住 */ }
+  if (!silent) Sound.tone(600 + k * 150, 0.12, 'triangle', 0.15);
+}
+function goRace() {
+  if (state.track === trackIndex) { startRace(); return; }
+  $('loading').classList.remove('hidden');
+  setTimeout(() => { loadTrack(state.track); startRace(); }, 40);
+}
+
 function setSpeedLevel(v) {
   state.speedLevel = v;
   $('speedSel').querySelectorAll('button').forEach((x) => x.classList.toggle('on', +x.dataset.v === v));
@@ -1699,7 +2320,7 @@ addEventListener('resize', () => {
 });
 
 // ================= 主迴圈 =================
-let last = performance.now(), titleAngle = 0;
+let last = performance.now(), titleAngle = 0, skipRender = false;
 function frame(now) {
   requestAnimationFrame(frame);
   const dt = Math.min(0.05, (now - last) / 1000);
@@ -1716,6 +2337,8 @@ function tick(dt) {
   }
   if (state.mode === 'loading') return;
 
+  for (const st of scrollTex) st.tex.offset.x += st.speed * dt;
+  if (snowfall) updateSnowfall(dt);
   // 花生旋轉與重生
   for (const pn of peanuts) {
     pn.mesh.rotation.y += dt * 2.5;
@@ -1768,14 +2391,27 @@ function tick(dt) {
   for (const car of state.cars) syncModel(car, state.mode === 'paused' ? 0 : dt);
   if (state.mode !== 'paused') updateEffects(dt);
   updateCamera(dt);
+  if (skipRender) return;
   renderer.render(scene, camera);
   drawMinimap();
 }
 
+function updateSnowfall(dt) {
+  const a = snowfall.geometry.attributes.position, arr = a.array;
+  for (let k = 0; k < arr.length; k += 3) {
+    arr[k + 1] -= dt * (5 + (k % 7));
+    arr[k] += Math.sin(time * 1.3 + k) * dt * 0.8;
+    if (arr[k + 1] < -5) arr[k + 1] += 45;
+  }
+  a.needsUpdate = true;
+  snowfall.position.set(camera.position.x, camera.position.y - 15, camera.position.z);
+}
+
 function updateCamera(dt) {
   const c = state.player, fx = Math.sin(c.heading), fz = Math.cos(c.heading);
-  const dist = 8.5 + Math.max(0, c.speed) * 0.035;
-  const want = new THREE.Vector3(c.x - fx * dist, c.y + 3.8, c.z - fz * dist);
+  const sizeK = 0.55 + 0.45 * c.scaleNow;   // 車變大鏡頭拉遠、變小拉近
+  const dist = (8.5 + Math.max(0, c.speed) * 0.035) * sizeK;
+  const want = new THREE.Vector3(c.x - fx * dist, c.y + 3.8 * sizeK, c.z - fz * dist);
   const p = pts[c.idx], s = SIDE[c.idx];
   const lat = (want.x - p.x) * s.x + (want.z - p.z) * s.z;
   if (c.fallT <= 0) want.y = Math.max(want.y, surfaceY({ x: want.x, z: want.z, idx: c.idx, s: c.s, lat }) + 1.5);
@@ -1797,7 +2433,11 @@ function updateCamera(dt) {
 
 // ================= 啟動 =================
 function boot() {
-  buildWorld();
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(1024, 1024);
+  Object.assign(sun.shadow.camera, { left: -40, right: 40, top: 40, bottom: -40, near: 1, far: 220 });
+  sun.shadow.bias = -0.0006;
+  scene.add(hemi, sun, sun.target);
   raceModels = RACERS.map((r) => {
     const m = buildKart(r);
     m.userData.tag = nameTag(r);
@@ -1808,7 +2448,8 @@ function boot() {
   buildPreview();
   layoutPreviewCam();
   buildCards();
-  initMinimap();
+  buildTrackButtons();
+  loadTrack(state.track);
   setupGrid(0);
   resetHazards();
   state.mode = 'title';
@@ -1818,7 +2459,11 @@ function boot() {
 setTimeout(boot, 30);
 if (AUTO || params.has('debug')) {
   window.__dbg = {
-    state, GAP0, villains, obstacles, bombs, smokes,
+    state, villains, obstacles, bombs, smokes, lasers, traffic, snowballs,
+    get GAP0() { return GAP0; },
+    get pts() { return pts; },
+    near: (x, z) => nearestIdx(x, z)[0],
+    loadTrack(k) { loadTrack(k); state.track = k; setupGrid(state.selected); resetHazards(); },
     place(i, lat, sp) {
       const p = state.player;
       placeCar(p, i, lat);
@@ -1826,7 +2471,9 @@ if (AUTO || params.has('debug')) {
       camPos.set(p.x - Math.sin(p.heading) * 9, p.y + 4, p.z - Math.cos(p.heading) * 9);
     },
     give(item) { state.player.item = item; },
+    input, surfaceY, canyonF, roadY,
     step(sec) { for (let k = 0; k < Math.round(sec * 60); k++) tick(1 / 60); },
+    fast(on) { skipRender = on; },
   };
 }
 

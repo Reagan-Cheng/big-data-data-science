@@ -1,6 +1,6 @@
 // 讓遊戲在 HTTPS 網址下可以離線遊玩：有網路時抓最新版，沒網路時用快取
-const CACHE = 'anya-kart-v4';
-const FILES = ['./', './index.html', './style.css', './main.js', './lib/three.module.min.js', './manifest.webmanifest',
+const CACHE = 'anya-kart-v5';
+const FILES = ['./', './index.html', './style.css', './main.js', './tracks.js', './lib/three.module.min.js', './manifest.webmanifest',
   './img/racer1.png', './img/racer2.png', './img/racer3.png', './img/racer4.png', './img/icon-180.png', './img/icon-512.png'];
 
 self.addEventListener('install', (e) => {
