@@ -168,8 +168,10 @@ function buildCityDecor(C) {
   // 霓虹招牌
   const words = [['WAKU WAKU', '#ff4fd8'], ['花生 PEANUT', '#ffd23f'], ['SPY 間諜', '#4ff0ff'], ['安妮亞 ♥', '#ff6b8b'], ['EDEN', '#8bff6b']];
   for (let k = 0; k < 14; k++) {
-    const i = Math.floor(rand() * N), s = rand() < 0.5 ? -1 : 1, off = (HW + 6.5) * s;
+    const i = Math.floor(rand() * N), s = rand() < 0.5 ? -1 : 1, off = (HW + 13) * s;   // 放在邊界外面：看得到、開不到
     if (pts[i].y > 2) continue;
+    const [, nd] = nearestIdx(pts[i].x + SIDE[i].x * off, pts[i].z + SIDE[i].z * off, 2);
+    if (onBoundary(nd, 0.5) || nd < HW + 6) continue;
     const [word, col] = words[k % words.length];
     const tex = canvasTex(512, 128, (g, W, H) => {
       g.fillStyle = 'rgba(10,8,30,0.85)'; g.fillRect(0, 0, W, H);
@@ -199,6 +201,7 @@ function buildCityDecor(C) {
   const poleM = toon('#5b5f73');
   for (let i = 0; i < N; i += 22) {
     const p = pts[i];
+    if (p.y > 2.5 || C.inTunnel(i)) continue;   // 高架橋上有欄杆、隧道裡有燈條，都不放路燈
     for (const s of [-1, 1]) {
       if ((i / 22) % 2 === (s > 0 ? 0 : 1)) continue;
       const off = (HW + 2.2) * s;

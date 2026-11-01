@@ -455,7 +455,11 @@ function groundY(x, z, i, dist) {
 // 車子/物體腳下的高度（含跳台、高架橋、橋面、峽谷）
 function surfaceY(o) {
   const al = Math.abs(o.lat), ry = roadY(o.s);
-  if (isDeck[o.idx]) return ry + (al <= HW + 1.6 ? rampH(o.s) : 0);   // 高架橋有欄杆，不會掉下去
+  if (isDeck[o.idx]) {
+    // 在橋面上：有欄杆不會掉下去；在橋下：用下面地面的高度
+    if (o.under) { const [gi, gd] = nearestIdx(o.x, o.z, 2, true); return groundY(o.x, o.z, gi, gd); }
+    return ry + (al <= HW + 1.6 ? rampH(o.s) : 0);
+  }
   let y = lerp(ry, hillFn(o.x, o.z), smooth(HW + 3, HW + 45, al));
   const c = canyonF(o.x, o.z);
   if (c > 0) y = al <= HW + 1.6 && !inGap(o.idx) ? ry : lerp(y, CANYON_Y, c);
@@ -474,7 +478,8 @@ function nearestIdx(x, z, step = 1, skipDeck = false) {
 }
 const headingAt = (i) => Math.atan2(TAN[i].x, TAN[i].z);
 // 佈景剛好壓在看不見的邊界上時，車子會被夾進去，所以這種位置不放東西
-const onBoundary = (d, r) => d + r > HW + OFFROAD - 0.5 && d - r < HW + OFFROAD + 1.8;
+// 內側要留一台大車通過的寬度、外側要留車身寬度，不然車子貼著邊界時會被夾住
+const onBoundary = (d, r) => d + r > HW + OFFROAD - KART_R * 1.7 * 2 - 0.5 && d - r < HW + OFFROAD + KART_R * 1.7 + 0.6;
 const latPos = (i, lat) => [pts[i].x + SIDE[i].x * lat, pts[i].z + SIDE[i].z * lat];
 
 function loadTrack(k) {
@@ -521,7 +526,8 @@ function loadTrack(k) {
   solidGrid.clear();
   snowfall = null;
   buildWorld();
-  if (cfg.decor) cfg.decor({ THREE, world, toon, mesh, canvasTex, rand, pts, TAN, SIDE, N, HW, nearestIdx, groundY, canyonF, gradTex, addSolid, onBoundary });
+  if (cfg.decor) cfg.decor({ THREE, world, toon, mesh, canvasTex, rand, pts, TAN, SIDE, N, HW, nearestIdx, groundY, canyonF, gradTex, addSolid, onBoundary,
+    inTunnel: (i) => LAYOUT.tunnels.some((t) => idxAhead(t.i0, i) <= t.len + 4 || idxAhead(i, t.i0) <= 4) });
   initMinimap();
   for (const m of [...raceModels, ...previewModels]) m.userData.lights.visible = !!cfg.theme.night;
 }
@@ -744,10 +750,11 @@ function buildTrees(cfg) {
   for (let tries = 0; trees.length < cfg.count && tries < cfg.count * 20; tries++) {
     const x = (rand() - 0.5) * 860, z = (rand() - 0.5) * 860;
     const [i, d] = nearestIdx(x, z, 4);
-    if (d < HW + 9 || Math.hypot(x, z) > 430 || canyonF(x, z) > 0.01 || onBoundary(d, 1.8)) continue;
-    trees.push([x, groundY(x, z, i, d), z, 0.7 + rand() * 0.8, rand() < (cfg.pink || 0)]);
+    const sc = 0.7 + rand() * 0.8, tr = (cfg.kind === 'pine' ? 1.7 : 1.2) * sc;
+    if (d < HW + 9 || Math.hypot(x, z) > 430 || canyonF(x, z) > 0.01 || onBoundary(d, tr)) continue;
+    trees.push([x, groundY(x, z, i, d), z, sc, rand() < (cfg.pink || 0)]);
     const t = trees[trees.length - 1];
-    if (d < HW + 30) addSolid({ x, z, y: t[1], r: (cfg.kind === 'pine' ? 1.7 : 1.2) * t[3] });
+    if (d < HW + 30) addSolid({ x, z, y: t[1], r: tr });
   }
   const mtx = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), ps = new THREE.Vector3();
   const place = (im, list) => list.forEach(([x, y, z, s], k) => {
@@ -910,8 +917,10 @@ function buildDecks() {
     if (i % 12 === 0) {
       const [, d] = nearestIdx(p.x, p.z, 2, true);
       if (d > HW + 2) for (const s of [-1, 1]) {
-        mesh(new THREE.CylinderGeometry(0.7, 0.9, p.y, 10), pillarM, (HW - 2) * s, -p.y / 2, SPACING, g);
         const [px, pz] = latPos(i, (HW - 2) * s);
+        const [, pd] = nearestIdx(px, pz, 2, true);
+        if (onBoundary(pd, 1.0)) continue;
+        mesh(new THREE.CylinderGeometry(0.7, 0.9, p.y, 10), pillarM, (HW - 2) * s, -p.y / 2, SPACING, g);
         addSolid({ x: px + TAN[i].x * SPACING, z: pz + TAN[i].z * SPACING, y: -5, top: p.y + 4, r: 1.0 });
       }
     }
@@ -1412,6 +1421,7 @@ const state = { mode: 'loading', selected: 0, difficulty: 1, speedLevel: 0, trac
 const input = { left: false, right: false, gas: false, brake: false };
 const G = 36;          // 重力
 const SPIN_T = 1.3;    // 轉圈圈秒數
+const KART_R = 1.6;    // 車子半寬（含後輪），撞牆時用
 const MAX_UP_V = 22;   // 在地面時最大往上速度（跳台起飛約 12～18）
 const ITEMS = {
   rocket: { icon: '🚀', name: '火箭衝刺', w: [1, 3, 5, 6] },
@@ -1447,6 +1457,7 @@ function placeCar(car, idx, lat) {
   car.lat = lat;
   car.x = p.x + s.x * lat; car.z = p.z + s.z * lat;
   car.heading = Math.atan2(TAN[idx].x, TAN[idx].z);
+  car.under = false; car.onDeck = isDeck[idx];
   car.y = car.prevSy = surfaceY(car);
   car.vy = 0; car.air = false; car.airT = 0;
   car.vdir = car.heading; car.slip = 0;
@@ -1562,8 +1573,24 @@ function updateCar(car, dt, ctl) {
   const prevLat = car.lat;
   updateIdx(car);
   const inCanyon = canyonF(car.x, car.z) > 0.05;
-  const railed = inCanyon || isDeck[car.idx];
-  const lim = railed ? HW + 1 : HW + OFFROAD;   // 橋上、高架橋上有欄杆
+  // 高架橋：從引道開上去的車才算在橋上；從旁邊過來的車在橋下（地面），低矮的地方會被欄杆擋住
+  if (isDeck[car.idx]) {
+    if (!isDeck[car.prevIdx]) car.onDeck = Math.abs(car.lat) <= HW + 1.6 && car.y > roadY(car.s) - 1.5;
+  } else car.onDeck = false;
+  car.under = isDeck[car.idx] && !car.onDeck;
+  if (car.under && car.y > roadY(car.s) - 4.4) {
+    const wall = HW + 1.6 + KART_R * car.scaleNow;
+    if (Math.abs(car.lat) < wall) {
+      const sv = SIDE[car.idx], L = (car.lat >= 0 ? 1 : -1) * wall;
+      car.x -= sv.x * (car.lat - L); car.z -= sv.z * (car.lat - L); car.lat = L;
+      car.heading += wrapAngle(headingAt(car.idx) - car.heading) * Math.min(1, dt * 6);
+      car.vdir = car.heading;
+      car.speed *= Math.pow(0.5, dt);
+      if (car.isPlayer && Math.random() < dt * 4) Sound.bump();
+    }
+  }
+  const railed = inCanyon || (isDeck[car.idx] && car.onDeck);
+  const lim = railed ? HW + 1.6 - KART_R * car.scaleNow : HW + OFFROAD;   // 橋上、高架橋上有欄杆（欄杆在 HW+1.6）
   if (Math.abs(car.lat) > lim) {
     const s = SIDE[car.idx], L = Math.sign(car.lat) * lim;
     car.x -= s.x * (car.lat - L); car.z -= s.z * (car.lat - L); car.lat = L;
@@ -1575,8 +1602,9 @@ function updateCar(car, dt, ctl) {
   }
   // 岔路中間的分隔牆
   for (const d of LAYOUT.dividers) {
-    if (car.air || idxAhead(d.i0, car.idx) > d.len || Math.abs(car.lat) >= 2.9) continue;
-    const s = SIDE[car.idx], L = (car.lat >= 0 ? 1 : -1) * 2.9;
+    const dw = 1.6 + KART_R * car.scaleNow;   // 分隔牆寬 3.2
+    if (car.air || idxAhead(d.i0, car.idx) > d.len || Math.abs(car.lat) >= dw) continue;
+    const s = SIDE[car.idx], L = (car.lat >= 0 ? 1 : -1) * dw;
     car.x -= s.x * (car.lat - L); car.z -= s.z * (car.lat - L); car.lat = L;
     car.heading += wrapAngle(headingAt(car.idx) - car.heading) * Math.min(1, dt * 6);
     car.vdir = car.heading;
@@ -1584,7 +1612,7 @@ function updateCar(car, dt, ctl) {
     if (car.isPlayer && Math.random() < dt * 4) Sound.bump();
   }
   // 隧道牆：從裡面出不去、從外面也進不來
-  const kr = 1.3 * car.scaleNow;
+  const kr = KART_R * car.scaleNow;
   for (const t of LAYOUT.tunnels) {
     if (idxAhead(t.i0, car.idx) > t.len) continue;
     const wall = tunnelWallLat(t);
@@ -1613,8 +1641,11 @@ function updateCar(car, dt, ctl) {
     sy = surfaceY(car);
   }
   // 地面高度如果一瞬間跳很多（跳台側邊、被欄杆推回橋面），只當成爬上去，不能變成火箭往上噴
-  const gv = clamp((sy - car.prevSy) / dt, -80, MAX_UP_V);
+  const rawGv = (sy - car.prevSy) / dt;
+  let gv = clamp(rawGv, -80, MAX_UP_V);
   car.prevSy = sy;
+  // 一格內地面突然高很多（台階、土堤邊緣）：直接站上去，不要被彈起來；跳台是慢慢變高，不會走到這裡
+  if (rawGv > 30 && !car.air) gv = 0;
   if (car.air) {
     car.vy = Math.max(car.vy - G * dt, -60);
     car.y += car.vy * dt;
@@ -1695,7 +1726,7 @@ function collideSolids(car, kr, dt) {
   const list = solidGrid.get(Math.floor(car.x / SOLID_CELL) * 10007 + Math.floor(car.z / SOLID_CELL));
   if (!list) return;
   for (const s of list) {
-    if (car.y > s.y + s.top) continue;   // 從上面飛過去
+    if (car.y > s.y + s.top || car.y + 2.8 < s.y) continue;   // 從上面飛過去，或東西在頭頂上
     let nx, nz, pen;
     if (s.r) {
       const dx = car.x - s.x, dz = car.z - s.z, d = Math.hypot(dx, dz);
@@ -2774,4 +2805,30 @@ if (AUTO || params.has('debug')) {
   };
 }
 
-if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {});
+
+// ================= 版本號 =================
+// 版本號寫在 version.js。打開遊戲時去網站抓最新的 version.js，比自己新就提示更新
+const VERSION = self.ANYA_KART_VERSION || '?';
+$('verTitle').textContent = `版本 v${VERSION}`;
+$('verPause').textContent = `版本 v${VERSION}（${self.ANYA_KART_DATE || ''}）`;
+const verNum = (v) => String(v).split('.').map((n) => +n || 0).reduce((a, n) => a * 1000 + n, 0);
+function checkForUpdate() {
+  fetch('version.js?t=' + Date.now(), { cache: 'no-store' })
+    .then((r) => (r.ok ? r.text() : ''))
+    .then((txt) => {
+      const m = txt.match(/ANYA_KART_VERSION\s*=\s*'([^']+)'/);
+      if (!m || verNum(m[1]) <= verNum(VERSION)) return;
+      const note = $('updateNote');
+      note.textContent = `🆕 有新版本 v${m[1]}，點這裡更新`;
+      note.classList.remove('hidden');
+      note.onclick = () => {
+        // 清掉舊的離線快取再重新載入
+        const clear = 'caches' in self ? caches.keys().then((ks) => Promise.all(ks.map((k) => caches.delete(k)))) : Promise.resolve();
+        clear.finally(() => location.reload());
+      };
+    })
+    .catch(() => {});
+}
+checkForUpdate();
+document.addEventListener('visibilitychange', () => { if (!document.hidden) checkForUpdate(); });
