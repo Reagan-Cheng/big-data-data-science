@@ -1645,6 +1645,25 @@ document.querySelectorAll('.ctl').forEach((btn) => {
 document.addEventListener('gesturestart', (e) => e.preventDefault());
 document.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
+// 手機（短邊小於 600px 的觸控裝置）在 <html> 加上 .phone，按鈕與畫面改成手機尺寸。網址加 ?phone=1 可強制測試
+const PHONE = /phone=1/.test(location.search)
+  || ((navigator.maxTouchPoints > 0 || matchMedia('(pointer: coarse)').matches) && Math.min(screen.width, screen.height) < 600);
+document.documentElement.classList.toggle('phone', PHONE);
+// 進入遊戲時自動全螢幕，把瀏覽器上下的網址列與工具列收起來（iPad、Android 支援；iPhone 請用「加入主畫面」）
+const STANDALONE = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+function goFullscreen() {
+  if (STANDALONE || document.fullscreenElement || document.webkitFullscreenElement) return;
+  const el = document.documentElement;
+  const fn = el.requestFullscreen || el.webkitRequestFullscreen;
+  if (!fn) return;
+  try { const r = fn.call(el, { navigationUI: 'hide' }); if (r && r.catch) r.catch(() => {}); } catch (e) { /* 不支援就算了 */ }
+}
+if (navigator.maxTouchPoints > 0) {
+  document.querySelector('#title .hint').textContent = /iPhone|iPod/.test(navigator.userAgent) && !STANDALONE
+    ? '請把手機橫放 · iPhone 按「分享 → 加入主畫面」就能全螢幕玩'
+    : '請把手機或 iPad 橫放 · 進入遊戲會自動全螢幕';
+}
+['btnStart', 'btnGo', 'btnResume', 'btnRestart', 'btnAgain'].forEach((id) => $(id).addEventListener('click', goFullscreen));
 $('btnStart').addEventListener('click', () => { Sound.init(); goSelect(); });
 $('btnBack').addEventListener('click', () => { state.mode = 'title'; setupGrid(state.selected); showScreen('title'); });
 $('btnGo').addEventListener('click', startRace);

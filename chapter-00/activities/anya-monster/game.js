@@ -6,6 +6,22 @@ const $ = (id) => document.getElementById(id);
 const cv = $('c'), ctx = cv.getContext('2d');
 let W = 960, SCALE = 1, DPR = 1;
 const SAFE = { t: 0, r: 0, b: 0, l: 0 };
+// 手機（短邊小於 600px 的觸控裝置）：畫面拉近一點、按鈕和選單縮小。網址加 ?phone=1 可強制測試
+const PHONE = /phone=1/.test(location.search)
+  || ((navigator.maxTouchPoints > 0 || matchMedia('(pointer: coarse)').matches) && Math.min(screen.width, screen.height) < 600);
+document.documentElement.classList.toggle('phone', PHONE);
+const VIEW_H = PHONE ? 430 : H;     // 畫面顯示的世界高度（手機切掉最上面的天空和最下面一點地面，角色變大）
+const VIEW_TOP = PHONE ? 100 : 0;
+const HUD_S = PHONE ? 1.2 : 1;      // 手機上的分數、愛心放大一點
+// 進入遊戲時自動全螢幕，把瀏覽器上下的網址列與工具列收起來（iPad、Android 支援；iPhone 請用「加入主畫面」）
+const STANDALONE = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+function goFullscreen() {
+  if (STANDALONE || document.fullscreenElement || document.webkitFullscreenElement) return;
+  const el = document.documentElement;
+  const fn = el.requestFullscreen || el.webkitRequestFullscreen;
+  if (!fn) return;
+  try { const r = fn.call(el, { navigationUI: 'hide' }); if (r && r.catch) r.catch(() => {}); } catch (e) { /* 不支援就算了 */ }
+}
 
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 const sign = (v) => (v < 0 ? -1 : 1);
@@ -239,7 +255,7 @@ function resize() {
   const vw = innerWidth, vh = innerHeight;
   if (!vw || !vh) return;   // 視窗暫時是 0 大小時（例如被隱藏）先不算，避免座標變成 NaN
   cv.width = Math.round(vw * DPR); cv.height = Math.round(vh * DPR);
-  SCALE = vh / H; W = vw / SCALE;
+  SCALE = vh / VIEW_H; W = vw / SCALE;
   const cs = getComputedStyle($('safe'));
   SAFE.t = (parseFloat(cs.paddingTop) || 0) / SCALE; SAFE.r = (parseFloat(cs.paddingRight) || 0) / SCALE;
   SAFE.b = (parseFloat(cs.paddingBottom) || 0) / SCALE; SAFE.l = (parseFloat(cs.paddingLeft) || 0) / SCALE;
@@ -248,6 +264,8 @@ function resize() {
   if (portrait && G.mode === 'play') pauseGame();
 }
 addEventListener('resize', resize);
+document.addEventListener('fullscreenchange', resize);
+document.addEventListener('webkitfullscreenchange', resize);
 addEventListener('orientationchange', () => setTimeout(resize, 200));
 document.addEventListener('visibilitychange', () => { if (document.hidden && G.mode === 'play') pauseGame(); });
 
@@ -1352,7 +1370,9 @@ function drawBubbles() {
   }
 }
 function drawHUD() {
-  const x0 = 12 + SAFE.l, y0 = 10 + SAFE.t;
+  const hs = HUD_S, Wh = W / hs;
+  ctx.save(); ctx.scale(hs, hs);
+  const x0 = 12 + SAFE.l / hs, y0 = 10 + SAFE.t / hs;
   for (let i = 0; i < P.maxHp; i++) { heartPath(ctx, x0 + 14 + i * 28, y0 + 14, 11); fs(ctx, i < P.hp ? '#ff5d7a' : 'rgba(255,255,255,.55)', 2.4); }
   rrect(ctx, x0, y0 + 34, 92, 30, 15, 'rgba(255,255,255,.88)', 2.4);
   drawPeanut(ctx, x0 + 19, y0 + 49, 0.95, 0.5);
@@ -1361,16 +1381,16 @@ function drawHUD() {
   rrect(ctx, x0 + 100, y0 + 36, mw, 26, 13, 'rgba(255,255,255,.88)', 2.4);
   if (P.meter > 0) rrect(ctx, x0 + 103, y0 + 39, (mw - 6) * P.meter / 100, 20, 10, full ? `hsl(${(G.t * 400) % 360},85%,68%)` : '#ff8fb5', 0);
   txt(full ? '超能力 OK！' : '超能力', x0 + 100 + mw / 2, y0 + 50, 15, full ? '#fff' : OL, 'center', full ? OL : null);
-  txt(`${G.score}`, W - SAFE.r - 132, y0 + 22, 24, '#fff', 'right');
+  txt(`${G.score}`, Wh - SAFE.r / hs - 132, y0 + 22, 24, '#fff', 'right');
   const b = G.boss;
-  const cx = W / 2;
+  const cx = Wh / 2;
   if (b && G.bossStarted) {
-    const bw = Math.min(380, W * 0.36);
+    const bw = Math.min(380, Wh * 0.36);
     txt(L().bossName, cx, y0 + 12, 17, '#fff', 'center');
     rrect(ctx, cx - bw / 2, y0 + 24, bw, 16, 8, 'rgba(0,0,0,.45)', 2.4);
     if (b.hp > 0) rrect(ctx, cx - bw / 2 + 2, y0 + 26, (bw - 4) * Math.max(0, b.hp) / b.maxHp, 12, 6, b.phase2 ? '#ff4d6d' : '#ff9a3c', 0);
   } else {
-    const bw = Math.min(300, W * 0.28);
+    const bw = Math.min(300, Wh * 0.28);
     txt(`第 ${G.lv + 1} 關 ${L().name}`, cx, y0 + 12, 16, '#fff', 'center');
     rrect(ctx, cx - bw / 2, y0 + 26, bw, 10, 5, 'rgba(255,255,255,.6)', 2);
     const k = clamp(P.x / (L().len + W * 0.3), 0, 1);
@@ -1382,11 +1402,12 @@ function drawHUD() {
     const bn = G.banner, k = bn.t / bn.dur;
     const s = bn.t < 0.25 ? 0.5 + bn.t * 2 : 1;
     const a = k > 0.85 ? (1 - k) / 0.15 : 1;
-    ctx.save(); ctx.globalAlpha = a; ctx.translate(cx, H * 0.36); ctx.scale(s, s);
+    ctx.save(); ctx.globalAlpha = a; ctx.translate(cx, VIEW_H / hs * 0.36); ctx.scale(s, s);
     if (bn.sub) txt(bn.sub, 0, -40, 22, '#ffe27a', 'center');
     txt(bn.title, 0, 6, 52, '#fff', 'center');
     ctx.restore();
   }
+  ctx.restore();
 }
 
 // 網址加上 #gallery 可以放大檢查所有角色造型
@@ -1420,7 +1441,7 @@ function render() {
   const th = inGame ? L().theme : 'city';
   const cam = inGame ? G.camX : G.t * 70;
   const sx = G.shake ? rand(-G.shake, G.shake) : 0, sy = G.shake ? rand(-G.shake, G.shake) : 0;
-  ctx.save(); ctx.translate(sx, sy);
+  ctx.save(); ctx.translate(sx, sy - VIEW_TOP);
   drawBackground(ctx, th, cam, W, G.t);
   drawGround(ctx, th, cam, W, H);
   if (!inGame) {
@@ -1491,7 +1512,7 @@ function buildMap() {
 }
 function goMap() { G.mode = 'map'; P = null; buildMap(); showScreen('map'); playSong(0); }
 function startLevel(lv, fromBoss = false) {
-  audioInit();
+  audioInit(); goFullscreen();
   G.lv = lv;
   const lvd = L();
   genLevel();
@@ -1511,7 +1532,7 @@ function startLevel(lv, fromBoss = false) {
   bubble(P, '哇庫哇庫！出發！', 2, 0.5);
 }
 function pauseGame() { if (G.mode !== 'play') return; G.mode = 'pause'; AU.paused = true; showScreen('pause'); for (const k in touchHeld) touchHeld[k] = false; ptrKey.clear(); }
-function resumeGame() { G.mode = 'play'; AU.paused = false; showScreen(null); }
+function resumeGame() { goFullscreen(); G.mode = 'play'; AU.paused = false; showScreen(null); }
 function starsFor() { const r = P.hp / P.maxHp; return r >= 0.7 ? 3 : r >= 0.35 ? 2 : 1; }
 function levelClear() {
   if (G.mode !== 'play') return;
@@ -1534,7 +1555,7 @@ function gameOver() {
   showScreen('over');
 }
 
-$('btnStart').addEventListener('click', () => { audioInit(); goMap(); });
+$('btnStart').addEventListener('click', () => { audioInit(); goFullscreen(); goMap(); });
 $('btnBackTitle').addEventListener('click', () => { G.mode = 'title'; showScreen('title'); });
 document.querySelectorAll('#diff button').forEach((bt) => bt.addEventListener('click', () => { save.diff = +bt.dataset.v; persist(); buildMap(); }));
 $('btnPause').addEventListener('click', pauseGame);
@@ -1566,6 +1587,12 @@ function frame(now) {
     if (n === 6) acc = 0;
   }
   render();
+}
+if (TOUCH) {
+  const iphone = /iPhone|iPod/.test(navigator.userAgent);
+  document.querySelector('#title .hint').textContent = iphone && !STANDALONE
+    ? '請把手機橫放 · iPhone 按「分享 → 加入主畫面」就能全螢幕玩'
+    : '請把手機或 iPad 橫放 · 進入遊戲會自動全螢幕';
 }
 resize();
 setMuted(save.muted);
