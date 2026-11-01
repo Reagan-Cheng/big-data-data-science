@@ -132,6 +132,30 @@
     </article>
 
     <article class="game">
+      <div class="num">ACTIVITY 05</div>
+      <h2 id="g8Title">安妮亞打怪獸</h2>
+      <p id="g8Desc">安妮亞的 2D 橫向打怪遊戲：四關（柏林特街頭、伊甸學園、豪華郵輪、夜晚的柏林特），每關最後有魔王；爸爸、媽媽和彭德會跳出來幫忙一段時間。用拳頭、花生和超能力打倒壞人，可選簡單／普通難度。</p>
+      <div class="game-meta">
+        <span class="tag" data-zh="2D 動作遊戲" data-en="2D Action Game">2D 動作遊戲</span>
+        <span class="tag" data-zh="iPad／平板" data-en="iPad / Tablet">iPad／平板</span>
+        <span class="tag" data-zh="觸控＋鍵盤" data-en="Touch + Keyboard">觸控＋鍵盤</span>
+      </div>
+      <p class="hint" id="g8Note">一關約 3～5 分鐘。建議用 iPad 橫放遊玩，用 Safari「分享 → 加入主畫面」可全螢幕玩；電腦用方向鍵移動、空白鍵跳、Z 出拳、X 丟花生、C 超能力。</p>
+      <div class="urlbox" id="url8"></div>
+      <div class="qr-code" data-qr-path="/chapter-00/activities/anya-monster/">
+        <img class="qr-image" src="../assets/qr/anya-monster.png" width="192" height="192" alt="安妮亞打怪獸 QR Code" data-qr-zh="安妮亞打怪獸 QR Code" data-qr-en="Anya Monster Brawl QR Code">
+        <div>
+          <div data-qr-zh="掃描後直接進入遊戲" data-qr-en="Scan to open the game directly" class="qr-help">掃描後直接進入遊戲</div>
+          <a data-qr-zh="下載 PNG 圖片" data-qr-en="Download PNG" class="button secondary qr-download" href="../assets/qr/anya-monster.png" download="big-data-anya-monster-qr.png">下載 PNG 圖片</a>
+        </div>
+      </div>
+      <div class="actions">
+        <a class="button" href="activities/anya-monster/" target="_blank" id="open8">開啟遊戲</a>
+        <button class="button secondary" type="button" data-copy="8" id="copy8">複製網址</button>
+      </div>
+    </article>
+
+    <article class="game">
       <div class="num">CASE 01</div>
       <h2 id="g3Title">個案閱讀：沐鼎鮮鍋</h2>
       <p id="g3Desc">個案全文分四段逐句呈現，讀到哪一句，旁邊的示意圖就畫到哪一步；最後列出個案討論問題。用於「AI 導入專案規劃與策略」課程（單元一）。</p>
@@ -217,8 +241,8 @@
 <footer id="footer">Chapter 0｜業界演講用</footer>
 
 <script>
-const COUNT=7;
-const paths=["activities/conflict-style/","activities/disc/","cases/mu-ding-hotpot/","../chapter-03/cases/abc-bath-living/?lang=zh","activities/ai-readiness/","cases/star-sales-90-days/","activities/anya-kart/"];
+const COUNT=8;
+const paths=["activities/conflict-style/","activities/disc/","cases/mu-ding-hotpot/","../chapter-03/cases/abc-bath-living/?lang=zh","activities/ai-readiness/","cases/star-sales-90-days/","activities/anya-kart/","activities/anya-monster/"];
 function gameUrl(i){ return new URL(paths[i-1], window.location.href).href; }
 function refreshUrls(){for(let i=1;i<=COUNT;i++)document.getElementById("url"+i).textContent=gameUrl(i)}
 async function copyUrl(i){
@@ -257,7 +281,10 @@ zh:{
  g7Title:"安妮亞 3D 賽車",
  g7Desc:"四位安妮亞選手的 3D 卡丁車遊戲：懸崖飛躍、斷橋、衝出來的黑衣壞人、路障與禮物盒道具，跑三圈和電腦對手比賽。可選難度與車速（標準／慢一點／更慢），落後時電腦會出包讓玩家追上。",
  g7Note:"一場約 2 分鐘。建議用 iPad 橫放遊玩，用 Safari「分享 → 加入主畫面」可全螢幕玩、也能離線玩；電腦用方向鍵開車、E 鍵用道具。",
- open1:"開啟活動",open2:"開啟活動",open3:"開啟個案",open4:"開啟個案",open5:"開啟活動",open6:"開啟個案",open7:"開啟遊戲",copy:"複製網址",qrTitle:"QR Code 圖片下載",
+ g8Title:"安妮亞打怪獸",
+ g8Desc:"安妮亞的 2D 橫向打怪遊戲：四關（柏林特街頭、伊甸學園、豪華郵輪、夜晚的柏林特），每關最後有魔王；爸爸、媽媽和彭德會跳出來幫忙一段時間。用拳頭、花生和超能力打倒壞人，可選簡單／普通難度。",
+ g8Note:"一關約 3～5 分鐘。建議用 iPad 橫放遊玩，用 Safari「分享 → 加入主畫面」可全螢幕玩；電腦用方向鍵移動、空白鍵跳、Z 出拳、X 丟花生、C 超能力。",
+ open1:"開啟活動",open2:"開啟活動",open3:"開啟個案",open4:"開啟個案",open5:"開啟活動",open6:"開啟個案",open7:"開啟遊戲",open8:"開啟遊戲",copy:"複製網址",qrTitle:"QR Code 圖片下載",
  qrText:"每個活動與個案的 QR Code 已自動建立，掃描後可直接進入該頁。按「下載 PNG 圖片」即可保存圖片；課程首頁另提供本章的 QR Code。",
  homeBtn:"返回課程首頁",footer:"Chapter 0｜業界演講用"
 },
@@ -285,14 +312,17 @@ en:{
  g7Title:"Anya 3D Kart",
  g7Desc:"A 3D kart racing game with four Anya racers: a cliff jump, a broken bridge, villains dashing across the road, roadblocks and gift-box items, racing three laps against computer opponents. Choose the difficulty and car speed (standard / slower / slowest); computer racers make mistakes when the player falls behind so they can catch up. In Chinese.",
  g7Note:"About 2 minutes per race. Best played on an iPad in landscape; in Safari use Share → Add to Home Screen to play full screen and offline. On a computer, drive with the arrow keys and press E to use items.",
- open1:"Open Activity",open2:"Open Activity",open3:"Open Case",open4:"Open Case",open5:"Open Activity",open6:"Open Case",open7:"Open Game",copy:"Copy URL",qrTitle:"Download QR Code Images",
+ g8Title:"Anya Monster Brawl",
+ g8Desc:"A 2D side-scrolling brawler starring Anya: four stages (Berlint streets, Eden Academy, a cruise ship, Berlint at night), each ending with a boss; Dad, Mom and Bond jump in to help for a while. Defeat villains with punches, peanuts and a telepathy super move. Easy / Normal difficulty. In Chinese.",
+ g8Note:"About 3–5 minutes per stage. Best played on an iPad in landscape; in Safari use Share → Add to Home Screen to play full screen. On a computer, move with the arrow keys, Space to jump, Z to punch, X to throw peanuts, C for the super move.",
+ open1:"Open Activity",open2:"Open Activity",open3:"Open Case",open4:"Open Case",open5:"Open Activity",open6:"Open Case",open7:"Open Game",open8:"Open Game",copy:"Copy URL",qrTitle:"Download QR Code Images",
  qrText:"Each activity and case has an automatically generated QR Code that opens it directly. Select Download PNG to save the image. A QR Code for this chapter is also available on the course home page.",
  homeBtn:"Back to Course Home",footer:"Chapter 0 | Industry Talks"
 }};
 let current="zh";
 function setLang(l){
  current=l; document.documentElement.lang=l==="zh"?"zh-Hant":"en"; const t=lang[l];
- ["title","subtitle","langLabel","teacherNote","g1Title","g1Desc","g1Note","g2Title","g2Desc","g2Note","g3Title","g3Desc","g3Note","g4Title","g4Desc","g4Note","g5Title","g5Desc","g5Note","g6Title","g6Desc","g6Note","g7Title","g7Desc","g7Note","open1","open2","open3","open4","open5","open6","open7","qrTitle","qrText","homeBtn","footer"].forEach(k=>{
+ ["title","subtitle","langLabel","teacherNote","g1Title","g1Desc","g1Note","g2Title","g2Desc","g2Note","g3Title","g3Desc","g3Note","g4Title","g4Desc","g4Note","g5Title","g5Desc","g5Note","g6Title","g6Desc","g6Note","g7Title","g7Desc","g7Note","g8Title","g8Desc","g8Note","open1","open2","open3","open4","open5","open6","open7","open8","qrTitle","qrText","homeBtn","footer"].forEach(k=>{
    const e=document.getElementById(k); if(e)e.textContent=t[k];
  });
  for(let i=1;i<=COUNT;i++)document.getElementById("copy"+i).textContent=t.copy;

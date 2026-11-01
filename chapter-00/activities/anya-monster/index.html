@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="安妮亞打怪獸">
+<meta name="theme-color" content="#5f8f74">
+<link rel="apple-touch-icon" href="img/icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>安妮亞打怪獸</title>
+<link rel="stylesheet" href="style.css?v=20261101-flyer">
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="safe"></div>
+
+<div id="title" class="screen">
+  <div class="logo">
+    <span class="logo-sub">FORGER FAMILY BRAWL</span>
+    <span class="logo-kicker">佛傑家的祕密任務</span>
+    <h1>安妮亞<br>打怪獸</h1>
+  </div>
+  <button id="btnStart" class="big-btn">開始遊戲</button>
+  <p class="hint">建議把 iPad 橫放 · 電腦：方向鍵移動、空白鍵跳、Z 出拳、X 丟花生、C 超能力、P 暫停</p>
+</div>
+
+<div id="map" class="screen hidden">
+  <h2 class="sel-title">選擇關卡</h2>
+  <div id="levels" class="levels"></div>
+  <div class="row-btns">
+    <button id="btnBackTitle" class="small-btn">← 返回</button>
+    <div class="seg" id="diff">
+      <span>難度</span>
+      <button data-v="0">簡單</button>
+      <button data-v="1">普通</button>
+    </div>
+  </div>
+</div>
+
+<div id="pad" class="hidden">
+  <div class="pad-left">
+    <button class="ctl" data-k="left" aria-label="往左">◀</button>
+    <button class="ctl" data-k="right" aria-label="往右">▶</button>
+  </div>
+  <div class="pad-right">
+    <button class="ctl b-super" id="btnSuper" data-k="super">超能力</button>
+    <button class="ctl b-throw" data-k="throw">花生</button>
+    <button class="ctl b-punch" data-k="punch">拳</button>
+    <button class="ctl b-jump" data-k="jump">跳</button>
+  </div>
+</div>
+
+<button id="btnPause" class="pause-btn hidden" aria-label="暫停">II</button>
+<button id="btnMute" class="mute-btn" aria-label="音效">🔊</button>
+
+<div id="pause" class="screen dim hidden">
+  <h2>暫停</h2>
+  <button id="btnResume" class="big-btn">繼續</button>
+  <div class="row-btns">
+    <button id="btnRestart" class="small-btn">重新開始這關</button>
+    <button id="btnQuit" class="small-btn">回關卡選擇</button>
+  </div>
+  <div class="howto">
+    <b>怎麼玩</b>
+    ◀ ▶ 移動 · 「跳」可以按兩下二段跳 · 「拳」連按三下是大絕拳<br>
+    「花生」丟出花生 · 把壞人丟過來的東西用拳頭打回去！<br>
+    打中壞人會集「超能力」，集滿就放心電感應波，還會叫家人來幫忙
+  </div>
+</div>
+
+<div id="clear" class="screen dim hidden">
+  <canvas width="240" height="250" class="clear-anya" data-portrait="anya" role="img" aria-label="安妮亞開心歡呼"></canvas>
+  <h2>任務成功！</h2>
+  <div id="clearStars" class="stars"></div>
+  <p id="clearScore" class="score"></p>
+  <div class="row-btns">
+    <button id="btnMap2" class="small-btn">關卡選擇</button>
+    <button id="btnNext" class="big-btn">下一關</button>
+  </div>
+</div>
+
+<div id="over" class="screen dim hidden">
+  <h2>哎呀…被打倒了</h2>
+  <p class="score">別灰心，再來一次！</p>
+  <div class="row-btns">
+    <button id="btnMap3" class="small-btn">關卡選擇</button>
+    <button id="btnBossRetry" class="small-btn">從魔王戰再試</button>
+    <button id="btnRetry" class="big-btn">再試一次</button>
+  </div>
+</div>
+
+<div id="ending" class="screen dim hidden">
+  <canvas width="240" height="250" class="clear-anya" data-portrait="anya" role="img" aria-label="安妮亞開心歡呼"></canvas>
+  <h2>全部任務完成！</h2>
+  <p class="score">佛傑家一起守護了柏林特的和平！<br>安妮亞好開心，哇庫哇庫！</p>
+  <button id="btnEndMap" class="big-btn">回關卡選擇</button>
+</div>
+
+<div id="rotate" class="screen hidden"><div class="rot">請把 iPad 橫放來玩 ↻</div></div>
+
+<script src="anime-art.js?v=20261101-flyer"></script>
+<script src="draw.js?v=20261101-flyer"></script>
+<script src="game.js?v=20261101-flyer"></script>
+</body>
+</html>

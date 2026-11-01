@@ -1,0 +1,13 @@
+{
+  "name": "安妮亞打怪獸",
+  "short_name": "安妮亞打怪獸",
+  "start_url": "./index.html",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#bcd6df",
+  "theme_color": "#5f8f74",
+  "icons": [
+    { "src": "img/icon-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "img/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
