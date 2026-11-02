@@ -98,7 +98,7 @@ export function createAnyaBuilder({ THREE, toon, mesh, canvasTex, drawStar }) {
     return geometry;
   }
   function frontZ(x, y) {
-    return .57 * Math.sqrt(Math.max(.025, 1 - (x / .78) ** 2)) *
+    return .50 * Math.sqrt(Math.max(.025, 1 - (x / .78) ** 2)) *
       Math.sqrt(Math.max(.025, 1 - (y / .71) ** 2)) + .025;
   }
   function hairPanel(shape, parent, material, outlined = true) {
@@ -152,7 +152,8 @@ export function createAnyaBuilder({ THREE, toon, mesh, canvasTex, drawStar }) {
       new THREE.MeshBasicMaterial({map:faceTexture(cfg.face),transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1}));
     face.name='anya-curved-face';skull.add(face);
     const hair=toon(HAIR,{side:THREE.DoubleSide});
-    mesh(new THREE.SphereGeometry(.625,40,24,0,TAU,0,Math.PI*.41),hair,0,.025,-.025,skull).name='anya-hair-crown';
+    const crown=mesh(new THREE.SphereGeometry(.625,40,24,0,TAU,0,Math.PI*.41),hair,0,.025,-.025,skull);
+    crown.name='anya-hair-crown';crown.scale.z=.86;
     const bobPoints=[];
     const profile=[[-.56,.44],[-.50,.57],[-.34,.65],[-.10,.66],[.16,.63],[.40,.51],[.57,.28],[.63,.01]];
     for(let i=0;i<profile.length-1;i++)for(let j=0;j<4;j++) {
@@ -195,8 +196,13 @@ export function createAnyaBuilder({ THREE, toon, mesh, canvasTex, drawStar }) {
       const hat=new THREE.Group();hat.position.set(0,.39,-.03);hat.rotation.set(-.12,0,-.22);skull.add(hat);
       const material=toon('#ffffff',{map:starTexture()});
       mesh(new THREE.CylinderGeometry(.615,.63,.16,32),material,0,0,0,hat);
-      const cone=mesh(new THREE.ConeGeometry(.60,.66,32),material,.11,.36,0,hat);cone.rotation.z=-.34;
-      mesh(new THREE.SphereGeometry(.14,20,14),toon('#fffdf4'),.235,.67,0,hat);
+      const cap=new THREE.ConeGeometry(.60,.66,32,12),positions=cap.attributes.position;
+      for(let i=0;i<positions.count;i++){
+        const t=(positions.getY(i)+.33)/.66;
+        positions.setX(i,positions.getX(i)+.28*t*t);positions.setZ(i,positions.getZ(i)-.10*t*t);
+      }
+      cap.computeVertexNormals();mesh(cap,material,0,.41,0,hat);
+      mesh(new THREE.SphereGeometry(.14,20,14),toon('#fffdf4'),.28,.76,-.10,hat);
     }
     return head;
   }

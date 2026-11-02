@@ -1,6 +1,6 @@
 import * as THREE from './lib/three.module.min.js';
-import { TRACKS } from './tracks.js';
-import { createAnyaBuilder } from './anya-model.js?v=1.9';
+import { TRACKS } from './tracks.js?v=2.0';
+import { createAnyaBuilder } from './anya-model.js?v=2.0';
 
 // ================= 小工具 =================
 const $ = (id) => document.getElementById(id);
@@ -12,12 +12,14 @@ let seed = 7;
 const rand = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
 
 // ================= 遊戲設定 =================
-const LAPS = 3;      // 圈數
+const LAPS = 3;      // 圈數（賽道可以用 laps 另外指定）
+const lapsNow = () => (TRACK && TRACK.laps) || LAPS;
 const N = 1200;      // 賽道取樣點數
 const HW = 11;       // 賽道半寬
 const DIFF = [0.84, 0.93, 1.0];
 const SPEED_MUL = [1, 0.8, 0.65];
-const WIN_TEXT = '安妮亞，哇庫哇庫！';   // 拿第一名時固定顯示這句   // 車速：標準／慢一點／更慢
+const WIN_TEXT = '安妮亞，哇庫哇庫！';   // 拿第一名時固定顯示這句
+const WALKER_HIT = { penguin: '撞到童童了！暈頭轉向～', crab: '被螃蟹夾到了！轉圈圈～', peanutkid: '撞到花生寶寶了！轉圈圈～' };   // 車速：標準／慢一點／更慢
 // 測試用網址參數：?auto=1 自動駕駛、?ts=4 四倍速
 const params = new URLSearchParams(location.search);
 const AUTO = params.has('auto'), TS = clamp(+params.get('ts') || 1, 1, 8);
@@ -290,6 +292,14 @@ function countryHill(x, z) {
 function cityHill(x, z) {
   return Math.max(0, Math.hypot(x, z) - 380) * 0.3;
 }
+function beachHill(x, z) {
+  // 內陸是沙丘，往南（z 變小）和地圖外圍是海
+  const r = Math.hypot(x, z), shore = -172 + 10 * Math.sin(x * 0.015);
+  let h = 2.2 + 1.5 * Math.sin(x * 0.02) * Math.cos(z * 0.025) + 5 * smooth(40, 220, z);
+  h = lerp(h, -6, smooth(shore, shore - 28, z));
+  return lerp(h, -6, smooth(330, 380, r));
+}
+const voidHill = () => -200;
 function snowHill(x, z) {
   const r = Math.hypot(x, z);
   return 5 + 7 * Math.sin(x * 0.011 + 0.4) * Math.cos(z * 0.013) + 3 * Math.sin(x * 0.03) * Math.sin(z * 0.027 + 1.1)
@@ -319,6 +329,7 @@ function groundY(x, z, i, dist) {
 function surfaceY(o) {
   const al = Math.abs(o.lat), ry = roadY(o.s);
   if (isBroken[o.idx]) { const [gi, gd] = nearestIdx(o.x, o.z, 2, true); return groundY(o.x, o.z, gi, gd); }
+  if (TRACK.sky && !isDeck[o.idx]) return al <= HW + 1.6 ? ry : -200;   // 雲端沒有欄杆的路段：路面外面是天空
   if (isDeck[o.idx]) {
     // 在橋面上：有欄杆不會掉下去；在橋下：用下面地面的高度
     if (o.under) { const [gi, gd] = nearestIdx(o.x, o.z, 2, true); return groundY(o.x, o.z, gi, gd); }
@@ -368,9 +379,10 @@ function loadTrack(k) {
     SIDE.push(new THREE.Vector3(t.z, 0, -t.x));
   }
   SPACING = curve.getLength() / N;
-  hillFn = cfg.hill === 'snow' ? snowHill : cfg.flat ? cityHill : countryHill;
+  hillFn = cfg.sky ? voidHill : cfg.hill === 'snow' ? snowHill : cfg.hill === 'beach' ? beachHill : cfg.flat ? cityHill : countryHill;
   OFFROAD = cfg.offroad ?? 20;
-  isDeck = pts.map((p) => cfg.deckAbove != null && p.y > cfg.deckAbove);
+  // 天空賽道整條都是高架（有欄杆），之後再把「沒有欄杆」的路段拿掉
+  isDeck = pts.map((p) => !!cfg.sky || (cfg.deckAbove != null && p.y > cfg.deckAbove));
   isBroken = pts.map(() => false);
   EDGE = -1; BROKEN_END = -1;
   if (cfg.broken) {
@@ -392,11 +404,15 @@ function loadTrack(k) {
   }
   CREST = 0;
   if (cfg.crest) { CREST = cfg.crest[0]; for (let i = cfg.crest[0]; i < cfg.crest[1]; i++) if (pts[i].y > pts[CREST].y) CREST = i; }
-  const T = { N, near: (x, z) => nearestIdx(x, z)[0], GAP0, CREST, EDGE, idxGap: (a, b) => (b - a + N) % N };
+  // near3：用 3D 位置找賽道點（螺旋上下重疊時才分得出是哪一圈）
+  const near3 = (x, y, z) => { let b = 0, bd = Infinity; pts.forEach((q, i) => { const d = (q.x - x) ** 2 + (q.z - z) ** 2 + ((q.y - y) * 3) ** 2; if (d < bd) { bd = d; b = i; } }); return b; };
+  const T = { N, near: (x, z) => nearestIdx(x, z)[0], near3, GAP0, CREST, EDGE, idxGap: (a, b) => (b - a + N) % N };
   LAYOUT = Object.assign({ ramps: [], pads: [], signs: [], boxes: [], obstacles: [], villains: [], peanuts: [], zones: [],
-    lasers: [], snowballs: [], dividers: [], tunnels: [], crosswalks: [], ghosts: [], penguins: [], traffic: null }, cfg.layout(T));
+    lasers: [], snowballs: [], dividers: [], tunnels: [], crosswalks: [], ghosts: [], penguins: [], traffic: null,
+    railless: [], crushers: [], spinners: [] }, cfg.layout(T));
   RAMPS = LAYOUT.ramps;
-  for (const a of [pads, peanuts, itemBoxes, obstacles, villains, bombs, smokes, effects, lasers, traffic, snowballs, scrollTex, solids, ghosts, penguins]) a.length = 0;
+  for (const r of LAYOUT.railless) for (let k = 0; k < r.len; k++) isDeck[(r.i0 + k + N) % N] = false;
+  for (const a of [pads, peanuts, itemBoxes, obstacles, villains, bombs, smokes, effects, lasers, traffic, snowballs, scrollTex, solids, ghosts, penguins, crushers, spinners, tides, winds]) a.length = 0;
   solidGrid.clear();
   snowfall = null;
   buildWorld();
@@ -418,6 +434,15 @@ function buildWorld() {
   hemi.color.set(th.hemi[0]); hemi.groundColor.set(th.hemi[1]); hemi.intensity = th.hemi[2];
   sun.color.set(th.sun[0]); sun.intensity = th.sun[1];
 
+  if (th.sea) buildSea(th.sea);
+  if (TRACK.sky) buildCloudSea();
+  else buildTerrain(th);
+
+  // 路面與路緣
+  buildRoadAndArch(th);
+}
+
+function buildTerrain(th) {
   // 地形
   const SIZE = 960, SEG = 160;
   const tg = new THREE.PlaneGeometry(SIZE, SIZE, SEG, SEG);
@@ -450,8 +475,9 @@ function buildWorld() {
   const terrain = new THREE.Mesh(tg, new THREE.MeshLambertMaterial({ vertexColors: true }));
   terrain.receiveShadow = true;
   world.add(terrain);
+}
 
-  // 路面與路緣
+function buildRoadAndArch(th) {
   const rc = th.road;
   const roadTex = canvasTex(256, 256, (g, W, H) => {
     g.fillStyle = rc.base; g.fillRect(0, 0, W, H);
@@ -501,12 +527,13 @@ function buildWorld() {
 
   buildTrees(th.trees);
   buildHouses(th.houses || 0);
-  if (th.clouds) buildClouds(th.snow ? '#f4f7fb' : '#ffffff');
+  if (th.clouds) buildClouds(th.cloudColor || (th.snow ? '#f4f7fb' : '#ffffff'));
 
   // 加速板
   const padTex = canvasTex(64, 128, (g, W, H) => {
     g.fillStyle = '#ff9a1f'; g.fillRect(0, 0, W, H);
-    g.fillStyle = '#fff36b';
+    if (th.padStyle === 'rainbow') ['#ff5f5f', '#ff9a3c', '#ffd23f', '#7be08b', '#4fa3ff', '#a07bff'].forEach((c, k) => { g.fillStyle = c; g.fillRect(k * W / 6, 0, W / 6 + 1, H); });
+    g.fillStyle = th.padStyle === 'rainbow' ? 'rgba(255,255,255,0.85)' : '#fff36b';
     for (let k = 0; k < 3; k++) { const y = 18 + k * 40; g.beginPath(); g.moveTo(8, y + 24); g.lineTo(W / 2, y); g.lineTo(W - 8, y + 24); g.lineTo(W - 8, y + 36); g.lineTo(W / 2, y + 12); g.lineTo(8, y + 36); g.fill(); }
   });
   padTex.wrapS = THREE.RepeatWrapping;
@@ -539,6 +566,8 @@ function buildWorld() {
     world.add(new THREE.Mesh(ribbonRange(i - 3, 6, -HW, HW, 0.05, 999), new THREE.MeshBasicMaterial({ map: zebra, transparent: true, opacity: 0.9 })));
   }
   for (const l of LAYOUT.lasers) buildLaser(l);
+  for (const c of LAYOUT.crushers) buildCrusher(c);
+  for (const sp of LAYOUT.spinners) buildSpinner(sp);
   if (LAYOUT.traffic) buildTraffic(LAYOUT.traffic);
   for (const sb of LAYOUT.snowballs) buildSnowballs(sb);
   for (const gd of LAYOUT.ghosts) buildGhosts(gd);
@@ -575,7 +604,23 @@ function buildWorld() {
       g.position.set(x, p.y, z);
       g.rotation.y = headingAt(i);
       let r = 1.9;
-      if (kind === 'hydrant') {
+      if (kind === 'sandcastle') {
+        const sand = toon('#e9cf8e');
+        mesh(new THREE.BoxGeometry(2.4, 1.1, 2.4), sand, 0, 0.55, 0, g);
+        for (const [a, b] of [[-0.9, -0.9], [0.9, -0.9], [-0.9, 0.9], [0.9, 0.9]]) mesh(new THREE.CylinderGeometry(0.4, 0.45, 1.8, 8), sand, a, 0.9, b, g);
+        mesh(new THREE.ConeGeometry(0.55, 1.0, 8), sand, 0, 1.6, 0, g);
+        mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.0, 4), toon('#ffffff'), 0, 2.5, 0, g);
+        const fl = mesh(new THREE.BoxGeometry(0.5, 0.3, 0.03), toon('#ff5f5f'), 0.25, 2.85, 0, g);
+        fl.castShadow = false;
+        r = 2.0;
+      } else if (kind === 'candycane') {
+        const caneTex = canvasTex(32, 128, (c, W, H) => { for (let y = -W; y < H; y += 24) { c.fillStyle = '#ff3f6a'; c.beginPath(); c.moveTo(0, y); c.lineTo(W, y + 12); c.lineTo(W, y + 24); c.lineTo(0, y + 12); c.fill(); } });
+        const caneM = toon('#ffffff', { map: caneTex });
+        mesh(new THREE.CylinderGeometry(0.35, 0.35, 3.2, 10), caneM, 0, 1.6, 0, g);
+        const hook = mesh(new THREE.TorusGeometry(0.6, 0.35, 8, 12, Math.PI), caneM, 0.6, 3.2, 0, g);
+        hook.rotation.z = 0;
+        r = 1.3;
+      } else if (kind === 'hydrant') {
         mesh(new THREE.CylinderGeometry(0.45, 0.55, 1.3, 12), toon('#e8343a'), 0, 0.65, 0, g);
         mesh(new THREE.SphereGeometry(0.45, 12, 8), toon('#e8343a'), 0, 1.3, 0, g);
         mesh(new THREE.CylinderGeometry(0.18, 0.18, 1.3, 8), toon('#c9c9c9'), 0, 0.85, 0, g).rotation.z = Math.PI / 2;
@@ -625,8 +670,9 @@ function buildTrees(cfg) {
   for (let tries = 0; trees.length < cfg.count && tries < cfg.count * 20; tries++) {
     const x = (rand() - 0.5) * 860, z = (rand() - 0.5) * 860;
     const [i, d] = nearestIdx(x, z, 4);
-    const sc = 0.7 + rand() * 0.8, tr = (cfg.kind === 'pine' ? 1.7 : 1.2) * sc;
+    const sc = 0.7 + rand() * 0.8, tr = (cfg.kind === 'pine' ? 1.7 : cfg.kind === 'palm' ? 0.8 : 1.2) * sc;
     if (d < HW + 9 || Math.hypot(x, z) > 430 || canyonF(x, z) > 0.01 || onBoundary(d, tr)) continue;
+    if (TRACK.theme.sea && groundY(x, z, i, d) < TRACK.theme.sea.y + 0.5) continue;   // 不種在海裡
     trees.push([x, groundY(x, z, i, d), z, sc, rand() < (cfg.pink || 0)]);
     const t = trees[trees.length - 1];
     if (d < HW + 30) addSolid({ x, z, y: t[1], r: tr });
@@ -636,6 +682,7 @@ function buildTrees(cfg) {
     q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), x * 13 % 6);
     im.setMatrixAt(k, mtx.compose(ps.set(x, y - 0.2, z), q, sc.set(s, s, s)));
   });
+  if (cfg.kind === 'palm' || cfg.kind === 'lollipop') { buildFancyTrees(cfg.kind, trees); return; }
   const trunkGeo = new THREE.CylinderGeometry(0.5, 0.7, 3, 6); trunkGeo.translate(0, 1.5, 0);
   const meshes = [new THREE.InstancedMesh(trunkGeo, toon('#9a6b4a'), trees.length)];
   place(meshes[0], trees);
@@ -802,29 +849,79 @@ function buildBrokenEdge() {
 // 高架橋：橋面、欄杆、橋墩
 function buildDecks() {
   const dc = TRACK.theme.deck;
-  const deckM = toon(dc.deck), railM = toon(dc.rail), pillarM = toon(dc.pillar);
-  const deckGeo = new THREE.BoxGeometry(HW * 2 + 3.4, 1.2, SPACING * 2 + 0.1);
-  const railGeo = new THREE.BoxGeometry(0.4, 1.2, SPACING * 2 + 0.1);
-  for (let i = 0; i < N; i += 2) {
-    if (!isDeck[i]) continue;
-    const p = pts[i];
-    const g = new THREE.Group();
-    g.position.copy(p);
-    g.rotation.y = headingAt(i);
-    world.add(g);
-    mesh(deckGeo, deckM, 0, -0.6, SPACING, g).receiveShadow = true;
-    for (const s of [-1, 1]) mesh(railGeo, railM, (HW + 1.6) * s, 0.55, SPACING, g);
-    if (i % 12 === 0) {
-      const [, d] = nearestIdx(p.x, p.z, 2, true);
-      if (d > HW + 2) for (const s of [-1, 1]) {
-        const [px, pz] = latPos(i, (HW - 2) * s);
-        const [, pd] = nearestIdx(px, pz, 2, true);
-        if (onBoundary(pd, 1.0)) continue;
-        mesh(new THREE.CylinderGeometry(0.7, 0.9, p.y, 10), pillarM, (HW - 2) * s, -p.y / 2, SPACING, g);
-        addSolid({ x: px + TAN[i].x * SPACING, z: pz + TAN[i].z * SPACING, y: -5, top: p.y + 4, r: 1.0 });
-      }
+  const deckM = toon(dc.deck, { side: THREE.DoubleSide }), railM = toon(dc.rail, { side: THREE.DoubleSide }), pillarM = toon(dc.pillar);
+  // 橋面和欄杆沿著賽道整段擠出成幾個長條（物件少，iPad 才跑得動）
+  const W = HW + 1.7;
+  const slab = [[-W, -0.02], [W, -0.02], [W, -1.2], [-W, -1.2], [-W, -0.02]];
+  const rail = (c) => [[c - 0.2, 0], [c + 0.2, 0], [c + 0.2, 1.15], [c - 0.2, 1.15], [c - 0.2, 0]];
+  for (const [i0, len] of runsOf((i) => isDeck[i] || (TRACK.sky && !isBroken[i]))) {
+    const m = new THREE.Mesh(extrudeAlong(i0, len, slab), deckM);
+    m.receiveShadow = m.castShadow = true;
+    world.add(m);
+  }
+  for (const [i0, len] of runsOf((i) => isDeck[i])) {
+    for (const sgn of [-1, 1]) {
+      const m = new THREE.Mesh(extrudeAlong(i0, len, rail((HW + 1.6) * sgn)), railM);
+      m.castShadow = true;
+      world.add(m);
     }
   }
+  // 雲端沒有欄杆的路段：路邊放橘色小三角錐提醒
+  if (TRACK.sky) {
+    const coneGeo = new THREE.ConeGeometry(0.35, 1, 6), coneM = toon('#ff8a1f');
+    for (let i = 0; i < N; i += 6) {
+      if (isDeck[i]) continue;
+      for (const sgn of [-1, 1]) { const [x, z] = latPos(i, (HW + 1.2) * sgn); mesh(coneGeo, coneM, x, pts[i].y + 0.5, z, world); }
+    }
+    return;
+  }
+  // 橋墩
+  for (let i = 0; i < N; i += 12) {
+    if (!isDeck[i]) continue;
+    const p = pts[i];
+    const [, d] = nearestIdx(p.x, p.z, 2, true);
+    if (d <= HW + 2) continue;
+    for (const sgn of [-1, 1]) {
+      const [px, pz] = latPos(i, (HW - 2) * sgn);
+      const [, pd] = nearestIdx(px, pz, 2, true);
+      if (onBoundary(pd, 1.0)) continue;
+      mesh(new THREE.CylinderGeometry(0.7, 0.9, p.y, 10), pillarM, px, p.y / 2, pz, world);
+      addSolid({ x: px, z: pz, y: -5, top: p.y + 4, r: 1.0 });
+    }
+  }
+}
+// 找出連續符合條件的路段：回傳 [起點, 長度]
+function runsOf(test) {
+  const out = [];
+  let start = -1;
+  for (let k = 0; k <= N; k++) {
+    const on = k < N && test(k);
+    if (on && start < 0) start = k;
+    if (!on && start >= 0) { out.push([start, k - start]); start = -1; }
+  }
+  // 整圈都符合，或頭尾相接
+  if (out.length > 1 && out[0][0] === 0 && out[out.length - 1][0] + out[out.length - 1][1] === N) {
+    const last = out.pop();
+    out[0] = [last[0], last[1] + out[0][1]];
+  }
+  return out;
+}
+// 沿賽道擠出一個斷面（[側向, 高度] 的折線）
+function extrudeAlong(i0, len, prof) {
+  const verts = [], tri = [], cols = prof.length;
+  for (let k = 0; k <= len; k++) {
+    const i = (i0 + k) % N, p = pts[i], s = SIDE[i];
+    for (const [lat, h] of prof) verts.push(p.x + s.x * lat, p.y + h, p.z + s.z * lat);
+    if (k < len) for (let c = 0; c < cols - 1; c++) {
+      const a = k * cols + c, b = a + cols;
+      tri.push(a, b, a + 1, a + 1, b, b + 1);
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+  g.setIndex(tri);
+  g.computeVertexNormals();
+  return g;
 }
 
 function rampMesh(r) {
@@ -879,8 +976,8 @@ function buildTunnel(t) {
   const verts = [], tri = [];
   const kind = t.kind;
   const prof = [];   // 斷面：[側向位置, 高度]
-  if (kind === 'base') {
-    for (const [a, b] of [[-HW - 2, 0], [-HW - 2, 7.5], [HW + 2, 7.5], [HW + 2, 0]]) prof.push([a, b]);
+  if (kind === 'base' || kind === 'factory') {
+    for (const [a, b] of [[-HW - 2, 0], [-HW - 2, kind === 'factory' ? 10 : 7.5], [HW + 2, kind === 'factory' ? 10 : 7.5], [HW + 2, 0]]) prof.push([a, b]);
   } else {
     const cx = kind === 'cave' ? t.side * 6.5 : 0, R = kind === 'cave' ? 7.2 : HW + 3;
     for (let a = 0; a <= 16; a++) { const th = Math.PI * a / 16; prof.push([cx + Math.cos(th) * R, Math.sin(th) * R * (kind === 'cave' ? 0.85 : 0.75)]); }
@@ -898,19 +995,19 @@ function buildTunnel(t) {
   g.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
   g.setIndex(tri);
   g.computeVertexNormals();
-  const color = kind === 'base' ? '#4d5666' : kind === 'cave' ? '#bfe3f5' : '#4a4e5c';
+  const color = kind === 'base' ? '#4d5666' : kind === 'factory' ? '#ff9fcf' : kind === 'cave' ? '#bfe3f5' : '#4a4e5c';
   const shell = new THREE.Mesh(g, toon(color, { side: THREE.DoubleSide }));
   shell.castShadow = true;
   world.add(shell);
   // 燈條與裝飾
-  const lightM = new THREE.MeshBasicMaterial({ color: kind === 'base' ? '#4ff0ff' : kind === 'cave' ? '#e9fbff' : '#ffe08a' });
+  const lightM = new THREE.MeshBasicMaterial({ color: kind === 'base' ? '#4ff0ff' : kind === 'factory' ? '#fff3a0' : kind === 'cave' ? '#e9fbff' : '#ffe08a' });
   for (let k = 2; k < t.len; k += kind === 'cave' ? 5 : 8) {
     const i = (t.i0 + k + N) % N, p = pts[i];
     const gg = new THREE.Group();
     gg.position.copy(p);
     gg.rotation.y = headingAt(i);
     world.add(gg);
-    if (kind === 'base') {
+    if (kind === 'base' || kind === 'factory') {
       for (const s of [-1, 1]) { const b = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.3, SPACING * 4), lightM); b.position.set((HW + 1.8) * s, 3.5, 0); gg.add(b); }
       const top = new THREE.Mesh(new THREE.BoxGeometry(HW * 1.4, 0.15, 0.5), lightM); top.position.set(0, 7.3, 0); gg.add(top);
     } else if (kind === 'cave') {
@@ -929,14 +1026,16 @@ function buildTunnel(t) {
     gg.position.copy(p);
     gg.rotation.y = headingAt(i);
     world.add(gg);
-    if (kind === 'base') {
+    if (kind === 'base' || kind === 'factory') {
+      const fac = kind === 'factory', glow = fac ? '#ff5fa2' : '#4ff0ff';
       const tex = canvasTex(512, 96, (c, W, H) => {
-        c.fillStyle = '#20252f'; c.fillRect(0, 0, W, H); c.shadowColor = '#4ff0ff'; c.shadowBlur = 16;
-        c.fillStyle = '#4ff0ff'; c.font = '900 56px "PingFang TC", "Microsoft JhengHei", sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
-        c.fillText(k ? 'EXIT 出口' : 'SPY BASE 間諜基地', W / 2, H / 2 + 3);
+        c.fillStyle = fac ? '#fff0f7' : '#20252f'; c.fillRect(0, 0, W, H); c.shadowColor = glow; c.shadowBlur = 16;
+        c.fillStyle = glow; c.font = '900 52px "PingFang TC", "Microsoft JhengHei", sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+        c.fillText(k ? 'EXIT 出口' : fac ? 'PEANUT FACTORY 花生工廠' : 'SPY BASE 間諜基地', W / 2, H / 2 + 3);
       });
       const sm = new THREE.MeshBasicMaterial({ map: tex });
-      const sign = mesh(new THREE.BoxGeometry(HW * 2 + 4, 2, 0.5), [toon('#20252f'), toon('#20252f'), toon('#20252f'), toon('#20252f'), sm, sm], 0, 8.6, 0, gg);
+      const fm = toon(fac ? '#ff5fa2' : '#20252f');
+      const sign = mesh(new THREE.BoxGeometry(HW * 2 + 4, 2, 0.5), [fm, fm, fm, fm, sm, sm], 0, fac ? 11.1 : 8.6, 0, gg);
       sign.castShadow = false;
     } else if (kind === 'tunnel') {
       mesh(new THREE.BoxGeometry(HW * 2 + 8, 2.4, 1.2), toon('#6a6f80'), 0, (HW + 3) * 0.75 + 0.8, 0, gg);
@@ -986,6 +1085,37 @@ function buildZone(z) {
     tex.repeat.set(w / 4, 1);
     world.add(new THREE.Mesh(ribbonRange(z.i0, z.len, z.lat0, z.lat1, 0.07, 4), new THREE.MeshLambertMaterial({ map: tex })));
     scrollTex.push({ tex, speed: -z.push / 4 });
+  } else if (z.type === 'tide') {
+    const tex = canvasTex(64, 64, (g, W, H) => {
+      g.fillStyle = 'rgba(80,190,240,0.75)'; g.fillRect(0, 0, W, H);
+      g.strokeStyle = 'rgba(255,255,255,0.8)'; g.lineWidth = 3;
+      for (const y of [16, 44]) { g.beginPath(); for (let x = 0; x <= W; x += 6) g.lineTo(x, y + Math.sin(x * 0.2) * 3); g.stroke(); }
+    });
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    const m = new THREE.Mesh(ribbonRange(z.i0, z.len, z.lat0, z.lat1, 0.18, 6), new THREE.MeshLambertMaterial({ map: tex, transparent: true }));
+    m.position.y = -0.7;
+    world.add(m);
+    tides.push({ z, mesh: m });
+    scrollTex.push({ tex, speed: 0.15 });
+  } else if (z.type === 'spring') {
+    const tex = canvasTex(64, 64, (g, W, H) => {
+      const cs = TRACK.sky ? ['#ffffff', '#ffe3f0'] : ['#7fffc4', '#ff9fd8'];
+      for (let k = 0; k < 8; k++) { g.fillStyle = cs[k % 2]; g.fillRect(0, k * H / 8, W, H / 8 + 1); }
+    });
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    world.add(new THREE.Mesh(ribbonRange(z.i0, z.len, z.lat0, z.lat1, 0.14, 2), new THREE.MeshLambertMaterial({ map: tex, transparent: true, opacity: 0.9 })));
+  } else if (z.type === 'wind') {
+    const tex = canvasTex(64, 32, (g, W, H) => {
+      g.clearRect(0, 0, W, H);
+      g.strokeStyle = 'rgba(255,255,255,0.7)'; g.lineWidth = 3;
+      for (const y of [8, 24]) { g.beginPath(); g.moveTo(6, y); g.lineTo(40, y); g.lineTo(32, y - 5); g.moveTo(40, y); g.lineTo(32, y + 5); g.stroke(); }
+    });
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(w / 5, z.len / 3);
+    world.add(new THREE.Mesh(ribbonRange(z.i0, z.len, z.lat0, z.lat1, 0.12, 999), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false })));
+    const st = { tex, speed: 0 };
+    scrollTex.push(st);
+    winds.push({ z, st });
   }
 }
 
@@ -1044,8 +1174,13 @@ function buildTraffic(cfg) {
 // 從坡上滾下來的大雪球
 function buildSnowballs(cfg) {
   const geo = new THREE.SphereGeometry(2, 18, 14);
+  let mat = toon('#ffffff');
+  if (cfg.kind === 'beachball') {
+    const bt = canvasTex(128, 64, (c, W, H) => { ['#ff5f5f', '#ffffff', '#ffd23f', '#ffffff', '#3fb7e6', '#ffffff'].forEach((col, k) => { c.fillStyle = col; c.fillRect(k * W / 6, 0, W / 6 + 1, H); }); });
+    mat = toon('#ffffff', { map: bt });
+  }
   for (let k = 0; k < 2; k++) {
-    const m = mesh(geo, toon('#ffffff'), 0, -50, 0, world);
+    const m = mesh(geo, mat, 0, -50, 0, world);
     snowballs.push({ cfg, s: cfg.iTop, lat: 0, active: false, t: k * cfg.every, r: 2, mesh: m, x: 0, z: 0, y: 0, idx: cfg.iTop });
   }
 }
@@ -1165,10 +1300,11 @@ function buildPenguin() {
   return g;
 }
 function addPenguin(pd, k) {
-  const m = buildPenguin();
+  const kind = pd.kind || 'penguin';
+  const m = kind === 'crab' ? buildCrab() : kind === 'peanutkid' ? buildPeanutKid() : buildPenguin();
   m.scale.setScalar(1.1);
   world.add(m);
-  penguins.push({ idx: (pd.i + k * 6) % N, lat: (k ? 1 : -1) * 4, dir: k ? -1 : 1, spd: 2.2 + rand() * 0.8, wave: 0, dizzy: 0,
+  penguins.push({ kind, idx: (pd.i + k * 6) % N, lat: (k ? 1 : -1) * 4, dir: k ? -1 : 1, spd: (kind === 'crab' ? 3 : 2.2) + rand() * 0.8, wave: 0, dizzy: 0,
     t: rand() * 6, mesh: m, x: 0, y: 0, z: 0, vy: 0, hop: 0, solid: true });
 }
 
@@ -1244,6 +1380,278 @@ function spawnEffect(x, y, z, color, size) {
   effects.push({ mesh: m, t: 0, dur: 0.5, size });
 }
 
+
+// ================= 第 4～6 關的新機關 =================
+// 海面（海灘）
+function buildSea(sea) {
+  const tex = canvasTex(128, 128, (g, W, H) => {
+    g.fillStyle = sea.color; g.fillRect(0, 0, W, H);
+    g.strokeStyle = 'rgba(255,255,255,0.35)'; g.lineWidth = 3;
+    for (let y = 10; y < H; y += 26) { g.beginPath(); for (let x = 0; x <= W; x += 8) g.lineTo(x, y + Math.sin(x * 0.1) * 4); g.stroke(); }
+  });
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(60, 60);
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(2400, 2400), new THREE.MeshLambertMaterial({ map: tex, transparent: true, opacity: 0.92 }));
+  m.rotation.x = -Math.PI / 2;
+  m.position.y = sea.y;
+  world.add(m);
+  scrollTex.push({ tex, speed: 0.02 });
+}
+// 雲海（雲端城堡）
+function buildCloudSea() {
+  const tex = canvasTex(256, 256, (g, W, H) => {
+    g.fillStyle = '#ffe9e0'; g.fillRect(0, 0, W, H);
+    for (let k = 0; k < 40; k++) {
+      const x = Math.random() * W, y = Math.random() * H, r = 20 + Math.random() * 40;
+      const gr = g.createRadialGradient(x, y, 0, x, y, r);
+      gr.addColorStop(0, 'rgba(255,255,255,0.95)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+      g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2);
+    }
+  });
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(12, 12);
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(2400, 2400), new THREE.MeshLambertMaterial({ map: tex }));
+  m.rotation.x = -Math.PI / 2;
+  m.position.y = -8;
+  world.add(m);
+  scrollTex.push({ tex, speed: 0.006 });
+}
+
+// 椰子樹／棒棒糖樹
+function buildFancyTrees(kind, trees) {
+  const mtx = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), ps = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
+  const meshes = [];
+  if (kind === 'palm') {
+    const trunkGeo = new THREE.CylinderGeometry(0.35, 0.55, 8, 7); trunkGeo.translate(0, 4, 0);
+    const trunk = new THREE.InstancedMesh(trunkGeo, toon('#a8784a'), trees.length);
+    const leafGeo = new THREE.BoxGeometry(0.9, 0.12, 4.2); leafGeo.translate(0, 0, 2.1);
+    const leaves = new THREE.InstancedMesh(leafGeo, toon('#3fae5a'), trees.length * 7);
+    const tilt = new THREE.Quaternion(), yaw = new THREE.Quaternion();
+    trees.forEach(([x, y, z, s], k) => {
+      q.setFromAxisAngle(up, x * 13 % 6);
+      trunk.setMatrixAt(k, mtx.compose(ps.set(x, y - 0.2, z), q, sc.set(s, s, s)));
+      for (let j = 0; j < 7; j++) {
+        yaw.setFromAxisAngle(up, j / 7 * Math.PI * 2 + x);
+        tilt.setFromAxisAngle(new THREE.Vector3(1, 0, 0), 0.45);
+        leaves.setMatrixAt(k * 7 + j, mtx.compose(ps.set(x, y - 0.2 + 8 * s, z), yaw.clone().multiply(tilt), sc.set(s, s, s)));
+      }
+    });
+    meshes.push(trunk, leaves);
+  } else {
+    const stickGeo = new THREE.CylinderGeometry(0.25, 0.25, 6, 6); stickGeo.translate(0, 3, 0);
+    const stick = new THREE.InstancedMesh(stickGeo, toon('#ffffff'), trees.length);
+    const swirl = canvasTex(128, 128, (g, W) => {
+      for (let r = W / 2; r > 0; r -= 8) { g.fillStyle = (r / 8) % 2 ? '#ffffff' : '#ff5fa2'; g.beginPath(); g.arc(W / 2, W / 2, r, 0, Math.PI * 2); g.fill(); }
+    });
+    const discGeo = new THREE.CylinderGeometry(2.4, 2.4, 0.6, 20); discGeo.rotateX(Math.PI / 2); discGeo.translate(0, 7.6, 0);
+    const disc = new THREE.InstancedMesh(discGeo, new THREE.MeshToonMaterial({ map: swirl, gradientMap: gradTex }), trees.length);
+    const tint = ['#ffffff', '#c9f0ff', '#fff3a8', '#e0ccff', '#c8ffd8'];
+    const col = new THREE.Color();
+    trees.forEach(([x, y, z, s], k) => {
+      q.setFromAxisAngle(up, x * 7 % 6);
+      mtx.compose(ps.set(x, y - 0.2, z), q, sc.set(s, s, s));
+      stick.setMatrixAt(k, mtx); disc.setMatrixAt(k, mtx);
+      disc.setColorAt(k, col.set(tint[k % tint.length]));
+    });
+    meshes.push(stick, disc);
+  }
+  for (const im of meshes) { im.castShadow = true; world.add(im); }
+}
+
+// 螃蟹：橫著走、兩隻大鉗子、眼睛長在小柱子上
+function buildCrab() {
+  const g = new THREE.Group();
+  const red = toon('#ff6b4a'), dark = toon('#d9472b'), white = toon('#ffffff'), black = toon('#1d2430');
+  const body = new THREE.Group();
+  g.add(body);
+  mesh(new THREE.SphereGeometry(1.0, 18, 12), red, 0, 0.9, 0, body).scale.set(1.35, 0.6, 1.0);
+  mesh(new THREE.SphereGeometry(0.12, 8, 6), toon('#ff9fbf'), -0.6, 0.85, 0.85, body);
+  mesh(new THREE.SphereGeometry(0.12, 8, 6), toon('#ff9fbf'), 0.6, 0.85, 0.85, body);
+  const eyes = new THREE.Group(), dizzy = new THREE.Group();
+  body.add(eyes, dizzy);
+  for (const s of [-1, 1]) {
+    mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.6, 6), red, 0.32 * s, 1.55, 0.45, body);
+    mesh(new THREE.SphereGeometry(0.22, 10, 8), white, 0.32 * s, 1.9, 0.45, body);
+    mesh(new THREE.SphereGeometry(0.1, 8, 6), black, 0.32 * s, 1.92, 0.63, eyes);
+    for (const r of [0.75, -0.75]) mesh(new THREE.BoxGeometry(0.22, 0.04, 0.04), black, 0.32 * s, 1.92, 0.66, dizzy).rotation.z = r;
+  }
+  dizzy.visible = false;
+  const flips = [];
+  for (const s of [-1, 1]) {
+    const f = new THREE.Group();
+    f.position.set(1.15 * s, 1.0, 0.5);
+    body.add(f);
+    mesh(new THREE.SphereGeometry(0.45, 12, 10), dark, 0.2 * s, 0.35, 0.3, f).scale.set(1, 0.8, 1.2);
+    const pin = mesh(new THREE.SphereGeometry(0.28, 10, 8), dark, 0.25 * s, 0.75, 0.55, f);
+    pin.scale.set(0.6, 1, 1.3);
+    flips.push(f);
+  }
+  const feet = [];
+  for (const s of [-1, 1]) for (let k = 0; k < 3; k++) {
+    const leg = mesh(new THREE.CylinderGeometry(0.07, 0.05, 1.0, 5), dark, 1.05 * s, 0.4, -0.4 + k * 0.4, g);
+    leg.rotation.z = s * 0.9;
+    if (k === 1) feet.push(leg);
+  }
+  const stars = new THREE.Group();
+  stars.position.y = 2.5;
+  const starM = new THREE.MeshBasicMaterial({ color: '#ffd23f' });
+  for (let k = 0; k < 3; k++) { const st = new THREE.Mesh(new THREE.OctahedronGeometry(0.18, 0), starM); st.position.set(Math.cos(k * 2.1) * 0.6, 0, Math.sin(k * 2.1) * 0.6); stars.add(st); }
+  stars.visible = false;
+  g.add(stars);
+  g.userData = { body, eyes, dizzy, flips, feet, stars };
+  return g;
+}
+
+// 花生寶寶：會跳來跳去的小花生
+function buildPeanutKid() {
+  const g = new THREE.Group();
+  const shell = toon('#dcae6a'), dark = toon('#b9853f'), black = toon('#2b1d1d'), pink = toon('#ff9fbf');
+  const body = new THREE.Group();
+  g.add(body);
+  mesh(new THREE.SphereGeometry(0.8, 16, 12), shell, 0, 0.9, 0, body);
+  mesh(new THREE.SphereGeometry(0.7, 16, 12), shell, 0, 1.95, 0, body);
+  mesh(new THREE.TorusGeometry(0.62, 0.08, 6, 16), dark, 0, 1.42, 0, body).rotation.x = Math.PI / 2;
+  const eyes = new THREE.Group(), dizzy = new THREE.Group();
+  body.add(eyes, dizzy);
+  for (const s of [-1, 1]) {
+    mesh(new THREE.SphereGeometry(0.09, 8, 6), black, 0.24 * s, 2.05, 0.62, eyes);
+    mesh(new THREE.SphereGeometry(0.11, 8, 6), pink, 0.42 * s, 1.85, 0.52, body).scale.set(1.3, 0.7, 0.4);
+    for (const r of [0.75, -0.75]) mesh(new THREE.BoxGeometry(0.22, 0.04, 0.04), black, 0.24 * s, 2.05, 0.66, dizzy).rotation.z = r;
+  }
+  dizzy.visible = false;
+  mesh(new THREE.TorusGeometry(0.14, 0.04, 6, 10, Math.PI), black, 0, 1.82, 0.64, body).rotation.z = Math.PI;
+  const sprout = mesh(new THREE.ConeGeometry(0.12, 0.45, 6), toon('#5fbf6a'), 0.05, 2.75, 0, body);
+  sprout.rotation.z = -0.4;
+  const flips = [];
+  for (const s of [-1, 1]) {
+    const f = new THREE.Group();
+    f.position.set(0.78 * s, 1.1, 0);
+    body.add(f);
+    mesh(new THREE.SphereGeometry(0.18, 8, 6), shell, 0.1 * s, -0.25, 0, f);
+    flips.push(f);
+  }
+  const feet = [];
+  for (const s of [-1, 1]) { const ft = mesh(new THREE.SphereGeometry(0.22, 8, 6), dark, 0.32 * s, 0.12, 0.15, g); ft.scale.set(1, 0.6, 1.3); feet.push(ft); }
+  const stars = new THREE.Group();
+  stars.position.y = 3.0;
+  const starM = new THREE.MeshBasicMaterial({ color: '#ffd23f' });
+  for (let k = 0; k < 3; k++) { const st = new THREE.Mesh(new THREE.OctahedronGeometry(0.18, 0), starM); st.position.set(Math.cos(k * 2.1) * 0.6, 0, Math.sin(k * 2.1) * 0.6); stars.add(st); }
+  stars.visible = false;
+  g.add(stars);
+  g.userData = { body, eyes, dizzy, flips, feet, stars };
+  return g;
+}
+
+// 壓扁機：大鐵鎚定時砸下來，被壓到車子會變扁、變慢
+function buildCrusher(c) {
+  const i = (c.i + N) % N, p = pts[i], w = c.w || 7;
+  const g = new THREE.Group();
+  g.position.copy(p);
+  g.rotation.y = headingAt(i);
+  world.add(g);
+  // 框架立在路的兩側（路中間沒有柱子），鐵鎚只砸其中一個車道
+  for (const s of [-1, 1]) mesh(new THREE.BoxGeometry(0.8, 10.5, 0.8), toon('#ffffff'), (HW + 1.4) * s, 5.25, 0, g);
+  mesh(new THREE.BoxGeometry(HW * 2 + 3.6, 0.8, 1.0), toon('#ff5fa2'), 0, 10.6, 0, g);
+  const stripe = canvasTex(64, 32, (cx, W, H) => { for (let k = 0; k < 8; k++) { cx.fillStyle = k % 2 ? '#ffd23f' : '#2b2b33'; cx.fillRect(k * 8, 0, 8, H); } });
+  const hammer = new THREE.Group();
+  hammer.position.set(c.lat, 7, 0);
+  g.add(hammer);
+  mesh(new THREE.BoxGeometry(w, 2.4, 4), toon('#9aa3b5'), 0, 0, 0, hammer);
+  mesh(new THREE.BoxGeometry(w + 0.05, 0.5, 4.05), toon('#ffffff', { map: stripe }), 0, -1.1, 0, hammer);
+  mesh(new THREE.CylinderGeometry(0.3, 0.3, 2.6, 8), toon('#ffffff'), 0, 2.4, 0, hammer);
+  crushers.push({ idx: i, lat: c.lat, w, period: c.period, phase: c.phase, hammer, y: 7, hitT: 0 });
+}
+// 一輪：砸下 → 停在下面 → 慢慢升起 → 停在上面 → 再砸下
+function crusherHeight(cr, t) {
+  const f = ((t + cr.phase) % cr.period) / cr.period;
+  if (f < 0.08) return lerp(7, 0.9, f / 0.08);
+  if (f < 0.3) return 0.9;
+  if (f < 0.65) return lerp(0.9, 7, (f - 0.3) / 0.35);
+  return 7;
+}
+const crusherLow = (cr, t) => crusherHeight(cr, t) < 2.6;
+
+// 大風車：架在路的正上方，四片扇葉直立轉動；扇葉轉到下面時會掃過路中間，靠兩邊比較安全
+const MILL_HUB = 8.5, MILL_LEN = 9;
+function buildSpinner(sp) {
+  const i = (sp.i + N) % N, p = pts[i];
+  const g = new THREE.Group();
+  g.position.copy(p);
+  g.rotation.y = headingAt(i);
+  world.add(g);
+  for (const s of [-1, 1]) {
+    mesh(new THREE.BoxGeometry(1.0, MILL_HUB + 1.5, 1.0), toon('#ffffff'), (HW + 1.6) * s, (MILL_HUB + 1.5) / 2, 0, g);
+    const [px, pz] = latPos(i, (HW + 1.6) * s);
+    addSolid({ x: px, z: pz, y: p.y, r: 0.7 });
+  }
+  mesh(new THREE.BoxGeometry(HW * 2 + 4.2, 0.8, 0.8), toon('#ffd23f'), 0, MILL_HUB + 1.2, -0.6, g);
+  const rot = new THREE.Group();
+  rot.position.set(0, MILL_HUB, 0.4);
+  g.add(rot);
+  mesh(new THREE.CylinderGeometry(0.9, 0.9, 0.8, 12), toon('#ff8fc4'), 0, 0, 0, rot).rotation.x = Math.PI / 2;
+  const cols = ['#ff5f5f', '#ffd23f', '#7be08b', '#4fa3ff'];
+  for (let k = 0; k < 3; k++) {
+    const arm = new THREE.Group();
+    arm.rotation.z = k * Math.PI * 2 / 3;
+    rot.add(arm);
+    mesh(new THREE.BoxGeometry(1.6, MILL_LEN - 1, 0.25), toon(cols[k]), 0, -(MILL_LEN + 1) / 2, 0, arm);
+  }
+  spinners.push({ idx: i, speed: sp.speed, ang: (i % 7) * 0.9, L: HW, rot, mill: rot });
+}
+// 車子在側向 lat、離風車前後 along 的位置會不會被扇葉打到（扇葉 0 指向正下方）
+function spinnerBlocks(sp, ang, lat, along = 0) {
+  if (Math.abs(along) > 1.8) return false;
+  for (let k = 0; k < 3; k++) {
+    const a = ang + k * Math.PI * 2 / 3;
+    const tx = Math.sin(a) * MILL_LEN, ty = MILL_HUB - Math.cos(a) * MILL_LEN;
+    // 點 (lat, 1.2) 到扇葉線段（從軸心到葉尖）的距離
+    const vx = tx, vy = ty - MILL_HUB, wx = lat, wy = 1.2 - MILL_HUB;
+    const t = clamp((wx * vx + wy * vy) / (vx * vx + vy * vy), 0, 1);
+    if (Math.hypot(wx - vx * t, wy - vy * t) < 1.9) return true;
+  }
+  return false;
+}
+
+// 每格更新：潮水、陣風、壓扁機、風車
+function updateNewHazards(dt, cars) {
+  const t = state.raceTime;
+  for (const td of tides) {
+    const on = ((t + td.z.phase) % td.z.period) < td.z.period * 0.45;
+    td.z.on = on;
+    td.mesh.position.y = lerp(td.mesh.position.y, on ? 0 : -0.7, 1 - Math.exp(-dt * 3));
+  }
+  for (const wd of winds) {
+    const dir = Math.sin((t / wd.z.period) * Math.PI * 2) >= 0 ? 1 : -1;
+    wd.z.cur = dir * wd.z.push;
+    wd.st.speed = -dir * 0.8;
+  }
+  for (const cr of crushers) {
+    cr.y = crusherHeight(cr, t);
+    cr.hammer.position.y = cr.y;
+    if (cr.y > 2.6) continue;
+    for (const c of cars) {
+      if (c.fallT > 0 || c.flat > 0 || c.air) continue;
+      const d = Math.min(idxAhead(cr.idx, c.idx), idxAhead(c.idx, cr.idx)) * SPACING;
+      if (d > 2.6 || Math.abs(c.lat - cr.lat) > cr.w / 2 + 0.8) continue;
+      if (c.big > 0 || c.dog > 0) continue;
+      if (c.shield > 0) { c.shield = 0; c.invuln = 1; continue; }
+      c.flat = 3;
+      c.speed *= 0.5;
+      if (c.isPlayer) { Sound.clang(); showBanner('被壓扁了！扁扁的～', 1300); state.shake = 0.3; }
+    }
+  }
+  for (const sp of spinners) {
+    sp.ang += sp.speed * dt;
+    sp.rot.rotation.z = sp.ang;
+    for (const c of cars) {
+      if (c.fallT > 0 || c.air) continue;
+      const di = idxAhead(sp.idx, c.idx), along = (di > N / 2 ? di - N : di) * SPACING;
+      if (Math.abs(along) > 2) continue;
+      if (spinnerBlocks(sp, sp.ang, c.lat, along)) hit(c, '被大風車打到了！轉圈圈～');
+    }
+  }
+}
+
 // ================= 音效 =================
 const Sound = {
   ctx: null, muted: false,
@@ -1303,6 +1711,8 @@ const Sound = {
   fall() { this.tone(700, 1.1, 'sine', 0.18, 0, 90); },
   grow() { [262, 330, 392, 523].forEach((f, i) => this.tone(f, 0.25, 'square', 0.1, i * 0.08, f * 1.5)); },
   shrink() { this.tone(1400, 0.6, 'sine', 0.18, 0, 200); },
+  boing() { this.tone(220, 0.35, 'sine', 0.2, 0, 880); },
+  clang() { this.noise(0.25, 0.4); this.tone(140, 0.3, 'square', 0.15, 0, 70); },
   squeak() { this.tone(1500, 0.08, 'square', 0.1, 0, 2200); this.tone(1300, 0.12, 'square', 0.1, 0.1, 700); },
   boo() { this.tone(660, 0.18, 'sine', 0.16, 0, 990); this.tone(880, 0.22, 'sine', 0.14, 0.15, 520); },
   bark() { this.tone(520, 0.12, 'square', 0.16, 0, 300); this.tone(560, 0.14, 'square', 0.16, 0.18, 320); },
@@ -1314,6 +1724,7 @@ const Sound = {
 const sun = new THREE.DirectionalLight('#fff3e0', 2.4);
 const pads = [], peanuts = [], itemBoxes = [], obstacles = [], villains = [], bombs = [], smokes = [], effects = []
 const lasers = [], traffic = [], snowballs = [], scrollTex = [], solids = [], ghosts = [], penguins = [];
+const crushers = [], spinners = [], tides = [], winds = [];
 const solidGrid = new Map();
 let snowfall = null;
 const hemi = new THREE.HemisphereLight('#ffffff', '#86b86a', 1.5);
@@ -1347,7 +1758,7 @@ function makeCar(ri, isPlayer) {
     lap: 0, checkpoint: true, peanuts: 0, boost: 0, finished: false, finishTime: 0, offroad: false, wheelSpin: 0,
     maxSpeed: (42 + s.speed * 2) * speedMul(), accel: (12 + s.accel * 3) * speedMul(), handling: 1.85 + s.handling * 0.13,
     s: 0, vy: 0, air: false, prevSy: 0, fallT: 0, spin: 0, invuln: 0, shield: 0, item: null, roll: 0,
-    big: 0, small: 0, dog: 0, scaleNow: 1, gold: 0,
+    big: 0, small: 0, dog: 0, scaleNow: 1, gold: 0, flat: 0,
     ai: { baseSkill: 1, skill: 1, phase: rand() * 6, bias: (rand() - 0.5) * 4, hold: 0 },
   };
 }
@@ -1359,6 +1770,7 @@ function placeCar(car, idx, lat) {
   car.x = p.x + s.x * lat; car.z = p.z + s.z * lat;
   car.heading = Math.atan2(TAN[idx].x, TAN[idx].z);
   car.under = false; car.onDeck = isDeck[idx];
+  car.inCanyon = canyonF(car.x, car.z) > 0.05; car.outCanyon = Math.abs(lat) > HW + 1.6;
   car.y = car.prevSy = surfaceY(car);
   car.vy = 0; car.air = false; car.airT = 0; car.glide = false;
   car.vdir = car.heading; car.slip = 0;
@@ -1409,6 +1821,7 @@ function updateCar(car, dt, ctl) {
   }
   car.big = Math.max(0, car.big - dt);
   car.gold = Math.max(0, car.gold - dt);
+  car.flat = Math.max(0, car.flat - dt);
   car.small = Math.max(0, car.small - dt);
   car.dog = Math.max(0, car.dog - dt);
   if (car.dog > 0) {
@@ -1429,6 +1842,14 @@ function updateCar(car, dt, ctl) {
   if (car.offroad && car.dog <= 0) maxSp *= 0.5;
   if (car.big > 0) maxSp *= 1.08;
   if (car.small > 0) maxSp *= 0.72;
+  if (car.flat > 0) maxSp *= 0.75;
+  // 潮水淹上路面：開過去會濺水、變慢
+  const tz = car.air ? null : zoneAt(car);
+  if (tz && tz.type === 'tide' && tz.on && car.dog <= 0) {
+    maxSp *= 0.55;
+    if (!car.inTide) { spawnEffect(car.x, car.y + 0.5, car.z, '#bfe8ff', 2.2); if (car.isPlayer) { Sound.noise(0.3, 0.18); showBanner('海水漲上來了！', 800); } }
+    car.inTide = true;
+  } else car.inTide = false;
   if (car.boost > 0) { maxSp += 18 * speedMul(); car.boost -= dt; }
   if (car.dog > 0) { maxSp = car.maxSpeed * 1.45; car.speed = Math.max(car.speed, lerp(car.speed, maxSp, 1 - Math.exp(-dt * 4))); }
   if (!car.air) {
@@ -1472,6 +1893,16 @@ function updateCar(car, dt, ctl) {
   car.x += Math.sin(car.vdir) * car.speed * dt;
   car.z += Math.cos(car.vdir) * car.speed * dt;
   if (zone && zone.type === 'conveyor') { car.x += SIDE[car.idx].x * zone.push * dt; car.z += SIDE[car.idx].z * zone.push * dt; }
+  if (zone && zone.type === 'wind' && car.dog <= 0) { car.x += SIDE[car.idx].x * zone.cur * dt; car.z += SIDE[car.idx].z * zone.cur * dt; }
+  // 彈簧軟糖／雲朵彈跳墊：踩上去整台車彈起來
+  if (zone && zone.type === 'spring') {
+    if (!car.inSpring) {
+      car.vy = zone.power; car.air = true; car.airT = 0; car.y += 0.2; car.prevSy = car.y;
+      spawnEffect(car.x, car.y, car.z, TRACK.sky ? '#ffffff' : '#7fffc4', 2);
+      if (car.isPlayer) { Sound.boing(); showBanner(TRACK.sky ? '雲朵彈跳～' : '彈簧軟糖！彈～', 700); }
+    }
+    car.inSpring = true;
+  } else if (!car.air) car.inSpring = false;
 
   car.prevIdx = car.idx;
   const prevLat = car.lat;
@@ -1493,7 +1924,20 @@ function updateCar(car, dt, ctl) {
       if (car.isPlayer && Math.random() < dt * 4) Sound.bump();
     }
   }
-  const railed = inCanyon || (isDeck[car.idx] && car.onDeck);
+  // 峽谷：從橋上進來的車被欄杆擋住；從路外開過來的車在欄杆外側（會滑下峽谷），也穿不進欄杆
+  if (inCanyon && !car.inCanyon) car.outCanyon = Math.abs(prevLat) > HW + 1.6;
+  car.inCanyon = inCanyon;
+  if (inCanyon && car.outCanyon) {
+    const wall = HW + 1.6 + KART_R * car.scaleNow;
+    if (Math.abs(car.lat) < wall) {
+      const sv = SIDE[car.idx], L = (car.lat >= 0 ? 1 : -1) * wall;
+      car.x -= sv.x * (car.lat - L); car.z -= sv.z * (car.lat - L); car.lat = L;
+      car.heading += wrapAngle(headingAt(car.idx) - car.heading) * Math.min(1, dt * 6);
+      car.vdir = car.heading;
+      car.speed *= Math.pow(0.5, dt);
+    }
+  }
+  const railed = (inCanyon && !car.outCanyon) || (isDeck[car.idx] && car.onDeck);
   const lim = railed ? HW + 1.6 - KART_R * car.scaleNow : HW + OFFROAD;   // 橋上、高架橋上有欄杆（欄杆在 HW+1.6）
   if (Math.abs(car.lat) > lim) {
     const s = SIDE[car.idx], L = Math.sign(car.lat) * lim;
@@ -1571,12 +2015,12 @@ function updateCar(car, dt, ctl) {
     car.vy = gv;
     car.y = sy;
   }
-  // 掉進峽谷（不論是飛進去還是開下去）→ 回到橋前
-  if (car.y < roadY(car.s) - 7 && canyonF(car.x, car.z) > 0.3) {
+  // 掉進峽谷（不論是飛進去還是開下去）→ 回到橋前；雲端賽道掉下去 → 被雲朵接住送回賽道
+  if ((car.y < roadY(car.s) - 7 && canyonF(car.x, car.z) > 0.3) || (TRACK.sky && car.y < roadY(car.s) - 8)) {
     car.fallT = 1.4;
     car.speed = 0;
     car.air = true;
-    if (car.isPlayer) { Sound.fall(); showBanner('掉下去了～！', 1400); }
+    if (car.isPlayer) { Sound.fall(); showBanner(TRACK.sky ? '掉下雲端～被雲朵接住了！' : '掉下去了～！', 1400); }
     return;
   }
   // 記住最近一次安全的位置（在路面上、沒在飛、不在峽谷）
@@ -1612,7 +2056,7 @@ function rescue(car) {
 
 // 隧道牆在路中心哪一側多遠（和 buildTunnel 的斷面一致）
 function tunnelWallLat(t) {
-  return t.kind === 'base' ? HW + 2 : t.kind === 'cave' ? 6.5 + 7.2 : HW + 3;
+  return t.kind === 'base' || t.kind === 'factory' ? HW + 2 : t.kind === 'cave' ? 6.5 + 7.2 : HW + 3;
 }
 
 // ---------- 實體障礙物：圓形（樹、柱子）或方形（房子、大樓） ----------
@@ -1929,8 +2373,9 @@ function updateHazards(dt) {
   }
 }
 
-// 雷射門、城市車輛、滾雪球
+// 雷射門、城市車輛、滾雪球、潮水、陣風、壓扁機、風車
 function updateMovingHazards(dt, cars) {
+  updateNewHazards(dt, cars);
   for (const l of lasers) {
     const on = laserOn(l, state.raceTime);
     const warn = !on && laserOn(l, state.raceTime + 0.8);
@@ -2007,21 +2452,23 @@ function updateMovingHazards(dt, cars) {
       pg.lat += pg.dir * pg.spd * dt;
       if (Math.abs(pg.lat) > HW - 1.5) { pg.lat = Math.sign(pg.lat) * (HW - 1.5); pg.dir = -pg.dir; if (Math.random() < 0.5) pg.wave = 1.2; }
       const ph = pg.t * 9;
-      u.body.rotation.z = Math.sin(ph) * 0.22;
+      u.body.rotation.z = pg.kind === 'crab' ? Math.sin(ph * 1.5) * 0.08 : Math.sin(ph) * 0.22;
       u.feet[0].position.z = 0.25 + Math.sin(ph) * 0.22; u.feet[1].position.z = 0.25 - Math.sin(ph) * 0.22;
+      if (pg.kind === 'peanutkid') pg.hop = Math.abs(Math.sin(ph * 0.6)) * 0.7;
       u.flips.forEach((f, k) => { f.rotation.z = (k ? -1 : 1) * (0.3 + Math.abs(Math.sin(ph)) * 0.35); });
     }
     pg.solid = pg.dizzy <= 0;
     const [x, z] = latPos(pg.idx, pg.lat);
     pg.x = x; pg.z = z; pg.y = pts[pg.idx].y + pg.hop;
     pg.mesh.position.set(x, pg.y, z);
-    const face = pg.wave > 0 || pg.dizzy > 0 ? Math.PI : (pg.dir > 0 ? -Math.PI / 2 : Math.PI / 2);
+    // 螃蟹橫著走，臉一直朝著開過來的車
+    const face = pg.wave > 0 || pg.dizzy > 0 || pg.kind === 'crab' ? Math.PI : (pg.dir > 0 ? -Math.PI / 2 : Math.PI / 2);
     pg.mesh.rotation.y = headingAt(pg.idx) + face;
     if (!pg.solid) continue;
     for (const c of cars) {
       if (c.fallT > 0 || c.air || Math.abs(c.y - pg.y) > 2.5) continue;
       if ((c.x - x) ** 2 + (c.z - z) ** 2 < (0.95 + 1.15 * c.scaleNow) ** 2) {
-        hit(c, '撞到童童了！暈頭轉向～');
+        hit(c, WALKER_HIT[pg.kind] || WALKER_HIT.penguin);
         pg.dizzy = 2.5; pg.vy = 9; pg.hop = 0.01; pg.wave = 0;
         Sound.squeak();
         break;
@@ -2041,7 +2488,7 @@ function updateMovingHazards(dt, cars) {
     b.s = (b.s - 22 * dt / SPACING + N) % N;
     b.idx = Math.floor(b.s);
     const [x, z] = latPos(b.idx, b.lat);
-    b.x = x; b.z = z; b.y = roadY(b.s) + b.r;
+    b.x = x; b.z = z; b.y = roadY(b.s) + b.r + (cfg.kind === 'beachball' ? Math.abs(Math.sin(time * 3.5 + b.lat)) * 2.8 : 0);
     b.mesh.visible = true;
     b.mesh.position.set(x, b.y, z);
     b.mesh.rotation.x -= 22 * dt / b.r;
@@ -2050,7 +2497,7 @@ function updateMovingHazards(dt, cars) {
     for (const c of cars) {
       if (c.fallT > 0 || Math.abs(c.y + 1 - b.y) > 3.5) continue;
       if ((c.x - x) ** 2 + (c.z - z) ** 2 < (b.r + 1.1 * c.scaleNow) ** 2) {
-        hit(c, '被大雪球撞到了！');
+        hit(c, cfg.kind === 'beachball' ? '被海灘球彈到了！轉圈圈～' : '被大雪球撞到了！');
         done = true;
         break;
       }
@@ -2134,6 +2581,18 @@ function aiControl(car, dt) {
     const d = idxAhead(car.idx, l.idx);
     const eta = state.raceTime + d * SPACING / Math.max(car.speed, 5);
     if (d > 2 && d < 50 && (laserOn(l, eta - 0.3) || laserOn(l, eta) || laserOn(l, eta + 0.3))) { gas = false; if (d < 22) brake = true; }
+  }
+  for (const cr of crushers) {
+    const d = idxAhead(car.idx, cr.idx);
+    if (d < 2 || d > 45 || Math.abs(lane - cr.lat) > cr.w / 2 + 3) continue;
+    const eta = state.raceTime + d * SPACING / Math.max(car.speed, 5);
+    if (crusherLow(cr, eta) || crusherLow(cr, eta + 0.3)) { gas = false; if (d < 20) brake = true; }
+  }
+  for (const sp of spinners) {
+    const d = idxAhead(car.idx, sp.idx);
+    if (d < 2 || d > 40) continue;
+    const eta = d * SPACING / Math.max(car.speed, 5);
+    if (spinnerBlocks(sp, sp.ang + sp.speed * eta, car.lat)) { gas = false; if (d < 15) brake = true; }
   }
   if (ai.blunderT > 0) {
     if (ai.blunder === 'wobble') steer = clamp(steer + Math.sin(time * 7) * 1.1, -1, 1);   // 方向盤亂打
@@ -2242,7 +2701,7 @@ function bully(a, b) {
 }
 
 function onLap(car) {
-  if (car.lap > LAPS && !car.finished) {
+  if (car.lap > lapsNow() && !car.finished) {
     car.finished = true;
     car.finishTime = state.raceTime;
     if (car.isPlayer) {
@@ -2253,8 +2712,8 @@ function onLap(car) {
       Sound.fanfare();
       $('controls').classList.add('hidden');
     }
-  } else if (car.isPlayer && car.lap >= 2 && car.lap <= LAPS) {
-    showBanner(car.lap === LAPS ? '最後一圈！' : `第 ${car.lap} 圈`, 1500);
+  } else if (car.isPlayer && car.lap >= 2 && car.lap <= lapsNow()) {
+    showBanner(car.lap === lapsNow() ? '最後一圈！' : `第 ${car.lap} 圈`, 1500);
     Sound.tone(660, 0.2, 'triangle', 0.15); Sound.tone(990, 0.3, 'triangle', 0.15, 0.12);
   }
 }
@@ -2300,6 +2759,7 @@ function syncModel(car, dt) {
   if (left > 0 && left < 1.2 && Math.floor(time * 8) % 2 === 0) target = 1;
   car.scaleNow = lerp(car.scaleNow, target, 1 - Math.exp(-(dt || 0.016) * 8));
   m.scale.setScalar(car.scaleNow);
+  if (car.flat > 0) m.scale.set(car.scaleNow * 1.3, car.scaleNow * 0.35, car.scaleNow * 1.3);
   // 彭德拉車
   u.dog.visible = car.dog > 0;
   if (car.dog > 0) {
@@ -2354,7 +2814,7 @@ function drawMinimap() {
 function updateHud() {
   const p = state.player, rank = ranking().indexOf(p) + 1;
   $('hudPos').innerHTML = `${rank}<small>/4</small>`;
-  $('hudLap').textContent = `圈數 ${clamp(p.lap, 1, LAPS)}/${LAPS}`;
+  $('hudLap').textContent = `圈數 ${clamp(p.lap, 1, lapsNow())}/${lapsNow()}`;
   $('hudTime').textContent = fmtTime(p.finished ? p.finishTime : state.raceTime);
   $('hudSpeed').innerHTML = `${Math.round(Math.abs(p.speed) * 3.6)}<small> km/h</small>`;
   $('hudPeanut').textContent = `🥜 × ${p.peanuts}`;
@@ -2734,7 +3194,7 @@ if (AUTO || params.has('debug')) {
     get EDGE() { return EDGE; },
     get BROKEN_END() { return BROKEN_END; },
     get pts() { return pts; },
-    solids, ghosts, penguins,
+    solids, ghosts, penguins, scene, camera,
     near: (x, z) => nearestIdx(x, z)[0],
     loadTrack(k) { loadTrack(k); state.track = k; setupGrid(state.selected); resetHazards(); },
     place(i, lat, sp) {

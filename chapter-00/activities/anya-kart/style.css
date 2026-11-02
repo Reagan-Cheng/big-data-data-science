@@ -244,3 +244,8 @@ html.phone body.racing .mute-btn { top: calc(max(14px, env(safe-area-inset-top))
   15% { opacity: 1; transform: translate(-50%, 0) scale(1.1); }
   100% { opacity: 0; transform: translate(-50%, -40px) scale(1); }
 }
+
+/* 6 條賽道：按鈕自動換行 */
+#trackSel { flex-wrap: wrap; justify-content: center; max-width: min(96vw, 980px); border-radius: 22px; }
+#trackSel button { padding: 7px 12px; }
+html.phone #trackSel button { padding: 4px 8px; font-size: 12px; }
